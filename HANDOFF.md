@@ -1,4 +1,4 @@
-# Student Intelligence — Claude Code Devir Dokümanı
+# Student Intelligence — Devir Dokümanı
 
 **Proje:** Eğitim kurumları için AI destekli öğrenci risk tespit platformu
 **Hedef:** American LIFE'a gösterilecek 3–5 dakikalık çalışan demo
@@ -6,6 +6,18 @@
 **Notion:** [Proje 03 — Student Intelligence MVP](https://app.notion.com/p/3cfc55d081f481d2b5bbc7b5baa8947d)
 
 ---
+
+## Güncel uygulama durumu — 8 Eylül 2026
+
+American LIFE UI/UX tasarımı uygulanmış ve kullanıcı tarafından onaylanmıştır.
+Çalışan uygulama `dashboard.html` içindedir; bağımlılık veya build adımı yoktur.
+Next.js/React ifadesi ve aşağıdaki “Yapılacak” ekran listesi ilk planın tarihsel
+kaydıdır. Güncel kurulum ve doğrulama bilgileri için `README.md` esas alınır.
+
+Gündem, öğrenci kartı, öğrenci listesi ve soru ekranı çalışır durumdadır.
+Geniş ekranda risk haritası öncelik listesinin yanındadır. Mobil menü iki
+sütunludur. Gündemde ilk iki risk nedeni, detayda tüm sinyaller gösterilir.
+Risk motoru, veri ve aşağıdaki ürün kapsamı kararları korunmuştur.
 
 ## 1. Bu dokümanın amacı
 

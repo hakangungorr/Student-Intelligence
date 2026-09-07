@@ -133,5 +133,22 @@ Bağımlılık yok. Tek `.html` dosyası; veri, yazı tipleri ve mantık gömül
   genelinde `demo_dataset.json`'daki `kpi` bloğuyla birebir aynı sonucu verir
 - Öncelik listesi ham skora göre sıralıdır
 - "Acil" etiketli ama gerekçe gösterilmeyen öğrenci yoktur
-- 1024 px genişlikte yatay taşma yoktur
-- Kontrast: açık tema 12.7 / 8.3 · koyu tema 15.8 / 7.5
+- 390 px mobil ve 1440 px masaüstü görünümünde yatay taşma yoktur
+- Açık/koyu tema ve klavyeyle aksiyon tamamlama kontrol edildi
+
+## American LIFE UI/UX güncellemesi
+
+- Lacivert gezinme alanı ve her ekranda şube/tema seçimi.
+- Geniş ekranda öncelik listesiyle yan yana şube ve kur risk haritası.
+- Gündemde ilk iki risk nedeni; tüm sinyaller öğrenci kartında ve listede.
+- Ayrı aksiyon alanı, tamamlandı/geri al akışı ve klavye desteği.
+- Mobilde iki sütunlu menü ve özet kartları; dar ekranda tek sütunlu içerik.
+- Gömülü yazı tiplerinin önündeki açık CSS yorumu düzeltildi.
+- Risk motoru ve sentetik veri değişmedi.
+
+Yerel önizleme: `python3 -m http.server 8765 --bind 127.0.0.1`, ardından
+`http://127.0.0.1:8765/dashboard.html`. Dosya doğrudan açıldığında da çalışır.
+
+Tarayıcıda kontrol edilenler: açık/koyu tema, 390 px mobil görünüm,
+1440 px masaüstü görünümü, öğrenci araması, İzmir kapsamı (22 öğrenci /
+7 acil), öğrenci detayı, klavyeyle aksiyon tamamlama, geri alma ve demo sorusu.
