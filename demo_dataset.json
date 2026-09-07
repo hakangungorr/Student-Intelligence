@@ -1,0 +1,7678 @@
+{
+ "kpi": {
+  "acil_mudahale": {
+   "value": 20,
+   "prev": 15
+  },
+  "izlemede": {
+   "value": 24,
+   "prev": 31
+  },
+  "yeni_riske_giren": 5,
+  "toparlanan": 3,
+  "devami_kritik": 21,
+  "en_yogun_risk_sube": "Izmir",
+  "toplam_ogrenci": 100
+ },
+ "benchmarks": {
+  "A2": {
+   "exam": 83.33333333333333,
+   "skill": 81.625,
+   "cohort_size": 24
+  },
+  "A1": {
+   "exam": 81.66666666666667,
+   "skill": 81.33333333333333,
+   "cohort_size": 22
+  },
+  "B1": {
+   "exam": 80.91666666666667,
+   "skill": 81.45833333333333,
+   "cohort_size": 26
+  },
+  "B2": {
+   "exam": 86.75,
+   "skill": 84.9375,
+   "cohort_size": 18
+  },
+  "C1": {
+   "exam": 84.75,
+   "skill": 84.25,
+   "cohort_size": 10
+  }
+ },
+ "branch_x_dimension": {
+  "Izmir": {
+   "n": 22,
+   "high": 7,
+   "test": 32.9,
+   "skill": 50.2,
+   "classroom": 30,
+   "attendance": 32.9
+  },
+  "Istanbul": {
+   "n": 30,
+   "high": 7,
+   "test": 32.2,
+   "skill": 26.3,
+   "classroom": 24.4,
+   "attendance": 24.7
+  },
+  "Bursa": {
+   "n": 16,
+   "high": 3,
+   "test": 31.7,
+   "skill": 28.2,
+   "classroom": 25.1,
+   "attendance": 35.6
+  },
+  "Ankara": {
+   "n": 32,
+   "high": 3,
+   "test": 16.0,
+   "skill": 15.9,
+   "classroom": 19.4,
+   "attendance": 20.0
+  }
+ },
+ "level_x_dimension": {
+  "A2": {
+   "n": 24,
+   "high": 6,
+   "test": 27.4,
+   "skill": 32.4,
+   "classroom": 25.8,
+   "attendance": 21.5
+  },
+  "A1": {
+   "n": 22,
+   "high": 4,
+   "test": 21.9,
+   "skill": 20.5,
+   "classroom": 27.1,
+   "attendance": 22.6
+  },
+  "B1": {
+   "n": 26,
+   "high": 7,
+   "test": 32.2,
+   "skill": 36.1,
+   "classroom": 22.1,
+   "attendance": 38.3
+  },
+  "B2": {
+   "n": 18,
+   "high": 2,
+   "test": 26,
+   "skill": 22.9,
+   "classroom": 18.6,
+   "attendance": 21.6
+  },
+  "C1": {
+   "n": 10,
+   "high": 1,
+   "test": 26.6,
+   "skill": 27.3,
+   "classroom": 29,
+   "attendance": 27.5
+  }
+ },
+ "students": [
+  {
+   "student_id": "S091",
+   "name": "Melis Dogan",
+   "branch": "Izmir",
+   "level": "B2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 50,
+   "attendance_recent": 38,
+   "exam_1": 65,
+   "exam_2": 56,
+   "exam_3": 54,
+   "exam_4": 43,
+   "speaking_score": 22,
+   "writing_score": 53,
+   "listening_score": 54,
+   "reading_score": 41,
+   "participation_score": 1,
+   "homework_completion": 47,
+   "teacher_concern": true,
+   "satisfaction_score": 3,
+   "dimensions": {
+    "test": 100,
+    "skill": 94,
+    "classroom": 88,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -12.0,
+     "last_exam": 43,
+     "monotonic_decline": true,
+     "recent_avg": 48.5,
+     "cohort_gap_pct": 44.1
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 22,
+     "own_avg": 42.5,
+     "spread": 20.5,
+     "cohort_gap_pct": 50.0,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 1,
+     "homework": 47,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 50,
+     "recent": 38,
+     "drop": 12
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 93.1,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 125.1,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 12.0 puan dusus",
+    "B2 kur ortalamasinin %44 altinda",
+    "Son sinav 43 — gecme notunun altinda",
+    "Beceri ortalamasi B2 kurunun %50 altinda",
+    "Speaking 22 — kendi ortalamasinin 20 puan altinda",
+    "Derse katilim 1/10",
+    "Odev tamamlama %47",
+    "Egitmen endise bildirdi",
+    "Devam orani %50",
+    "Son 4 haftada %50 -> %38"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + hedefli Speaking destek plani (2 hafta)",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S015",
+   "name": "Bilge Dogan",
+   "branch": "Bursa",
+   "level": "C1",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 52,
+   "attendance_recent": 35,
+   "exam_1": 67,
+   "exam_2": 60,
+   "exam_3": 54,
+   "exam_4": 48,
+   "speaking_score": 43,
+   "writing_score": 57,
+   "listening_score": 56,
+   "reading_score": 46,
+   "participation_score": 5,
+   "homework_completion": 47,
+   "teacher_concern": true,
+   "satisfaction_score": 3,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 74,
+    "attendance": 100
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -12.5,
+     "last_exam": 48,
+     "monotonic_decline": true,
+     "recent_avg": 51,
+     "cohort_gap_pct": 39.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 43,
+     "own_avg": 50.5,
+     "spread": 7.5,
+     "cohort_gap_pct": 40.1,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 47,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 52,
+     "recent": 35,
+     "drop": 17
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 87.3,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 119.3,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 12.5 puan dusus",
+    "C1 kur ortalamasinin %40 altinda",
+    "Son sinav 48 — gecme notunun altinda",
+    "Devam orani %52",
+    "Son 4 haftada %52 -> %35",
+    "Derse katilim 5/10",
+    "Odev tamamlama %47",
+    "Egitmen endise bildirdi",
+    "Beceri ortalamasi C1 kurunun %40 altinda",
+    "Speaking 43 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S033",
+   "name": "Yigit Dogan",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 55,
+   "attendance_recent": 45,
+   "exam_1": 65,
+   "exam_2": 55,
+   "exam_3": 48,
+   "exam_4": 40,
+   "speaking_score": 37,
+   "writing_score": 42,
+   "listening_score": 43,
+   "reading_score": 44,
+   "participation_score": 1,
+   "homework_completion": 43,
+   "teacher_concern": true,
+   "satisfaction_score": 3,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 88,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -16,
+     "last_exam": 40,
+     "monotonic_decline": true,
+     "recent_avg": 44,
+     "cohort_gap_pct": 47.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 37,
+     "own_avg": 41.5,
+     "spread": 4.5,
+     "cohort_gap_pct": 49.2,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 1,
+     "homework": 43,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 55,
+     "recent": 45,
+     "drop": 10
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 87.1,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 119.1,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 16.0 puan dusus",
+    "A2 kur ortalamasinin %47 altinda",
+    "Son sinav 40 — gecme notunun altinda",
+    "Derse katilim 1/10",
+    "Odev tamamlama %43",
+    "Egitmen endise bildirdi",
+    "Devam orani %55",
+    "Son 4 haftada %55 -> %45",
+    "Beceri ortalamasi A2 kurunun %49 altinda",
+    "Speaking 37 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S045",
+   "name": "Serkan Kurt",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 58,
+   "attendance_recent": 47,
+   "exam_1": 66,
+   "exam_2": 58,
+   "exam_3": 52,
+   "exam_4": 43,
+   "speaking_score": 48,
+   "writing_score": 46,
+   "listening_score": 51,
+   "reading_score": 51,
+   "participation_score": 2,
+   "homework_completion": 48,
+   "teacher_concern": true,
+   "satisfaction_score": 2,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 88,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -14.5,
+     "last_exam": 43,
+     "monotonic_decline": true,
+     "recent_avg": 47.5,
+     "cohort_gap_pct": 41.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 46,
+     "own_avg": 49,
+     "spread": 3,
+     "cohort_gap_pct": 39.8,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 2,
+     "homework": 48,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 58,
+     "recent": 47,
+     "drop": 11
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 87.1,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 119.1,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 14.5 puan dusus",
+    "B1 kur ortalamasinin %41 altinda",
+    "Son sinav 43 — gecme notunun altinda",
+    "Derse katilim 2/10",
+    "Odev tamamlama %48",
+    "Egitmen endise bildirdi",
+    "Devam orani %58",
+    "Son 4 haftada %58 -> %47",
+    "Beceri ortalamasi B1 kurunun %40 altinda",
+    "Writing 46 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S027",
+   "name": "Elif Sahin",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 52,
+   "attendance_recent": 38,
+   "exam_1": 65,
+   "exam_2": 56,
+   "exam_3": 50,
+   "exam_4": 39,
+   "speaking_score": 38,
+   "writing_score": 46,
+   "listening_score": 48,
+   "reading_score": 38,
+   "participation_score": 5,
+   "homework_completion": 35,
+   "teacher_concern": true,
+   "satisfaction_score": 3,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 86,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -16.0,
+     "last_exam": 39,
+     "monotonic_decline": true,
+     "recent_avg": 44.5,
+     "cohort_gap_pct": 46.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 38,
+     "own_avg": 42.5,
+     "spread": 4.5,
+     "cohort_gap_pct": 47.9,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 35,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 52,
+     "recent": 38,
+     "drop": 14
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 86.7,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 118.7,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 16.0 puan dusus",
+    "A2 kur ortalamasinin %47 altinda",
+    "Son sinav 39 — gecme notunun altinda",
+    "Devam orani %52",
+    "Son 4 haftada %52 -> %38",
+    "Derse katilim 5/10",
+    "Odev tamamlama %35",
+    "Egitmen endise bildirdi",
+    "Beceri ortalamasi A2 kurunun %48 altinda",
+    "Speaking 38 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S020",
+   "name": "Baris Yildiz",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 51,
+   "attendance_recent": 42,
+   "exam_1": 62,
+   "exam_2": 54,
+   "exam_3": 48,
+   "exam_4": 41,
+   "speaking_score": 52,
+   "writing_score": 42,
+   "listening_score": 51,
+   "reading_score": 48,
+   "participation_score": 3,
+   "homework_completion": 33,
+   "teacher_concern": true,
+   "satisfaction_score": 2,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 100,
+    "attendance": 75
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -13.5,
+     "last_exam": 41,
+     "monotonic_decline": true,
+     "recent_avg": 44.5,
+     "cohort_gap_pct": 45.5
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 42,
+     "own_avg": 48.2,
+     "spread": 6.2,
+     "cohort_gap_pct": 40.7,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 3,
+     "homework": 33,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 51,
+     "recent": 42,
+     "drop": 9
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 86.2,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 118.2,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 13.5 puan dusus",
+    "A1 kur ortalamasinin %46 altinda",
+    "Son sinav 41 — gecme notunun altinda",
+    "Derse katilim 3/10",
+    "Odev tamamlama %33",
+    "Egitmen endise bildirdi",
+    "Devam orani %51",
+    "Son 4 haftada %51 -> %42",
+    "Beceri ortalamasi A1 kurunun %41 altinda",
+    "Writing 42 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S096",
+   "name": "Bilge Kurt",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 54,
+   "attendance_recent": 45,
+   "exam_1": 64,
+   "exam_2": 58,
+   "exam_3": 51,
+   "exam_4": 39,
+   "speaking_score": 45,
+   "writing_score": 50,
+   "listening_score": 39,
+   "reading_score": 42,
+   "participation_score": 1,
+   "homework_completion": 31,
+   "teacher_concern": true,
+   "satisfaction_score": 2,
+   "dimensions": {
+    "test": 100,
+    "skill": 70,
+    "classroom": 100,
+    "attendance": 75
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -16,
+     "last_exam": 39,
+     "monotonic_decline": true,
+     "recent_avg": 45,
+     "cohort_gap_pct": 44.4
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 39,
+     "own_avg": 44,
+     "spread": 5,
+     "cohort_gap_pct": 46.0,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 1,
+     "homework": 31,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 54,
+     "recent": 45,
+     "drop": 9
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 86.2,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 118.2,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 16.0 puan dusus",
+    "B1 kur ortalamasinin %44 altinda",
+    "Son sinav 39 — gecme notunun altinda",
+    "Derse katilim 1/10",
+    "Odev tamamlama %31",
+    "Egitmen endise bildirdi",
+    "Devam orani %54",
+    "Son 4 haftada %54 -> %45",
+    "Beceri ortalamasi B1 kurunun %46 altinda",
+    "Listening 39 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S058",
+   "name": "Mert Ozdemir",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 51,
+   "attendance_recent": 46,
+   "exam_1": 66,
+   "exam_2": 62,
+   "exam_3": 55,
+   "exam_4": 52,
+   "speaking_score": 54,
+   "writing_score": 47,
+   "listening_score": 49,
+   "reading_score": 47,
+   "participation_score": 5,
+   "homework_completion": 24,
+   "teacher_concern": true,
+   "satisfaction_score": 4,
+   "dimensions": {
+    "test": 91,
+    "skill": 70,
+    "classroom": 86,
+    "attendance": 75
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -10.5,
+     "last_exam": 52,
+     "monotonic_decline": true,
+     "recent_avg": 53.5,
+     "cohort_gap_pct": 34.5
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 47,
+     "own_avg": 49.2,
+     "spread": 2.2,
+     "cohort_gap_pct": 39.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 24,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 51,
+     "recent": 46,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 80.8,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 112.8,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 10.5 puan dusus",
+    "A1 kur ortalamasinin %34 altinda",
+    "Son sinav 52 — gecme notunun altinda",
+    "Derse katilim 5/10",
+    "Odev tamamlama %24",
+    "Egitmen endise bildirdi",
+    "Devam orani %51",
+    "Son 4 haftada %51 -> %46",
+    "Beceri ortalamasi A1 kurunun %39 altinda",
+    "Writing 47 — gecme notunun altinda"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S024",
+   "name": "Mert Sahin",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 75,
+   "attendance_recent": 62,
+   "exam_1": 46,
+   "exam_2": 50,
+   "exam_3": 48,
+   "exam_4": 49,
+   "speaking_score": 51,
+   "writing_score": 28,
+   "listening_score": 41,
+   "reading_score": 44,
+   "participation_score": 4,
+   "homework_completion": 51,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 65,
+    "skill": 82,
+    "classroom": 74,
+    "attendance": 56
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 49,
+     "monotonic_decline": false,
+     "recent_avg": 48.5,
+     "cohort_gap_pct": 40.1
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 28,
+     "own_avg": 41,
+     "spread": 13,
+     "cohort_gap_pct": 49.7,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 4,
+     "homework": 51,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 75,
+     "recent": 62,
+     "drop": 13
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 68.8,
+   "escalation": 32,
+   "risk_score": 100,
+   "risk_score_raw": 100.8,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %50 altinda",
+    "Writing 28 — gecme notunun altinda",
+    "Derse katilim 4/10",
+    "Odev tamamlama %51",
+    "Egitmen endise bildirdi",
+    "B1 kur ortalamasinin %40 altinda",
+    "Son sinav 49 — gecme notunun altinda",
+    "Devam orani %75",
+    "Son 4 haftada %75 -> %62"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 84,
+   "prev_risk_level": "HIGH",
+   "delta": 16,
+   "transition": "same"
+  },
+  {
+   "student_id": "S051",
+   "name": "Ece Kurt",
+   "branch": "Izmir",
+   "level": "B1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 72,
+   "attendance_recent": 60,
+   "exam_1": 74,
+   "exam_2": 71,
+   "exam_3": 66,
+   "exam_4": 59,
+   "speaking_score": 42,
+   "writing_score": 40,
+   "listening_score": 56,
+   "reading_score": 64,
+   "participation_score": 8,
+   "homework_completion": 84,
+   "teacher_concern": true,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 80,
+    "skill": 82,
+    "classroom": 20,
+    "attendance": 73
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -10.0,
+     "last_exam": 59,
+     "monotonic_decline": true,
+     "recent_avg": 62.5,
+     "cohort_gap_pct": 22.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 40,
+     "own_avg": 50.5,
+     "spread": 10.5,
+     "cohort_gap_pct": 38.0,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 84,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 72,
+     "recent": 60,
+     "drop": 12
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "attendance"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 66.8,
+   "escalation": 22,
+   "risk_score": 89,
+   "risk_score_raw": 88.8,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %38 altinda",
+    "Writing 40 — gecme notunun altinda",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 10.0 puan dusus",
+    "B1 kur ortalamasinin %23 altinda",
+    "Son sinav 59 — gecme notunun altinda",
+    "Devam orani %72",
+    "Son 4 haftada %72 -> %60",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 59,
+   "prev_risk_level": "MEDIUM",
+   "delta": 30,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S052",
+   "name": "Zeynep Aslan",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 81,
+   "attendance_recent": 69,
+   "exam_1": 50,
+   "exam_2": 50,
+   "exam_3": 48,
+   "exam_4": 48,
+   "speaking_score": 42,
+   "writing_score": 49,
+   "listening_score": 47,
+   "reading_score": 55,
+   "participation_score": 4,
+   "homework_completion": 54,
+   "teacher_concern": true,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 75,
+    "skill": 70,
+    "classroom": 74,
+    "attendance": 42
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2,
+     "last_exam": 48,
+     "monotonic_decline": false,
+     "recent_avg": 48,
+     "cohort_gap_pct": 41.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 42,
+     "own_avg": 48.2,
+     "spread": 6.2,
+     "cohort_gap_pct": 40.7,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 4,
+     "homework": 54,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 81,
+     "recent": 69,
+     "drop": 12
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 65.3,
+   "escalation": 22,
+   "risk_score": 87,
+   "risk_score_raw": 87.3,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "A1 kur ortalamasinin %41 altinda",
+    "Son sinav 48 — gecme notunun altinda",
+    "Derse katilim 4/10",
+    "Odev tamamlama %54",
+    "Egitmen endise bildirdi",
+    "Beceri ortalamasi A1 kurunun %41 altinda",
+    "Speaking 42 — gecme notunun altinda",
+    "Devam orani %81",
+    "Son 4 haftada %81 -> %69"
+   ],
+   "recommended_action": "ACIL: egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 100,
+   "prev_risk_level": "HIGH",
+   "delta": -13,
+   "transition": "same"
+  },
+  {
+   "student_id": "S064",
+   "name": "Berk Celik",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 80,
+   "attendance_recent": 63,
+   "exam_1": 49,
+   "exam_2": 46,
+   "exam_3": 47,
+   "exam_4": 48,
+   "speaking_score": 53,
+   "writing_score": 44,
+   "listening_score": 55,
+   "reading_score": 51,
+   "participation_score": 7,
+   "homework_completion": 68,
+   "teacher_concern": true,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 65,
+    "skill": 70,
+    "classroom": 34,
+    "attendance": 54
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.0,
+     "last_exam": 48,
+     "monotonic_decline": false,
+     "recent_avg": 47.5,
+     "cohort_gap_pct": 41.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 44,
+     "own_avg": 50.8,
+     "spread": 6.8,
+     "cohort_gap_pct": 37.6,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 68,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 80,
+     "recent": 63,
+     "drop": 17
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "attendance"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 57.3,
+   "escalation": 22,
+   "risk_score": 79,
+   "risk_score_raw": 79.3,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi A1 kurunun %38 altinda",
+    "Writing 44 — gecme notunun altinda",
+    "A1 kur ortalamasinin %42 altinda",
+    "Son sinav 48 — gecme notunun altinda",
+    "Devam orani %80",
+    "Son 4 haftada %80 -> %63",
+    "Odev tamamlama %68",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 61,
+   "prev_risk_level": "MEDIUM",
+   "delta": 18,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S022",
+   "name": "Yigit Sahin",
+   "branch": "Izmir",
+   "level": "B1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 77,
+   "attendance_recent": 64,
+   "exam_1": 42,
+   "exam_2": 43,
+   "exam_3": 46,
+   "exam_4": 47,
+   "speaking_score": 26,
+   "writing_score": 41,
+   "listening_score": 40,
+   "reading_score": 41,
+   "participation_score": 7,
+   "homework_completion": 72,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 65,
+    "skill": 82,
+    "classroom": 14,
+    "attendance": 56
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 4.0,
+     "last_exam": 47,
+     "monotonic_decline": false,
+     "recent_avg": 46.5,
+     "cohort_gap_pct": 42.5
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 26,
+     "own_avg": 37,
+     "spread": 11,
+     "cohort_gap_pct": 54.6,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 72,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 77,
+     "recent": 64,
+     "drop": 13
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "attendance"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 56.8,
+   "escalation": 22,
+   "risk_score": 79,
+   "risk_score_raw": 78.8,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %55 altinda",
+    "Speaking 26 — gecme notunun altinda",
+    "B1 kur ortalamasinin %42 altinda",
+    "Son sinav 47 — gecme notunun altinda",
+    "Devam orani %77",
+    "Son 4 haftada %77 -> %64",
+    "Odev tamamlama %72"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 92,
+   "prev_risk_level": "HIGH",
+   "delta": -13,
+   "transition": "same"
+  },
+  {
+   "student_id": "S013",
+   "name": "Nur Aydin",
+   "branch": "Istanbul",
+   "level": "A2",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 91,
+   "attendance_recent": 87,
+   "exam_1": 49,
+   "exam_2": 52,
+   "exam_3": 52,
+   "exam_4": 48,
+   "speaking_score": 55,
+   "writing_score": 50,
+   "listening_score": 52,
+   "reading_score": 47,
+   "participation_score": 4,
+   "homework_completion": 65,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 65,
+    "skill": 70,
+    "classroom": 60,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 48,
+     "monotonic_decline": false,
+     "recent_avg": 50,
+     "cohort_gap_pct": 40.0
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 47,
+     "own_avg": 51,
+     "spread": 4,
+     "cohort_gap_pct": 37.5,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 4,
+     "homework": 65,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 87,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill",
+    "classroom"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill",
+    "classroom"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 49.0,
+   "escalation": 22,
+   "risk_score": 71,
+   "risk_score_raw": 71.0,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %38 altinda",
+    "Reading 47 — gecme notunun altinda",
+    "A2 kur ortalamasinin %40 altinda",
+    "Son sinav 48 — gecme notunun altinda",
+    "Derse katilim 4/10",
+    "Odev tamamlama %65",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 72,
+   "prev_risk_level": "HIGH",
+   "delta": -1,
+   "transition": "same"
+  },
+  {
+   "student_id": "S026",
+   "name": "Kuzey Kara",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 72,
+   "attendance_recent": 74,
+   "exam_1": 70,
+   "exam_2": 67,
+   "exam_3": 66,
+   "exam_4": 61,
+   "speaking_score": 58,
+   "writing_score": 27,
+   "listening_score": 58,
+   "reading_score": 57,
+   "participation_score": 8,
+   "homework_completion": 67,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 51,
+    "skill": 100,
+    "classroom": 14,
+    "attendance": 45
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -5.0,
+     "last_exam": 61,
+     "monotonic_decline": true,
+     "recent_avg": 63.5,
+     "cohort_gap_pct": 21.5
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 27,
+     "own_avg": 50,
+     "spread": 23,
+     "cohort_gap_pct": 38.6,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 67,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 72,
+     "recent": 74,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 54.3,
+   "escalation": 10,
+   "risk_score": 70,
+   "risk_score_raw": 70.0,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %39 altinda",
+    "Writing 27 — kendi ortalamasinin 23 puan altinda",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 5.0 puan dusus",
+    "B1 kur ortalamasinin %22 altinda",
+    "Devam orani %72",
+    "Odev tamamlama %67"
+   ],
+   "recommended_action": "ACIL: hedefli Writing destek plani (2 hafta) + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 70,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S044",
+   "name": "Aylin Yildiz",
+   "branch": "Izmir",
+   "level": "B1",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 54,
+   "attendance_recent": 38,
+   "exam_1": 72,
+   "exam_2": 75,
+   "exam_3": 76,
+   "exam_4": 74,
+   "speaking_score": 41,
+   "writing_score": 68,
+   "listening_score": 71,
+   "reading_score": 80,
+   "participation_score": 7,
+   "homework_completion": 72,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 0,
+    "skill": 81,
+    "classroom": 34,
+    "attendance": 100
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.5,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 75,
+     "cohort_gap_pct": 7.3
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 41,
+     "own_avg": 65,
+     "spread": 24,
+     "cohort_gap_pct": 20.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 72,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 54,
+     "recent": 38,
+     "drop": 16
+    }
+   },
+   "critical_dimensions": [
+    "skill",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "skill",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 52.0,
+   "escalation": 10,
+   "risk_score": 70,
+   "risk_score_raw": 70.0,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Devam orani %54",
+    "Son 4 haftada %54 -> %38",
+    "Beceri ortalamasi B1 kurunun %20 altinda",
+    "Speaking 41 — kendi ortalamasinin 24 puan altinda",
+    "Odev tamamlama %72",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: ogrenci iliskileri aramasi (devamsizlik nedeni) + hedefli Speaking destek plani (2 hafta)",
+   "prev_risk_score": 70,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S050",
+   "name": "Ahmet Polat",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 64,
+   "attendance_recent": 47,
+   "exam_1": 71,
+   "exam_2": 72,
+   "exam_3": 71,
+   "exam_4": 76,
+   "speaking_score": 74,
+   "writing_score": 80,
+   "listening_score": 71,
+   "reading_score": 73,
+   "participation_score": 6,
+   "homework_completion": 45,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 62,
+    "attendance": 100
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.0,
+     "last_exam": 76,
+     "monotonic_decline": false,
+     "recent_avg": 73.5,
+     "cohort_gap_pct": 11.8
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 71,
+     "own_avg": 74.5,
+     "spread": 3.5,
+     "cohort_gap_pct": 8.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 45,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 64,
+     "recent": 47,
+     "drop": 17
+    }
+   },
+   "critical_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 42.0,
+   "escalation": 10,
+   "risk_score": 70,
+   "risk_score_raw": 70.0,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Devam orani %64",
+    "Son 4 haftada %64 -> %47",
+    "Odev tamamlama %45",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 54,
+   "prev_risk_level": "MEDIUM",
+   "delta": 16,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S046",
+   "name": "Merve Celik",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 90,
+   "attendance_recent": 72,
+   "exam_1": 81,
+   "exam_2": 75,
+   "exam_3": 69,
+   "exam_4": 65,
+   "speaking_score": 61,
+   "writing_score": 41,
+   "listening_score": 66,
+   "reading_score": 62,
+   "participation_score": 7,
+   "homework_completion": 61,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 65,
+    "skill": 83,
+    "classroom": 34,
+    "attendance": 40
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -11,
+     "last_exam": 65,
+     "monotonic_decline": true,
+     "recent_avg": 67,
+     "cohort_gap_pct": 19.6
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 41,
+     "own_avg": 57.5,
+     "spread": 16.5,
+     "cohort_gap_pct": 29.6,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 61,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 72,
+     "drop": 18
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 57.0,
+   "escalation": 10,
+   "risk_score": 67,
+   "risk_score_raw": 67.0,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %30 altinda",
+    "Writing 41 — kendi ortalamasinin 16 puan altinda",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 11.0 puan dusus",
+    "A2 kur ortalamasinin %20 altinda",
+    "Son 4 haftada %90 -> %72",
+    "Odev tamamlama %61",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: hedefli Writing destek plani (2 hafta) + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 63,
+   "prev_risk_level": "MEDIUM",
+   "delta": 4,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S083",
+   "name": "Melis Kara",
+   "branch": "Istanbul",
+   "level": "A2",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 93,
+   "attendance_recent": 77,
+   "exam_1": 41,
+   "exam_2": 46,
+   "exam_3": 46,
+   "exam_4": 46,
+   "speaking_score": 46,
+   "writing_score": 26,
+   "listening_score": 43,
+   "reading_score": 52,
+   "participation_score": 7,
+   "homework_completion": 60,
+   "teacher_concern": true,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 65,
+    "skill": 82,
+    "classroom": 34,
+    "attendance": 40
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.5,
+     "last_exam": 46,
+     "monotonic_decline": false,
+     "recent_avg": 46,
+     "cohort_gap_pct": 44.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 26,
+     "own_avg": 41.8,
+     "spread": 15.8,
+     "cohort_gap_pct": 48.9,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 60,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 77,
+     "drop": 16
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 56.8,
+   "escalation": 10,
+   "risk_score": 67,
+   "risk_score_raw": 66.8,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %49 altinda",
+    "Writing 26 — gecme notunun altinda",
+    "A2 kur ortalamasinin %45 altinda",
+    "Son sinav 46 — gecme notunun altinda",
+    "Son 4 haftada %93 -> %77",
+    "Odev tamamlama %60",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ACIL: seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 60,
+   "prev_risk_level": "MEDIUM",
+   "delta": 7,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S095",
+   "name": "Ece Aydin",
+   "branch": "Izmir",
+   "level": "B2",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 86,
+   "attendance_recent": 79,
+   "exam_1": 81,
+   "exam_2": 79,
+   "exam_3": 73,
+   "exam_4": 65,
+   "speaking_score": 29,
+   "writing_score": 70,
+   "listening_score": 68,
+   "reading_score": 70,
+   "participation_score": 6,
+   "homework_completion": 78,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 65,
+    "skill": 94,
+    "classroom": 34,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -11,
+     "last_exam": 65,
+     "monotonic_decline": true,
+     "recent_avg": 69,
+     "cohort_gap_pct": 20.5
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 29,
+     "own_avg": 59.2,
+     "spread": 30.2,
+     "cohort_gap_pct": 30.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 78,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 86,
+     "recent": 79,
+     "drop": 7
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 53.5,
+   "escalation": 10,
+   "risk_score": 66,
+   "risk_score_raw": 66.4,
+   "risk_level": "HIGH",
+   "risk_reasons": [
+    "Beceri ortalamasi B2 kurunun %30 altinda",
+    "Speaking 29 — kendi ortalamasinin 30 puan altinda",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 11.0 puan dusus",
+    "B2 kur ortalamasinin %20 altinda",
+    "Egitmen endise bildirdi",
+    "Son 4 haftada %86 -> %79"
+   ],
+   "recommended_action": "ACIL: hedefli Speaking destek plani (2 hafta) + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 66,
+   "prev_risk_level": "HIGH",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S036",
+   "name": "Deniz Ozturk",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 83,
+   "attendance_recent": 68,
+   "exam_1": 76,
+   "exam_2": 70,
+   "exam_3": 66,
+   "exam_4": 59,
+   "speaking_score": 59,
+   "writing_score": 69,
+   "listening_score": 69,
+   "reading_score": 67,
+   "participation_score": 8,
+   "homework_completion": 68,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 80,
+    "skill": 35,
+    "classroom": 34,
+    "attendance": 54
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -10.5,
+     "last_exam": 59,
+     "monotonic_decline": true,
+     "recent_avg": 62.5,
+     "cohort_gap_pct": 22.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 59,
+     "own_avg": 66,
+     "spread": 7,
+     "cohort_gap_pct": 19.0,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 68,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 83,
+     "recent": 68,
+     "drop": 15
+    }
+   },
+   "critical_dimensions": [
+    "test"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 53.0,
+   "escalation": 10,
+   "risk_score": 63,
+   "risk_score_raw": 63.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 10.5 puan dusus",
+    "B1 kur ortalamasinin %23 altinda",
+    "Son sinav 59 — gecme notunun altinda",
+    "Devam orani %83",
+    "Son 4 haftada %83 -> %68",
+    "Beceri ortalamasi B1 kurunun %19 altinda",
+    "Speaking 59 — gecme notunun altinda",
+    "Odev tamamlama %68",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 42,
+   "prev_risk_level": "MEDIUM",
+   "delta": 21,
+   "transition": "same"
+  },
+  {
+   "student_id": "S011",
+   "name": "Kuzey Celik",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 55,
+   "attendance_recent": 44,
+   "exam_1": 68,
+   "exam_2": 72,
+   "exam_3": 72,
+   "exam_4": 71,
+   "speaking_score": 70,
+   "writing_score": 73,
+   "listening_score": 72,
+   "reading_score": 74,
+   "participation_score": 6,
+   "homework_completion": 59,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 62,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.5,
+     "last_exam": 71,
+     "monotonic_decline": false,
+     "recent_avg": 71.5,
+     "cohort_gap_pct": 11.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 70,
+     "own_avg": 72.2,
+     "spread": 2.2,
+     "cohort_gap_pct": 11.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 59,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 55,
+     "recent": 44,
+     "drop": 11
+    }
+   },
+   "critical_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 39.0,
+   "escalation": 10,
+   "risk_score": 63,
+   "risk_score_raw": 62.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %55",
+    "Son 4 haftada %55 -> %44",
+    "Odev tamamlama %59",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 45,
+   "prev_risk_level": "MEDIUM",
+   "delta": 18,
+   "transition": "same"
+  },
+  {
+   "student_id": "S088",
+   "name": "Yasemin Kara",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 57,
+   "attendance_recent": 43,
+   "exam_1": 76,
+   "exam_2": 73,
+   "exam_3": 72,
+   "exam_4": 74,
+   "speaking_score": 70,
+   "writing_score": 72,
+   "listening_score": 70,
+   "reading_score": 74,
+   "participation_score": 4,
+   "homework_completion": 51,
+   "teacher_concern": true,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 18,
+    "skill": 9,
+    "classroom": 74,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -1.5,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 73,
+     "cohort_gap_pct": 12.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 70,
+     "own_avg": 71.5,
+     "spread": 1.5,
+     "cohort_gap_pct": 12.4,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 4,
+     "homework": 51,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 57,
+     "recent": 43,
+     "drop": 14
+    }
+   },
+   "critical_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 44.5,
+   "escalation": 10,
+   "risk_score": 63,
+   "risk_score_raw": 62.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %57",
+    "Son 4 haftada %57 -> %43",
+    "Derse katilim 4/10",
+    "Odev tamamlama %51",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 63,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S074",
+   "name": "Burak Erdogan",
+   "branch": "Ankara",
+   "level": "C1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 83,
+   "attendance_recent": 77,
+   "exam_1": 53,
+   "exam_2": 57,
+   "exam_3": 55,
+   "exam_4": 56,
+   "speaking_score": 22,
+   "writing_score": 61,
+   "listening_score": 60,
+   "reading_score": 55,
+   "participation_score": 6,
+   "homework_completion": 70,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 45,
+    "skill": 100,
+    "classroom": 28,
+    "attendance": 29
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 56,
+     "monotonic_decline": false,
+     "recent_avg": 55.5,
+     "cohort_gap_pct": 34.5
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 22,
+     "own_avg": 49.5,
+     "spread": 27.5,
+     "cohort_gap_pct": 41.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 70,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 83,
+     "recent": 77,
+     "drop": 6
+    }
+   },
+   "critical_dimensions": [
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 51.4,
+   "escalation": 0,
+   "risk_score": 60,
+   "risk_score_raw": 60.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi C1 kurunun %41 altinda",
+    "Speaking 22 — kendi ortalamasinin 28 puan altinda",
+    "C1 kur ortalamasinin %34 altinda",
+    "Son sinav 56 — gecme notunun altinda",
+    "Devam orani %83",
+    "Son 4 haftada %83 -> %77",
+    "Odev tamamlama %70"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta) + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 60,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S032",
+   "name": "Efe Celik",
+   "branch": "Bursa",
+   "level": "B2",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 90,
+   "attendance_recent": 75,
+   "exam_1": 57,
+   "exam_2": 54,
+   "exam_3": 54,
+   "exam_4": 56,
+   "speaking_score": 62,
+   "writing_score": 52,
+   "listening_score": 51,
+   "reading_score": 51,
+   "participation_score": 6,
+   "homework_completion": 61,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 55,
+    "skill": 59,
+    "classroom": 28,
+    "attendance": 40
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 56,
+     "monotonic_decline": false,
+     "recent_avg": 55,
+     "cohort_gap_pct": 36.6
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 51,
+     "own_avg": 54,
+     "spread": 3,
+     "cohort_gap_pct": 36.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 61,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 75,
+     "drop": 15
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "test",
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 46.9,
+   "escalation": 10,
+   "risk_score": 57,
+   "risk_score_raw": 56.9,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi B2 kurunun %36 altinda",
+    "Listening 51 — gecme notunun altinda",
+    "B2 kur ortalamasinin %37 altinda",
+    "Son sinav 56 — gecme notunun altinda",
+    "Son 4 haftada %90 -> %75",
+    "Odev tamamlama %61"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 54,
+   "prev_risk_level": "MEDIUM",
+   "delta": 3,
+   "transition": "same"
+  },
+  {
+   "student_id": "S028",
+   "name": "Alp Cetin",
+   "branch": "Izmir",
+   "level": "C1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 53,
+   "attendance_recent": 48,
+   "exam_1": 83,
+   "exam_2": 81,
+   "exam_3": 80,
+   "exam_4": 80,
+   "speaking_score": 67,
+   "writing_score": 83,
+   "listening_score": 86,
+   "reading_score": 87,
+   "participation_score": 4,
+   "homework_completion": 56,
+   "teacher_concern": false,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 10,
+    "skill": 12,
+    "classroom": 54,
+    "attendance": 75
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2,
+     "last_exam": 80,
+     "monotonic_decline": false,
+     "recent_avg": 80,
+     "cohort_gap_pct": 5.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 67,
+     "own_avg": 80.8,
+     "spread": 13.8,
+     "cohort_gap_pct": 4.2,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 4,
+     "homework": 56,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 53,
+     "recent": 48,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 35.5,
+   "escalation": 10,
+   "risk_score": 55,
+   "risk_score_raw": 55.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %53",
+    "Son 4 haftada %53 -> %48",
+    "Derse katilim 4/10",
+    "Odev tamamlama %56"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 55,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S080",
+   "name": "Ipek Aslan",
+   "branch": "Izmir",
+   "level": "C1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 91,
+   "attendance_recent": 80,
+   "exam_1": 88,
+   "exam_2": 83,
+   "exam_3": 80,
+   "exam_4": 71,
+   "speaking_score": 59,
+   "writing_score": 65,
+   "listening_score": 68,
+   "reading_score": 83,
+   "participation_score": 5,
+   "homework_completion": 70,
+   "teacher_concern": true,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 54,
+    "skill": 35,
+    "classroom": 60,
+    "attendance": 28
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -10.0,
+     "last_exam": 71,
+     "monotonic_decline": true,
+     "recent_avg": 75.5,
+     "cohort_gap_pct": 10.9
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 59,
+     "own_avg": 68.8,
+     "spread": 9.8,
+     "cohort_gap_pct": 18.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 70,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 80,
+     "drop": 11
+    }
+   },
+   "critical_dimensions": [
+    "classroom"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "classroom"
+   ],
+   "top_dimension": "classroom",
+   "weighted_avg": 44.0,
+   "escalation": 10,
+   "risk_score": 54,
+   "risk_score_raw": 54.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Derse katilim 5/10",
+    "Odev tamamlama %70",
+    "Egitmen endise bildirdi",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 10.0 puan dusus",
+    "Beceri ortalamasi C1 kurunun %18 altinda",
+    "Speaking 59 — gecme notunun altinda",
+    "Son 4 haftada %91 -> %80"
+   ],
+   "recommended_action": "egitmen ile ogrenci degerlendirme toplantisi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 29,
+   "prev_risk_level": "LOW",
+   "delta": 25,
+   "transition": "worse"
+  },
+  {
+   "student_id": "S019",
+   "name": "Arda Sahin",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 69,
+   "attendance_recent": 59,
+   "exam_1": 69,
+   "exam_2": 71,
+   "exam_3": 70,
+   "exam_4": 70,
+   "speaking_score": 67,
+   "writing_score": 66,
+   "listening_score": 70,
+   "reading_score": 71,
+   "participation_score": 5,
+   "homework_completion": 72,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 19,
+    "skill": 21,
+    "classroom": 60,
+    "attendance": 73
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0,
+     "last_exam": 70,
+     "monotonic_decline": false,
+     "recent_avg": 70,
+     "cohort_gap_pct": 19.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 66,
+     "own_avg": 68.5,
+     "spread": 2.5,
+     "cohort_gap_pct": 19.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 72,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 69,
+     "recent": 59,
+     "drop": 10
+    }
+   },
+   "critical_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 41.2,
+   "escalation": 10,
+   "risk_score": 54,
+   "risk_score_raw": 53.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %69",
+    "Son 4 haftada %69 -> %59",
+    "Derse katilim 5/10",
+    "Odev tamamlama %72",
+    "Egitmen endise bildirdi",
+    "Beceri ortalamasi B2 kurunun %19 altinda",
+    "B2 kur ortalamasinin %19 altinda"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 36,
+   "prev_risk_level": "MEDIUM",
+   "delta": 18,
+   "transition": "same"
+  },
+  {
+   "student_id": "S065",
+   "name": "Sude Polat",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 63,
+   "attendance_recent": 51,
+   "exam_1": 72,
+   "exam_2": 73,
+   "exam_3": 72,
+   "exam_4": 74,
+   "speaking_score": 80,
+   "writing_score": 53,
+   "listening_score": 75,
+   "reading_score": 77,
+   "participation_score": 7,
+   "homework_completion": 47,
+   "teacher_concern": true,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 8,
+    "skill": 47,
+    "classroom": 48,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 73,
+     "cohort_gap_pct": 10.6
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 53,
+     "own_avg": 71.2,
+     "spread": 18.2,
+     "cohort_gap_pct": 12.4,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 47,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 63,
+     "recent": 51,
+     "drop": 12
+    }
+   },
+   "critical_dimensions": [
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 45.8,
+   "escalation": 0,
+   "risk_score": 53,
+   "risk_score_raw": 52.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %63",
+    "Son 4 haftada %63 -> %51",
+    "Odev tamamlama %47",
+    "Egitmen endise bildirdi",
+    "Writing 53 — kendi ortalamasinin 18 puan altinda"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 63,
+   "prev_risk_level": "MEDIUM",
+   "delta": -10,
+   "transition": "same"
+  },
+  {
+   "student_id": "S078",
+   "name": "Ece Yildiz",
+   "branch": "Bursa",
+   "level": "B2",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 59,
+   "attendance_recent": 47,
+   "exam_1": 74,
+   "exam_2": 75,
+   "exam_3": 74,
+   "exam_4": 76,
+   "speaking_score": 69,
+   "writing_score": 70,
+   "listening_score": 73,
+   "reading_score": 80,
+   "participation_score": 7,
+   "homework_completion": 56,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 28,
+    "attendance": 88
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 76,
+     "monotonic_decline": false,
+     "recent_avg": 75,
+     "cohort_gap_pct": 13.5
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 69,
+     "own_avg": 73,
+     "spread": 4,
+     "cohort_gap_pct": 14.1,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 56,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 59,
+     "recent": 47,
+     "drop": 12
+    }
+   },
+   "critical_dimensions": [
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 32.2,
+   "escalation": 0,
+   "risk_score": 53,
+   "risk_score_raw": 52.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %59",
+    "Son 4 haftada %59 -> %47",
+    "Odev tamamlama %56"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 53,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S003",
+   "name": "Serkan Ozdemir",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 74,
+   "attendance_recent": 66,
+   "exam_1": 74,
+   "exam_2": 70,
+   "exam_3": 62,
+   "exam_4": 60,
+   "speaking_score": 63,
+   "writing_score": 63,
+   "listening_score": 64,
+   "reading_score": 66,
+   "participation_score": 8,
+   "homework_completion": 82,
+   "teacher_concern": false,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 65,
+    "skill": 21,
+    "classroom": 0,
+    "attendance": 60
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -11,
+     "last_exam": 60,
+     "monotonic_decline": true,
+     "recent_avg": 61,
+     "cohort_gap_pct": 24.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 63,
+     "own_avg": 64,
+     "spread": 1,
+     "cohort_gap_pct": 21.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 82,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 74,
+     "recent": 66,
+     "drop": 8
+    }
+   },
+   "critical_dimensions": [
+    "test",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "attendance"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 39.8,
+   "escalation": 10,
+   "risk_score": 50,
+   "risk_score_raw": 49.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 11.0 puan dusus",
+    "B1 kur ortalamasinin %25 altinda",
+    "Devam orani %74",
+    "Son 4 haftada %74 -> %66",
+    "Beceri ortalamasi B1 kurunun %21 altinda"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 50,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S092",
+   "name": "Doruk Polat",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 78,
+   "attendance_recent": 74,
+   "exam_1": 70,
+   "exam_2": 68,
+   "exam_3": 64,
+   "exam_4": 64,
+   "speaking_score": 39,
+   "writing_score": 67,
+   "listening_score": 67,
+   "reading_score": 66,
+   "participation_score": 5,
+   "homework_completion": 87,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 41,
+    "skill": 83,
+    "classroom": 26,
+    "attendance": 28
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -5,
+     "last_exam": 64,
+     "monotonic_decline": false,
+     "recent_avg": 64,
+     "cohort_gap_pct": 20.9
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 39,
+     "own_avg": 59.8,
+     "spread": 20.8,
+     "cohort_gap_pct": 26.6,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 87,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 78,
+     "recent": 74,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 45.2,
+   "escalation": 0,
+   "risk_score": 50,
+   "risk_score_raw": 49.8,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %27 altinda",
+    "Speaking 39 — kendi ortalamasinin 21 puan altinda",
+    "Son 4 sinavda 5.0 puan dusus",
+    "B1 kur ortalamasinin %21 altinda",
+    "Devam orani %78",
+    "Derse katilim 5/10"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta) + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 60,
+   "prev_risk_level": "MEDIUM",
+   "delta": -10,
+   "transition": "same"
+  },
+  {
+   "student_id": "S029",
+   "name": "Naz Kaya",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 84,
+   "attendance_recent": 78,
+   "exam_1": 88,
+   "exam_2": 80,
+   "exam_3": 74,
+   "exam_4": 73,
+   "speaking_score": 67,
+   "writing_score": 80,
+   "listening_score": 73,
+   "reading_score": 74,
+   "participation_score": 5,
+   "homework_completion": 74,
+   "teacher_concern": true,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 54,
+    "skill": 9,
+    "classroom": 60,
+    "attendance": 29
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -10.5,
+     "last_exam": 73,
+     "monotonic_decline": true,
+     "recent_avg": 73.5,
+     "cohort_gap_pct": 10.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 67,
+     "own_avg": 73.5,
+     "spread": 6.5,
+     "cohort_gap_pct": 9.6,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 74,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 78,
+     "drop": 6
+    }
+   },
+   "critical_dimensions": [
+    "classroom"
+   ],
+   "elevated_dimensions": [
+    "test",
+    "classroom"
+   ],
+   "top_dimension": "classroom",
+   "weighted_avg": 37.7,
+   "escalation": 10,
+   "risk_score": 48,
+   "risk_score_raw": 47.7,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Derse katilim 5/10",
+    "Odev tamamlama %74",
+    "Egitmen endise bildirdi",
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 10.5 puan dusus",
+    "Devam orani %84",
+    "Son 4 haftada %84 -> %78"
+   ],
+   "recommended_action": "egitmen ile ogrenci degerlendirme toplantisi + egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 33,
+   "prev_risk_level": "MEDIUM",
+   "delta": 15,
+   "transition": "same"
+  },
+  {
+   "student_id": "S002",
+   "name": "Kaan Kurt",
+   "branch": "Izmir",
+   "level": "A1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 67,
+   "attendance_recent": 59,
+   "exam_1": 74,
+   "exam_2": 76,
+   "exam_3": 78,
+   "exam_4": 74,
+   "speaking_score": 69,
+   "writing_score": 75,
+   "listening_score": 80,
+   "reading_score": 72,
+   "participation_score": 5,
+   "homework_completion": 69,
+   "teacher_concern": true,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 0,
+    "skill": 9,
+    "classroom": 60,
+    "attendance": 60
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 76,
+     "cohort_gap_pct": 6.9
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 69,
+     "own_avg": 74,
+     "spread": 5,
+     "cohort_gap_pct": 9.0,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 69,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 67,
+     "recent": 59,
+     "drop": 8
+    }
+   },
+   "critical_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "classroom",
+    "attendance"
+   ],
+   "top_dimension": "classroom",
+   "weighted_avg": 29.2,
+   "escalation": 10,
+   "risk_score": 46,
+   "risk_score_raw": 46.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Derse katilim 5/10",
+    "Odev tamamlama %69",
+    "Egitmen endise bildirdi",
+    "Devam orani %67",
+    "Son 4 haftada %67 -> %59"
+   ],
+   "recommended_action": "egitmen ile ogrenci degerlendirme toplantisi + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 36,
+   "prev_risk_level": "MEDIUM",
+   "delta": 10,
+   "transition": "same"
+  },
+  {
+   "student_id": "S023",
+   "name": "Tunc Yilmaz",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 49,
+   "attendance_recent": 44,
+   "exam_1": 73,
+   "exam_2": 69,
+   "exam_3": 69,
+   "exam_4": 67,
+   "speaking_score": 69,
+   "writing_score": 67,
+   "listening_score": 70,
+   "reading_score": 73,
+   "participation_score": 7,
+   "homework_completion": 50,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 29,
+    "skill": 9,
+    "classroom": 28,
+    "attendance": 75
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -3,
+     "last_exam": 67,
+     "monotonic_decline": false,
+     "recent_avg": 68,
+     "cohort_gap_pct": 16.0
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 67,
+     "own_avg": 69.8,
+     "spread": 2.8,
+     "cohort_gap_pct": 14.4,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 50,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 49,
+     "recent": 44,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [
+    "attendance"
+   ],
+   "elevated_dimensions": [
+    "attendance"
+   ],
+   "top_dimension": "attendance",
+   "weighted_avg": 35.3,
+   "escalation": 0,
+   "risk_score": 45,
+   "risk_score_raw": 45.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Devam orani %49",
+    "Son 4 haftada %49 -> %44",
+    "B1 kur ortalamasinin %16 altinda",
+    "Odev tamamlama %50"
+   ],
+   "recommended_action": "ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 63,
+   "prev_risk_level": "MEDIUM",
+   "delta": -18,
+   "transition": "same"
+  },
+  {
+   "student_id": "S048",
+   "name": "Zeynep Kara",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 92,
+   "attendance_recent": 94,
+   "exam_1": 72,
+   "exam_2": 69,
+   "exam_3": 68,
+   "exam_4": 68,
+   "speaking_score": 45,
+   "writing_score": 71,
+   "listening_score": 71,
+   "reading_score": 67,
+   "participation_score": 8,
+   "homework_completion": 85,
+   "teacher_concern": true,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 29,
+    "skill": 70,
+    "classroom": 20,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.5,
+     "last_exam": 68,
+     "monotonic_decline": false,
+     "recent_avg": 68,
+     "cohort_gap_pct": 18.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 45,
+     "own_avg": 63.5,
+     "spread": 18.5,
+     "cohort_gap_pct": 22.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 85,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 94,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [
+    "skill"
+   ],
+   "elevated_dimensions": [
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 30.2,
+   "escalation": 0,
+   "risk_score": 42,
+   "risk_score_raw": 42.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %22 altinda",
+    "Speaking 45 — kendi ortalamasinin 18 puan altinda",
+    "A2 kur ortalamasinin %18 altinda",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta)",
+   "prev_risk_score": 56,
+   "prev_risk_level": "MEDIUM",
+   "delta": -14,
+   "transition": "same"
+  },
+  {
+   "student_id": "S057",
+   "name": "Umut Sahin",
+   "branch": "Bursa",
+   "level": "A2",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 90,
+   "attendance_recent": 87,
+   "exam_1": 70,
+   "exam_2": 64,
+   "exam_3": 65,
+   "exam_4": 59,
+   "speaking_score": 58,
+   "writing_score": 61,
+   "listening_score": 60,
+   "reading_score": 54,
+   "participation_score": 5,
+   "homework_completion": 76,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 67,
+    "skill": 48,
+    "classroom": 26,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -5,
+     "last_exam": 59,
+     "monotonic_decline": false,
+     "recent_avg": 62,
+     "cohort_gap_pct": 25.6
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 54,
+     "own_avg": 58.2,
+     "spread": 4.2,
+     "cohort_gap_pct": 28.6,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 76,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 87,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [
+    "test"
+   ],
+   "elevated_dimensions": [
+    "test"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 37.3,
+   "escalation": 0,
+   "risk_score": 40,
+   "risk_score_raw": 40.2,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavda 5.0 puan dusus",
+    "A2 kur ortalamasinin %26 altinda",
+    "Son sinav 59 — gecme notunun altinda",
+    "Beceri ortalamasi A2 kurunun %29 altinda",
+    "Reading 54 — gecme notunun altinda",
+    "Derse katilim 5/10"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + seviye degerlendirmesi — kur tekrari / telafi programi",
+   "prev_risk_score": 42,
+   "prev_risk_level": "MEDIUM",
+   "delta": -2,
+   "transition": "same"
+  },
+  {
+   "student_id": "S073",
+   "name": "Arda Kara",
+   "branch": "Ankara",
+   "level": "B2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 90,
+   "attendance_recent": 75,
+   "exam_1": 82,
+   "exam_2": 76,
+   "exam_3": 69,
+   "exam_4": 67,
+   "speaking_score": 67,
+   "writing_score": 71,
+   "listening_score": 64,
+   "reading_score": 61,
+   "participation_score": 7,
+   "homework_completion": 80,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 65,
+    "skill": 21,
+    "classroom": 0,
+    "attendance": 40
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -11,
+     "last_exam": 67,
+     "monotonic_decline": true,
+     "recent_avg": 68,
+     "cohort_gap_pct": 21.6
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 61,
+     "own_avg": 65.8,
+     "spread": 4.8,
+     "cohort_gap_pct": 22.6,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 80,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 75,
+     "drop": 15
+    }
+   },
+   "critical_dimensions": [
+    "test"
+   ],
+   "elevated_dimensions": [
+    "test"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 34.8,
+   "escalation": 0,
+   "risk_score": 39,
+   "risk_score_raw": 39.0,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 11.0 puan dusus",
+    "B2 kur ortalamasinin %22 altinda",
+    "Son 4 haftada %90 -> %75",
+    "Beceri ortalamasi B2 kurunun %23 altinda"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + ogrenci iliskileri aramasi (devamsizlik nedeni)",
+   "prev_risk_score": 32,
+   "prev_risk_level": "MEDIUM",
+   "delta": 7,
+   "transition": "same"
+  },
+  {
+   "student_id": "S063",
+   "name": "Naz Ozturk",
+   "branch": "Izmir",
+   "level": "C1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 84,
+   "attendance_recent": 79,
+   "exam_1": 77,
+   "exam_2": 72,
+   "exam_3": 70,
+   "exam_4": 72,
+   "speaking_score": 51,
+   "writing_score": 69,
+   "listening_score": 66,
+   "reading_score": 78,
+   "participation_score": 5,
+   "homework_completion": 63,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 29,
+    "skill": 47,
+    "classroom": 40,
+    "attendance": 29
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -3.5,
+     "last_exam": 72,
+     "monotonic_decline": false,
+     "recent_avg": 71,
+     "cohort_gap_pct": 16.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 51,
+     "own_avg": 66,
+     "spread": 15,
+     "cohort_gap_pct": 21.7,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 63,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 79,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 35.7,
+   "escalation": 0,
+   "risk_score": 36,
+   "risk_score_raw": 35.7,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi C1 kurunun %22 altinda",
+    "Speaking 51 — gecme notunun altinda",
+    "Derse katilim 5/10",
+    "Odev tamamlama %63",
+    "C1 kur ortalamasinin %16 altinda",
+    "Devam orani %84",
+    "Son 4 haftada %84 -> %79"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 39,
+   "prev_risk_level": "MEDIUM",
+   "delta": -3,
+   "transition": "same"
+  },
+  {
+   "student_id": "S041",
+   "name": "Naz Cetin",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 95,
+   "attendance_recent": 90,
+   "exam_1": 74,
+   "exam_2": 75,
+   "exam_3": 74,
+   "exam_4": 74,
+   "speaking_score": 50,
+   "writing_score": 73,
+   "listening_score": 71,
+   "reading_score": 73,
+   "participation_score": 8,
+   "homework_completion": 95,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 8,
+    "skill": 59,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 74,
+     "cohort_gap_pct": 11.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 50,
+     "own_avg": 66.8,
+     "spread": 16.8,
+     "cohort_gap_pct": 18.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 95,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 95,
+     "recent": 90,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 20.9,
+   "escalation": 0,
+   "risk_score": 35,
+   "risk_score_raw": 35.4,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %18 altinda",
+    "Speaking 50 — kendi ortalamasinin 17 puan altinda",
+    "Son 4 haftada %95 -> %90"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta)",
+   "prev_risk_score": 35,
+   "prev_risk_level": "MEDIUM",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S084",
+   "name": "Ece Erdogan",
+   "branch": "Izmir",
+   "level": "A1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 89,
+   "attendance_recent": 84,
+   "exam_1": 77,
+   "exam_2": 73,
+   "exam_3": 73,
+   "exam_4": 71,
+   "speaking_score": 51,
+   "writing_score": 69,
+   "listening_score": 79,
+   "reading_score": 75,
+   "participation_score": 5,
+   "homework_completion": 70,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 18,
+    "skill": 59,
+    "classroom": 40,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -3,
+     "last_exam": 71,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 11.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 51,
+     "own_avg": 68.5,
+     "spread": 17.5,
+     "cohort_gap_pct": 15.8,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 70,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 89,
+     "recent": 84,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "skill"
+   ],
+   "top_dimension": "skill",
+   "weighted_avg": 31.9,
+   "escalation": 0,
+   "risk_score": 35,
+   "risk_score_raw": 35.4,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Beceri ortalamasi A1 kurunun %16 altinda",
+    "Speaking 51 — kendi ortalamasinin 18 puan altinda",
+    "Derse katilim 5/10",
+    "Odev tamamlama %70",
+    "Son 4 haftada %89 -> %84"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta) + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 36,
+   "prev_risk_level": "MEDIUM",
+   "delta": -1,
+   "transition": "same"
+  },
+  {
+   "student_id": "S043",
+   "name": "Umut Yildiz",
+   "branch": "Istanbul",
+   "level": "A2",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 92,
+   "attendance_recent": 78,
+   "exam_1": 79,
+   "exam_2": 73,
+   "exam_3": 72,
+   "exam_4": 65,
+   "speaking_score": 73,
+   "writing_score": 65,
+   "listening_score": 75,
+   "reading_score": 73,
+   "participation_score": 6,
+   "homework_completion": 71,
+   "teacher_concern": true,
+   "satisfaction_score": 5,
+   "dimensions": {
+    "test": 51,
+    "skill": 9,
+    "classroom": 48,
+    "attendance": 28
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -7.5,
+     "last_exam": 65,
+     "monotonic_decline": true,
+     "recent_avg": 68.5,
+     "cohort_gap_pct": 17.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 65,
+     "own_avg": 71.5,
+     "spread": 6.5,
+     "cohort_gap_pct": 12.4,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 71,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 78,
+     "drop": 14
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "test"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 34.1,
+   "escalation": 0,
+   "risk_score": 34,
+   "risk_score_raw": 34.1,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 7.5 puan dusus",
+    "A2 kur ortalamasinin %18 altinda",
+    "Odev tamamlama %71",
+    "Egitmen endise bildirdi",
+    "Son 4 haftada %92 -> %78"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 32,
+   "prev_risk_level": "MEDIUM",
+   "delta": 2,
+   "transition": "same"
+  },
+  {
+   "student_id": "S010",
+   "name": "Umut Yildiz",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 81,
+   "attendance_recent": 77,
+   "exam_1": 65,
+   "exam_2": 64,
+   "exam_3": 59,
+   "exam_4": 62,
+   "speaking_score": 66,
+   "writing_score": 65,
+   "listening_score": 59,
+   "reading_score": 58,
+   "participation_score": 6,
+   "homework_completion": 73,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 52,
+    "skill": 35,
+    "classroom": 28,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -4.0,
+     "last_exam": 62,
+     "monotonic_decline": false,
+     "recent_avg": 60.5,
+     "cohort_gap_pct": 25.2
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 58,
+     "own_avg": 62,
+     "spread": 4,
+     "cohort_gap_pct": 23.9,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 73,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 81,
+     "recent": 77,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "test"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 33.5,
+   "escalation": 0,
+   "risk_score": 33,
+   "risk_score_raw": 33.5,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavda 4.0 puan dusus",
+    "B1 kur ortalamasinin %25 altinda",
+    "Beceri ortalamasi B1 kurunun %24 altinda",
+    "Reading 58 — gecme notunun altinda",
+    "Odev tamamlama %73",
+    "Devam orani %81"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 40,
+   "prev_risk_level": "MEDIUM",
+   "delta": -7,
+   "transition": "same"
+  },
+  {
+   "student_id": "S071",
+   "name": "Melis Aslan",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 93,
+   "attendance_recent": 87,
+   "exam_1": 84,
+   "exam_2": 78,
+   "exam_3": 71,
+   "exam_4": 69,
+   "speaking_score": 66,
+   "writing_score": 70,
+   "listening_score": 67,
+   "reading_score": 66,
+   "participation_score": 5,
+   "homework_completion": 81,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 54,
+    "skill": 21,
+    "classroom": 26,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -11,
+     "last_exam": 69,
+     "monotonic_decline": true,
+     "recent_avg": 70,
+     "cohort_gap_pct": 14.3
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 66,
+     "own_avg": 67.2,
+     "spread": 1.2,
+     "cohort_gap_pct": 17.3,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 81,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 87,
+     "drop": 6
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [
+    "test"
+   ],
+   "top_dimension": "test",
+   "weighted_avg": 30.4,
+   "escalation": 0,
+   "risk_score": 32,
+   "risk_score_raw": 32.4,
+   "risk_level": "MEDIUM",
+   "risk_reasons": [
+    "Son 4 sinavin her biri bir oncekinden dusuk",
+    "Son 4 sinavda 11.0 puan dusus",
+    "Derse katilim 5/10",
+    "Beceri ortalamasi A1 kurunun %17 altinda",
+    "Son 4 haftada %93 -> %87"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 33,
+   "prev_risk_level": "MEDIUM",
+   "delta": -1,
+   "transition": "same"
+  },
+  {
+   "student_id": "S077",
+   "name": "Ipek Koc",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 94,
+   "attendance_recent": 94,
+   "exam_1": 85,
+   "exam_2": 86,
+   "exam_3": 81,
+   "exam_4": 88,
+   "speaking_score": 52,
+   "writing_score": 82,
+   "listening_score": 91,
+   "reading_score": 88,
+   "participation_score": 8,
+   "homework_completion": 85,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 49,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -1.0,
+     "last_exam": 88,
+     "monotonic_decline": false,
+     "recent_avg": 84.5,
+     "cohort_gap_pct": -1.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 52,
+     "own_avg": 78.2,
+     "spread": 26.2,
+     "cohort_gap_pct": 4.1,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 85,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 94,
+     "recent": 94,
+     "drop": 0
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 12.2,
+   "escalation": 0,
+   "risk_score": 29,
+   "risk_score_raw": 29.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Speaking 52 — kendi ortalamasinin 26 puan altinda"
+   ],
+   "recommended_action": "hedefli Speaking destek plani (2 hafta)",
+   "prev_risk_score": 29,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S017",
+   "name": "Alp Demir",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 86,
+   "attendance_recent": 83,
+   "exam_1": 72,
+   "exam_2": 73,
+   "exam_3": 71,
+   "exam_4": 70,
+   "speaking_score": 52,
+   "writing_score": 71,
+   "listening_score": 66,
+   "reading_score": 66,
+   "participation_score": 6,
+   "homework_completion": 69,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 29,
+    "skill": 47,
+    "classroom": 28,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.0,
+     "last_exam": 70,
+     "monotonic_decline": false,
+     "recent_avg": 70.5,
+     "cohort_gap_pct": 15.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 52,
+     "own_avg": 63.8,
+     "spread": 11.8,
+     "cohort_gap_pct": 21.9,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 69,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 86,
+     "recent": 83,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 26.1,
+   "escalation": 0,
+   "risk_score": 28,
+   "risk_score_raw": 28.2,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %22 altinda",
+    "Speaking 52 — gecme notunun altinda",
+    "A2 kur ortalamasinin %15 altinda",
+    "Odev tamamlama %69"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi",
+   "prev_risk_score": 44,
+   "prev_risk_level": "MEDIUM",
+   "delta": -16,
+   "transition": "better"
+  },
+  {
+   "student_id": "S031",
+   "name": "Zeynep Ozdemir",
+   "branch": "Izmir",
+   "level": "B1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 78,
+   "attendance_recent": 77,
+   "exam_1": 77,
+   "exam_2": 75,
+   "exam_3": 72,
+   "exam_4": 72,
+   "speaking_score": 55,
+   "writing_score": 75,
+   "listening_score": 73,
+   "reading_score": 73,
+   "participation_score": 8,
+   "homework_completion": 99,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 30,
+    "skill": 47,
+    "classroom": 0,
+    "attendance": 28
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -4,
+     "last_exam": 72,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 11.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 55,
+     "own_avg": 69,
+     "spread": 14,
+     "cohort_gap_pct": 15.3,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 99,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 78,
+     "recent": 77,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 27.8,
+   "escalation": 0,
+   "risk_score": 28,
+   "risk_score_raw": 28.2,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %15 altinda",
+    "Speaking 55 — gecme notunun altinda",
+    "Son 4 sinavda 4.0 puan dusus",
+    "Devam orani %78"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi",
+   "prev_risk_score": 31,
+   "prev_risk_level": "MEDIUM",
+   "delta": -3,
+   "transition": "better"
+  },
+  {
+   "student_id": "S038",
+   "name": "Aylin Demir",
+   "branch": "Izmir",
+   "level": "B1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 83,
+   "attendance_recent": 85,
+   "exam_1": 67,
+   "exam_2": 71,
+   "exam_3": 71,
+   "exam_4": 68,
+   "speaking_score": 55,
+   "writing_score": 64,
+   "listening_score": 73,
+   "reading_score": 74,
+   "participation_score": 5,
+   "homework_completion": 82,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 8,
+    "skill": 47,
+    "classroom": 26,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 68,
+     "monotonic_decline": false,
+     "recent_avg": 69.5,
+     "cohort_gap_pct": 14.1
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 55,
+     "own_avg": 66.5,
+     "spread": 11.5,
+     "cohort_gap_pct": 18.4,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 82,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 83,
+     "recent": 85,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 22.9,
+   "escalation": 0,
+   "risk_score": 28,
+   "risk_score_raw": 28.2,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi B1 kurunun %18 altinda",
+    "Speaking 55 — gecme notunun altinda",
+    "Derse katilim 5/10",
+    "Devam orani %83"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi",
+   "prev_risk_score": 28,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S042",
+   "name": "Yasemin Ozturk",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 85,
+   "attendance_recent": 81,
+   "exam_1": 82,
+   "exam_2": 84,
+   "exam_3": 83,
+   "exam_4": 79,
+   "speaking_score": 85,
+   "writing_score": 57,
+   "listening_score": 84,
+   "reading_score": 73,
+   "participation_score": 8,
+   "homework_completion": 93,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 10,
+    "skill": 47,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2,
+     "last_exam": 79,
+     "monotonic_decline": false,
+     "recent_avg": 81,
+     "cohort_gap_pct": -0.1
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 57,
+     "own_avg": 74.8,
+     "spread": 17.8,
+     "cohort_gap_pct": 8.2,
+     "diagnosis": "beceri_acigi"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 93,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 85,
+     "recent": 81,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 14.8,
+   "escalation": 0,
+   "risk_score": 28,
+   "risk_score_raw": 28.2,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Writing 57 — kendi ortalamasinin 18 puan altinda"
+   ],
+   "recommended_action": "hedefli Writing destek plani (2 hafta)",
+   "prev_risk_score": 28,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S086",
+   "name": "Tunc Yilmaz",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 91,
+   "attendance_recent": 87,
+   "exam_1": 75,
+   "exam_2": 73,
+   "exam_3": 72,
+   "exam_4": 74,
+   "speaking_score": 54,
+   "writing_score": 73,
+   "listening_score": 70,
+   "reading_score": 74,
+   "participation_score": 9,
+   "homework_completion": 97,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 8,
+    "skill": 47,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -1,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 73,
+     "cohort_gap_pct": 12.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 54,
+     "own_avg": 67.8,
+     "spread": 13.8,
+     "cohort_gap_pct": 17.0,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 97,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 87,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 14.2,
+   "escalation": 0,
+   "risk_score": 28,
+   "risk_score_raw": 28.2,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %17 altinda",
+    "Speaking 54 — gecme notunun altinda"
+   ],
+   "recommended_action": "seviye degerlendirmesi — kur tekrari / telafi programi",
+   "prev_risk_score": 28,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S008",
+   "name": "Kuzey Yildiz",
+   "branch": "Ankara",
+   "level": "B2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 90,
+   "attendance_recent": 91,
+   "exam_1": 77,
+   "exam_2": 73,
+   "exam_3": 70,
+   "exam_4": 72,
+   "speaking_score": 77,
+   "writing_score": 69,
+   "listening_score": 71,
+   "reading_score": 77,
+   "participation_score": 5,
+   "homework_completion": 67,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 41,
+    "skill": 9,
+    "classroom": 40,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -4,
+     "last_exam": 72,
+     "monotonic_decline": false,
+     "recent_avg": 71,
+     "cohort_gap_pct": 18.2
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 69,
+     "own_avg": 73.5,
+     "spread": 4.5,
+     "cohort_gap_pct": 13.5,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 67,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 91,
+     "drop": -1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 22.5,
+   "escalation": 0,
+   "risk_score": 25,
+   "risk_score_raw": 24.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 sinavda 4.0 puan dusus",
+    "B2 kur ortalamasinin %18 altinda",
+    "Derse katilim 5/10",
+    "Odev tamamlama %67"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani + egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 31,
+   "prev_risk_level": "MEDIUM",
+   "delta": -6,
+   "transition": "better"
+  },
+  {
+   "student_id": "S060",
+   "name": "Kaan Koc",
+   "branch": "Ankara",
+   "level": "B2",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 82,
+   "attendance_recent": 80,
+   "exam_1": 73,
+   "exam_2": 75,
+   "exam_3": 70,
+   "exam_4": 69,
+   "speaking_score": 64,
+   "writing_score": 72,
+   "listening_score": 64,
+   "reading_score": 63,
+   "participation_score": 8,
+   "homework_completion": 71,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 41,
+    "skill": 21,
+    "classroom": 14,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -4.5,
+     "last_exam": 69,
+     "monotonic_decline": false,
+     "recent_avg": 69.5,
+     "cohort_gap_pct": 19.9
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 63,
+     "own_avg": 65.8,
+     "spread": 2.8,
+     "cohort_gap_pct": 22.6,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 71,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 82,
+     "recent": 80,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 23.8,
+   "escalation": 0,
+   "risk_score": 25,
+   "risk_score_raw": 24.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 sinavda 4.5 puan dusus",
+    "B2 kur ortalamasinin %20 altinda",
+    "Beceri ortalamasi B2 kurunun %23 altinda",
+    "Odev tamamlama %71",
+    "Devam orani %82"
+   ],
+   "recommended_action": "egitmen gorusmesi + telafi plani",
+   "prev_risk_score": 14,
+   "prev_risk_level": "LOW",
+   "delta": 11,
+   "transition": "same"
+  },
+  {
+   "student_id": "S099",
+   "name": "Serkan Aslan",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 89,
+   "attendance_recent": 86,
+   "exam_1": 67,
+   "exam_2": 68,
+   "exam_3": 66,
+   "exam_4": 68,
+   "speaking_score": 68,
+   "writing_score": 62,
+   "listening_score": 63,
+   "reading_score": 59,
+   "participation_score": 5,
+   "homework_completion": 71,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 19,
+    "skill": 35,
+    "classroom": 40,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 68,
+     "monotonic_decline": false,
+     "recent_avg": 67,
+     "cohort_gap_pct": 19.6
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 59,
+     "own_avg": 63,
+     "spread": 4,
+     "cohort_gap_pct": 22.8,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 71,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 89,
+     "recent": 86,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 22.4,
+   "escalation": 0,
+   "risk_score": 24,
+   "risk_score_raw": 24.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Derse katilim 5/10",
+    "Odev tamamlama %71",
+    "Beceri ortalamasi A2 kurunun %23 altinda",
+    "Reading 59 — gecme notunun altinda",
+    "A2 kur ortalamasinin %20 altinda"
+   ],
+   "recommended_action": "egitmen ile ogrenci degerlendirme toplantisi",
+   "prev_risk_score": 21,
+   "prev_risk_level": "LOW",
+   "delta": 3,
+   "transition": "same"
+  },
+  {
+   "student_id": "S059",
+   "name": "Elif Polat",
+   "branch": "Ankara",
+   "level": "C1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 82,
+   "attendance_recent": 81,
+   "exam_1": 75,
+   "exam_2": 75,
+   "exam_3": 71,
+   "exam_4": 74,
+   "speaking_score": 77,
+   "writing_score": 75,
+   "listening_score": 76,
+   "reading_score": 67,
+   "participation_score": 8,
+   "homework_completion": 66,
+   "teacher_concern": true,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 18,
+    "skill": 9,
+    "classroom": 34,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.5,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 72.5,
+     "cohort_gap_pct": 14.5
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 67,
+     "own_avg": 73.8,
+     "spread": 6.8,
+     "cohort_gap_pct": 12.5,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 66,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 82,
+     "recent": 81,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 17.9,
+   "escalation": 0,
+   "risk_score": 20,
+   "risk_score_raw": 20.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Odev tamamlama %66",
+    "Egitmen endise bildirdi",
+    "Devam orani %82"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 20,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S005",
+   "name": "Aylin Sahin",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 89,
+   "attendance_recent": 87,
+   "exam_1": 69,
+   "exam_2": 72,
+   "exam_3": 69,
+   "exam_4": 68,
+   "speaking_score": 63,
+   "writing_score": 75,
+   "listening_score": 72,
+   "reading_score": 66,
+   "participation_score": 6,
+   "homework_completion": 68,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 29,
+    "skill": 21,
+    "classroom": 28,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.0,
+     "last_exam": 68,
+     "monotonic_decline": false,
+     "recent_avg": 68.5,
+     "cohort_gap_pct": 21.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 63,
+     "own_avg": 69,
+     "spread": 6,
+     "cohort_gap_pct": 18.8,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 68,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 89,
+     "recent": 87,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 19.6,
+   "escalation": 0,
+   "risk_score": 20,
+   "risk_score_raw": 19.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "B2 kur ortalamasinin %21 altinda",
+    "Odev tamamlama %68",
+    "Beceri ortalamasi B2 kurunun %19 altinda"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 17,
+   "prev_risk_level": "LOW",
+   "delta": 3,
+   "transition": "same"
+  },
+  {
+   "student_id": "S035",
+   "name": "Sila Demir",
+   "branch": "Ankara",
+   "level": "B1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 84,
+   "attendance_recent": 80,
+   "exam_1": 72,
+   "exam_2": 71,
+   "exam_3": 71,
+   "exam_4": 68,
+   "speaking_score": 69,
+   "writing_score": 65,
+   "listening_score": 63,
+   "reading_score": 62,
+   "participation_score": 5,
+   "homework_completion": 85,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 18,
+    "skill": 21,
+    "classroom": 26,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.0,
+     "last_exam": 68,
+     "monotonic_decline": false,
+     "recent_avg": 69.5,
+     "cohort_gap_pct": 14.1
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 62,
+     "own_avg": 64.8,
+     "spread": 2.8,
+     "cohort_gap_pct": 20.5,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 85,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 80,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 19.3,
+   "escalation": 0,
+   "risk_score": 19,
+   "risk_score_raw": 19.3,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Derse katilim 5/10",
+    "Beceri ortalamasi B1 kurunun %20 altinda",
+    "Devam orani %84"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 13,
+   "prev_risk_level": "LOW",
+   "delta": 6,
+   "transition": "same"
+  },
+  {
+   "student_id": "S053",
+   "name": "Ahmet Ozdemir",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 84,
+   "attendance_recent": 79,
+   "exam_1": 81,
+   "exam_2": 81,
+   "exam_3": 82,
+   "exam_4": 82,
+   "speaking_score": 82,
+   "writing_score": 79,
+   "listening_score": 85,
+   "reading_score": 83,
+   "participation_score": 10,
+   "homework_completion": 80,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 29
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1,
+     "last_exam": 82,
+     "monotonic_decline": false,
+     "recent_avg": 82,
+     "cohort_gap_pct": -1.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 79,
+     "own_avg": 82.2,
+     "spread": 3.2,
+     "cohort_gap_pct": -1.0,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 80,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 79,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 7.2,
+   "escalation": 0,
+   "risk_score": 17,
+   "risk_score_raw": 17.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Devam orani %84",
+    "Son 4 haftada %84 -> %79"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 17,
+   "transition": "same"
+  },
+  {
+   "student_id": "S076",
+   "name": "Kuzey Sahin",
+   "branch": "Bursa",
+   "level": "B2",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 87,
+   "attendance_recent": 89,
+   "exam_1": 77,
+   "exam_2": 73,
+   "exam_3": 75,
+   "exam_4": 69,
+   "speaking_score": 71,
+   "writing_score": 71,
+   "listening_score": 68,
+   "reading_score": 73,
+   "participation_score": 7,
+   "homework_completion": 68,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 29,
+    "skill": 21,
+    "classroom": 14,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -3,
+     "last_exam": 69,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 17.0
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 68,
+     "own_avg": 70.8,
+     "spread": 2.8,
+     "cohort_gap_pct": 16.7,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 68,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 87,
+     "recent": 89,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 16.8,
+   "escalation": 0,
+   "risk_score": 17,
+   "risk_score_raw": 17.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "B2 kur ortalamasinin %17 altinda",
+    "Beceri ortalamasi B2 kurunun %17 altinda",
+    "Odev tamamlama %68"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 18,
+   "prev_risk_level": "LOW",
+   "delta": -1,
+   "transition": "same"
+  },
+  {
+   "student_id": "S018",
+   "name": "Deniz Koc",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 79,
+   "attendance_recent": 80,
+   "exam_1": 77,
+   "exam_2": 81,
+   "exam_3": 77,
+   "exam_4": 77,
+   "speaking_score": 79,
+   "writing_score": 71,
+   "listening_score": 79,
+   "reading_score": 78,
+   "participation_score": 10,
+   "homework_completion": 89,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 10,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 28
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2,
+     "last_exam": 77,
+     "monotonic_decline": false,
+     "recent_avg": 77,
+     "cohort_gap_pct": 4.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 71,
+     "own_avg": 76.8,
+     "spread": 5.8,
+     "cohort_gap_pct": 5.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 89,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 79,
+     "recent": 80,
+     "drop": -1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 10.0,
+   "escalation": 0,
+   "risk_score": 17,
+   "risk_score_raw": 16.8,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Devam orani %79"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 17,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S054",
+   "name": "Mert Demir",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 85,
+   "attendance_recent": 82,
+   "exam_1": 73,
+   "exam_2": 72,
+   "exam_3": 73,
+   "exam_4": 71,
+   "speaking_score": 78,
+   "writing_score": 75,
+   "listening_score": 73,
+   "reading_score": 77,
+   "participation_score": 6,
+   "homework_completion": 66,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 8,
+    "skill": 0,
+    "classroom": 28,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 71,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 11.8
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 73,
+     "own_avg": 75.8,
+     "spread": 2.8,
+     "cohort_gap_pct": 6.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 6,
+     "homework": 66,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 85,
+     "recent": 82,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 8.0,
+   "escalation": 0,
+   "risk_score": 17,
+   "risk_score_raw": 16.8,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Odev tamamlama %66"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 17,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S055",
+   "name": "Deniz Ozturk",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 86,
+   "attendance_recent": 88,
+   "exam_1": 77,
+   "exam_2": 74,
+   "exam_3": 77,
+   "exam_4": 78,
+   "speaking_score": 84,
+   "writing_score": 79,
+   "listening_score": 75,
+   "reading_score": 85,
+   "participation_score": 5,
+   "homework_completion": 76,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 26,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.0,
+     "last_exam": 78,
+     "monotonic_decline": false,
+     "recent_avg": 77.5,
+     "cohort_gap_pct": 5.1
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 75,
+     "own_avg": 80.8,
+     "spread": 5.8,
+     "cohort_gap_pct": 0.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 5,
+     "homework": 76,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 86,
+     "recent": 88,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 5.2,
+   "escalation": 0,
+   "risk_score": 16,
+   "risk_score_raw": 15.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Derse katilim 5/10"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 8,
+   "prev_risk_level": "LOW",
+   "delta": 8,
+   "transition": "same"
+  },
+  {
+   "student_id": "S001",
+   "name": "Alp Kara",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 92,
+   "attendance_recent": 89,
+   "exam_1": 75,
+   "exam_2": 73,
+   "exam_3": 72,
+   "exam_4": 72,
+   "speaking_score": 61,
+   "writing_score": 73,
+   "listening_score": 71,
+   "reading_score": 65,
+   "participation_score": 7,
+   "homework_completion": 87,
+   "teacher_concern": true,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 18,
+    "skill": 21,
+    "classroom": 20,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2,
+     "last_exam": 72,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 13.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 61,
+     "own_avg": 67.5,
+     "spread": 6.5,
+     "cohort_gap_pct": 17.3,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 87,
+     "teacher_concern": true
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 89,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 14.6,
+   "escalation": 0,
+   "risk_score": 15,
+   "risk_score_raw": 14.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi A2 kurunun %17 altinda",
+    "Egitmen endise bildirdi"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 15,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S081",
+   "name": "Aylin Koc",
+   "branch": "Ankara",
+   "level": "B2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 91,
+   "attendance_recent": 93,
+   "exam_1": 74,
+   "exam_2": 74,
+   "exam_3": 75,
+   "exam_4": 75,
+   "speaking_score": 78,
+   "writing_score": 74,
+   "listening_score": 68,
+   "reading_score": 68,
+   "participation_score": 9,
+   "homework_completion": 88,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 8,
+    "skill": 21,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1,
+     "last_exam": 75,
+     "monotonic_decline": false,
+     "recent_avg": 75,
+     "cohort_gap_pct": 13.5
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 68,
+     "own_avg": 72,
+     "spread": 4,
+     "cohort_gap_pct": 15.2,
+     "diagnosis": "seviye_dusuklugu"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 88,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 93,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 7.7,
+   "escalation": 0,
+   "risk_score": 13,
+   "risk_score_raw": 12.6,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Beceri ortalamasi B2 kurunun %15 altinda"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 13,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S009",
+   "name": "Ela Ozdemir",
+   "branch": "Bursa",
+   "level": "B2",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 97,
+   "attendance_recent": 92,
+   "exam_1": 84,
+   "exam_2": 86,
+   "exam_3": 84,
+   "exam_4": 87,
+   "speaking_score": 81,
+   "writing_score": 67,
+   "listening_score": 90,
+   "reading_score": 92,
+   "participation_score": 8,
+   "homework_completion": 95,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 12,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 87,
+     "monotonic_decline": false,
+     "recent_avg": 85.5,
+     "cohort_gap_pct": 1.4
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 67,
+     "own_avg": 82.5,
+     "spread": 15.5,
+     "cohort_gap_pct": 2.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 95,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 97,
+     "recent": 92,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 6.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %97 -> %92"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 9,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S014",
+   "name": "Ela Erdogan",
+   "branch": "Ankara",
+   "level": "B2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 98,
+   "attendance_recent": 92,
+   "exam_1": 73,
+   "exam_2": 77,
+   "exam_3": 77,
+   "exam_4": 81,
+   "speaking_score": 79,
+   "writing_score": 78,
+   "listening_score": 75,
+   "reading_score": 73,
+   "participation_score": 8,
+   "homework_completion": 94,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 4,
+     "last_exam": 81,
+     "monotonic_decline": false,
+     "recent_avg": 79,
+     "cohort_gap_pct": 8.9
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 73,
+     "own_avg": 76.2,
+     "spread": 3.2,
+     "cohort_gap_pct": 10.2,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 94,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 98,
+     "recent": 92,
+     "drop": 6
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 8.4,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %98 -> %92"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 9,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S025",
+   "name": "Mert Demir",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 87,
+   "attendance_recent": 82,
+   "exam_1": 71,
+   "exam_2": 73,
+   "exam_3": 78,
+   "exam_4": 79,
+   "speaking_score": 81,
+   "writing_score": 80,
+   "listening_score": 73,
+   "reading_score": 86,
+   "participation_score": 9,
+   "homework_completion": 84,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 6.5,
+     "last_exam": 79,
+     "monotonic_decline": false,
+     "recent_avg": 78.5,
+     "cohort_gap_pct": 3.0
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 73,
+     "own_avg": 80,
+     "spread": 7,
+     "cohort_gap_pct": 1.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 84,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 87,
+     "recent": 82,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %87 -> %82",
+    "Sinav trendi yukselisde (+6.5)"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S034",
+   "name": "Kaan Simsek",
+   "branch": "Istanbul",
+   "level": "A2",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 91,
+   "attendance_recent": 85,
+   "exam_1": 72,
+   "exam_2": 77,
+   "exam_3": 78,
+   "exam_4": 82,
+   "speaking_score": 75,
+   "writing_score": 72,
+   "listening_score": 82,
+   "reading_score": 78,
+   "participation_score": 7,
+   "homework_completion": 86,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 5.5,
+     "last_exam": 82,
+     "monotonic_decline": false,
+     "recent_avg": 80,
+     "cohort_gap_pct": 4.0
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 72,
+     "own_avg": 76.8,
+     "spread": 4.8,
+     "cohort_gap_pct": 6.0,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 86,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 85,
+     "drop": 6
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %91 -> %85"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S062",
+   "name": "Ece Dogan",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 92,
+   "attendance_recent": 87,
+   "exam_1": 77,
+   "exam_2": 77,
+   "exam_3": 81,
+   "exam_4": 80,
+   "speaking_score": 77,
+   "writing_score": 74,
+   "listening_score": 86,
+   "reading_score": 79,
+   "participation_score": 9,
+   "homework_completion": 86,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.5,
+     "last_exam": 80,
+     "monotonic_decline": false,
+     "recent_avg": 80.5,
+     "cohort_gap_pct": 1.4
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 74,
+     "own_avg": 79,
+     "spread": 5,
+     "cohort_gap_pct": 2.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 86,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 87,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %92 -> %87"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S069",
+   "name": "Kuzey Kurt",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Kemal Ozdemir",
+   "attendance_rate": 93,
+   "attendance_recent": 88,
+   "exam_1": 81,
+   "exam_2": 83,
+   "exam_3": 85,
+   "exam_4": 86,
+   "speaking_score": 79,
+   "writing_score": 80,
+   "listening_score": 78,
+   "reading_score": 91,
+   "participation_score": 8,
+   "homework_completion": 92,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.5,
+     "last_exam": 86,
+     "monotonic_decline": false,
+     "recent_avg": 85.5,
+     "cohort_gap_pct": -2.6
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 78,
+     "own_avg": 82,
+     "spread": 4,
+     "cohort_gap_pct": -0.5,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 92,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 88,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %93 -> %88"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S070",
+   "name": "Kuzey Koc",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 97,
+   "attendance_recent": 92,
+   "exam_1": 75,
+   "exam_2": 77,
+   "exam_3": 79,
+   "exam_4": 79,
+   "speaking_score": 86,
+   "writing_score": 79,
+   "listening_score": 80,
+   "reading_score": 80,
+   "participation_score": 8,
+   "homework_completion": 81,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3,
+     "last_exam": 79,
+     "monotonic_decline": false,
+     "recent_avg": 79,
+     "cohort_gap_pct": 3.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 79,
+     "own_avg": 81.2,
+     "spread": 2.2,
+     "cohort_gap_pct": 0.1,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 81,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 97,
+     "recent": 92,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %97 -> %92"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S075",
+   "name": "Irem Celik",
+   "branch": "Ankara",
+   "level": "B1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 85,
+   "attendance_recent": 80,
+   "exam_1": 80,
+   "exam_2": 83,
+   "exam_3": 80,
+   "exam_4": 84,
+   "speaking_score": 83,
+   "writing_score": 79,
+   "listening_score": 86,
+   "reading_score": 87,
+   "participation_score": 9,
+   "homework_completion": 90,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 15
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 84,
+     "monotonic_decline": false,
+     "recent_avg": 82,
+     "cohort_gap_pct": -1.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 79,
+     "own_avg": 83.8,
+     "spread": 4.8,
+     "cohort_gap_pct": -2.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 90,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 85,
+     "recent": 80,
+     "drop": 5
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.8,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 9.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Son 4 haftada %85 -> %80"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S090",
+   "name": "Gizem Koc",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 84,
+   "attendance_recent": 83,
+   "exam_1": 73,
+   "exam_2": 74,
+   "exam_3": 75,
+   "exam_4": 75,
+   "speaking_score": 74,
+   "writing_score": 82,
+   "listening_score": 71,
+   "reading_score": 82,
+   "participation_score": 8,
+   "homework_completion": 66,
+   "teacher_concern": false,
+   "satisfaction_score": 6,
+   "dimensions": {
+    "test": 8,
+    "skill": 0,
+    "classroom": 14,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.5,
+     "last_exam": 75,
+     "monotonic_decline": false,
+     "recent_avg": 75,
+     "cohort_gap_pct": 8.2
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 71,
+     "own_avg": 77.2,
+     "spread": 6.2,
+     "cohort_gap_pct": 5.0,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 66,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 83,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "classroom",
+   "weighted_avg": 8.7,
+   "escalation": 0,
+   "risk_score": 9,
+   "risk_score_raw": 8.7,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Odev tamamlama %66",
+    "Devam orani %84"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 9,
+   "transition": "same"
+  },
+  {
+   "student_id": "S007",
+   "name": "Cem Kurt",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 84,
+   "attendance_recent": 83,
+   "exam_1": 78,
+   "exam_2": 78,
+   "exam_3": 78,
+   "exam_4": 76,
+   "speaking_score": 69,
+   "writing_score": 74,
+   "listening_score": 76,
+   "reading_score": 83,
+   "participation_score": 7,
+   "homework_completion": 97,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -1,
+     "last_exam": 76,
+     "monotonic_decline": false,
+     "recent_avg": 77,
+     "cohort_gap_pct": 4.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 69,
+     "own_avg": 75.5,
+     "spread": 6.5,
+     "cohort_gap_pct": 7.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 97,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 83,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 3.5,
+   "escalation": 0,
+   "risk_score": 8,
+   "risk_score_raw": 8.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Devam orani %84"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 8,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S072",
+   "name": "Yigit Cetin",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 84,
+   "attendance_recent": 82,
+   "exam_1": 80,
+   "exam_2": 81,
+   "exam_3": 77,
+   "exam_4": 77,
+   "speaking_score": 80,
+   "writing_score": 84,
+   "listening_score": 82,
+   "reading_score": 78,
+   "participation_score": 7,
+   "homework_completion": 94,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 10,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -3.5,
+     "last_exam": 77,
+     "monotonic_decline": false,
+     "recent_avg": 77,
+     "cohort_gap_pct": 4.8
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 78,
+     "own_avg": 81,
+     "spread": 3,
+     "cohort_gap_pct": 0.6,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 94,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 84,
+     "recent": 82,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 6.5,
+   "escalation": 0,
+   "risk_score": 8,
+   "risk_score_raw": 8.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Devam orani %84"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 8,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S093",
+   "name": "Burak Kurt",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 82,
+   "attendance_recent": 80,
+   "exam_1": 70,
+   "exam_2": 73,
+   "exam_3": 73,
+   "exam_4": 71,
+   "speaking_score": 65,
+   "writing_score": 79,
+   "listening_score": 71,
+   "reading_score": 76,
+   "participation_score": 9,
+   "homework_completion": 96,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 14
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 71,
+     "monotonic_decline": false,
+     "recent_avg": 72,
+     "cohort_gap_pct": 11.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 65,
+     "own_avg": 72.8,
+     "spread": 7.8,
+     "cohort_gap_pct": 10.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 96,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 82,
+     "recent": 80,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "attendance",
+   "weighted_avg": 8.2,
+   "escalation": 0,
+   "risk_score": 8,
+   "risk_score_raw": 8.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Devam orani %82"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 8,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S087",
+   "name": "Ipek Ozdemir",
+   "branch": "Istanbul",
+   "level": "C1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 97,
+   "attendance_recent": 99,
+   "exam_1": 81,
+   "exam_2": 84,
+   "exam_3": 81,
+   "exam_4": 80,
+   "speaking_score": 73,
+   "writing_score": 84,
+   "listening_score": 85,
+   "reading_score": 81,
+   "participation_score": 10,
+   "homework_completion": 85,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 10,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -2.0,
+     "last_exam": 80,
+     "monotonic_decline": false,
+     "recent_avg": 80.5,
+     "cohort_gap_pct": 5.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 73,
+     "own_avg": 80.8,
+     "spread": 7.8,
+     "cohort_gap_pct": 4.2,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 85,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 97,
+     "recent": 99,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 3.0,
+   "escalation": 0,
+   "risk_score": 6,
+   "risk_score_raw": 6.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 6,
+   "transition": "same"
+  },
+  {
+   "student_id": "S006",
+   "name": "Sude Kara",
+   "branch": "Bursa",
+   "level": "B1",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 86,
+   "attendance_recent": 84,
+   "exam_1": 69,
+   "exam_2": 73,
+   "exam_3": 74,
+   "exam_4": 74,
+   "speaking_score": 70,
+   "writing_score": 69,
+   "listening_score": 70,
+   "reading_score": 82,
+   "participation_score": 8,
+   "homework_completion": 85,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 8,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3,
+     "last_exam": 74,
+     "monotonic_decline": false,
+     "recent_avg": 74,
+     "cohort_gap_pct": 8.5
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 69,
+     "own_avg": 72.8,
+     "spread": 3.8,
+     "cohort_gap_pct": 10.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 85,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 86,
+     "recent": 84,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 4.7,
+   "escalation": 0,
+   "risk_score": 5,
+   "risk_score_raw": 5.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 5,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S040",
+   "name": "Deniz Kaya",
+   "branch": "Izmir",
+   "level": "A1",
+   "teacher": "Ceren Bal",
+   "attendance_rate": 96,
+   "attendance_recent": 98,
+   "exam_1": 76,
+   "exam_2": 77,
+   "exam_3": 80,
+   "exam_4": 77,
+   "speaking_score": 67,
+   "writing_score": 72,
+   "listening_score": 76,
+   "reading_score": 74,
+   "participation_score": 10,
+   "homework_completion": 91,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.0,
+     "last_exam": 77,
+     "monotonic_decline": false,
+     "recent_avg": 78.5,
+     "cohort_gap_pct": 3.9
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 67,
+     "own_avg": 72.2,
+     "spread": 5.2,
+     "cohort_gap_pct": 11.2,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 91,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 96,
+     "recent": 98,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 2.2,
+   "escalation": 0,
+   "risk_score": 5,
+   "risk_score_raw": 5.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 5,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S061",
+   "name": "Yigit Kurt",
+   "branch": "Izmir",
+   "level": "A1",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 93,
+   "attendance_recent": 94,
+   "exam_1": 79,
+   "exam_2": 84,
+   "exam_3": 83,
+   "exam_4": 79,
+   "speaking_score": 70,
+   "writing_score": 76,
+   "listening_score": 77,
+   "reading_score": 76,
+   "participation_score": 10,
+   "homework_completion": 89,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": -0.5,
+     "last_exam": 79,
+     "monotonic_decline": false,
+     "recent_avg": 81,
+     "cohort_gap_pct": 0.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 70,
+     "own_avg": 74.8,
+     "spread": 4.8,
+     "cohort_gap_pct": 8.1,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 89,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 94,
+     "drop": -1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 2.2,
+   "escalation": 0,
+   "risk_score": 5,
+   "risk_score_raw": 5.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 5,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S089",
+   "name": "Merve Polat",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 92,
+   "attendance_recent": 90,
+   "exam_1": 74,
+   "exam_2": 76,
+   "exam_3": 76,
+   "exam_4": 76,
+   "speaking_score": 75,
+   "writing_score": 73,
+   "listening_score": 71,
+   "reading_score": 74,
+   "participation_score": 9,
+   "homework_completion": 94,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 9,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1,
+     "last_exam": 76,
+     "monotonic_decline": false,
+     "recent_avg": 76,
+     "cohort_gap_pct": 6.9
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 71,
+     "own_avg": 73.2,
+     "spread": 2.2,
+     "cohort_gap_pct": 9.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 94,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 90,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "skill",
+   "weighted_avg": 2.2,
+   "escalation": 0,
+   "risk_score": 5,
+   "risk_score_raw": 5.4,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 5,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S004",
+   "name": "Tunc Yilmaz",
+   "branch": "Izmir",
+   "level": "A2",
+   "teacher": "Deniz Aksoy",
+   "attendance_rate": 98,
+   "attendance_recent": 98,
+   "exam_1": 73,
+   "exam_2": 74,
+   "exam_3": 73,
+   "exam_4": 77,
+   "speaking_score": 67,
+   "writing_score": 78,
+   "listening_score": 81,
+   "reading_score": 80,
+   "participation_score": 8,
+   "homework_completion": 95,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 8,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.5,
+     "last_exam": 77,
+     "monotonic_decline": false,
+     "recent_avg": 75,
+     "cohort_gap_pct": 10.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 67,
+     "own_avg": 76.5,
+     "spread": 9.5,
+     "cohort_gap_pct": 6.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 95,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 98,
+     "recent": 98,
+     "drop": 0
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 2.4,
+   "escalation": 0,
+   "risk_score": 5,
+   "risk_score_raw": 4.8,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 5,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S012",
+   "name": "Kaan Ozdemir",
+   "branch": "Bursa",
+   "level": "C1",
+   "teacher": "Nehir Yalcin",
+   "attendance_rate": 92,
+   "attendance_recent": 91,
+   "exam_1": 82,
+   "exam_2": 85,
+   "exam_3": 87,
+   "exam_4": 86,
+   "speaking_score": 87,
+   "writing_score": 86,
+   "listening_score": 82,
+   "reading_score": 93,
+   "participation_score": 7,
+   "homework_completion": 95,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.0,
+     "last_exam": 86,
+     "monotonic_decline": false,
+     "recent_avg": 86.5,
+     "cohort_gap_pct": -2.1
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 82,
+     "own_avg": 87,
+     "spread": 5,
+     "cohort_gap_pct": -3.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 95,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 91,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S016",
+   "name": "Mert Arslan",
+   "branch": "Bursa",
+   "level": "C1",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 99,
+   "attendance_recent": 100,
+   "exam_1": 80,
+   "exam_2": 80,
+   "exam_3": 81,
+   "exam_4": 82,
+   "speaking_score": 79,
+   "writing_score": 87,
+   "listening_score": 81,
+   "reading_score": 79,
+   "participation_score": 9,
+   "homework_completion": 94,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.5,
+     "last_exam": 82,
+     "monotonic_decline": false,
+     "recent_avg": 81.5,
+     "cohort_gap_pct": 3.8
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 79,
+     "own_avg": 81.5,
+     "spread": 2.5,
+     "cohort_gap_pct": 3.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 94,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 99,
+     "recent": 100,
+     "drop": -1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S021",
+   "name": "Selin Koc",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 92,
+   "attendance_recent": 90,
+   "exam_1": 83,
+   "exam_2": 83,
+   "exam_3": 86,
+   "exam_4": 88,
+   "speaking_score": 82,
+   "writing_score": 80,
+   "listening_score": 81,
+   "reading_score": 92,
+   "participation_score": 9,
+   "homework_completion": 82,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 4,
+     "last_exam": 88,
+     "monotonic_decline": false,
+     "recent_avg": 87,
+     "cohort_gap_pct": -0.3
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 80,
+     "own_avg": 83.8,
+     "spread": 3.8,
+     "cohort_gap_pct": 1.4,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 82,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 90,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S030",
+   "name": "Elif Kurt",
+   "branch": "Istanbul",
+   "level": "B1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 88,
+   "attendance_recent": 84,
+   "exam_1": 78,
+   "exam_2": 81,
+   "exam_3": 84,
+   "exam_4": 86,
+   "speaking_score": 91,
+   "writing_score": 88,
+   "listening_score": 77,
+   "reading_score": 84,
+   "participation_score": 10,
+   "homework_completion": 82,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 5.5,
+     "last_exam": 86,
+     "monotonic_decline": false,
+     "recent_avg": 85,
+     "cohort_gap_pct": -5.0
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 77,
+     "own_avg": 85,
+     "spread": 8,
+     "cohort_gap_pct": -4.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 82,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 88,
+     "recent": 84,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S037",
+   "name": "Tunc Simsek",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 96,
+   "attendance_recent": 96,
+   "exam_1": 76,
+   "exam_2": 78,
+   "exam_3": 81,
+   "exam_4": 85,
+   "speaking_score": 78,
+   "writing_score": 79,
+   "listening_score": 86,
+   "reading_score": 79,
+   "participation_score": 8,
+   "homework_completion": 88,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 6,
+     "last_exam": 85,
+     "monotonic_decline": false,
+     "recent_avg": 83,
+     "cohort_gap_pct": 0.4
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 78,
+     "own_avg": 80.5,
+     "spread": 2.5,
+     "cohort_gap_pct": 1.4,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 88,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 96,
+     "recent": 96,
+     "drop": 0
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Sinav trendi yukselisde (+6.0)"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S039",
+   "name": "Elif Kurt",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 88,
+   "attendance_recent": 89,
+   "exam_1": 83,
+   "exam_2": 85,
+   "exam_3": 89,
+   "exam_4": 92,
+   "speaking_score": 91,
+   "writing_score": 86,
+   "listening_score": 96,
+   "reading_score": 83,
+   "participation_score": 9,
+   "homework_completion": 97,
+   "teacher_concern": false,
+   "satisfaction_score": 10,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 6.5,
+     "last_exam": 92,
+     "monotonic_decline": false,
+     "recent_avg": 90.5,
+     "cohort_gap_pct": -4.3
+    },
+    "skill": {
+     "weakest": "Reading",
+     "weakest_score": 83,
+     "own_avg": 89,
+     "spread": 6,
+     "cohort_gap_pct": -4.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 97,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 88,
+     "recent": 89,
+     "drop": -1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Sinav trendi yukselisde (+6.5)"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S047",
+   "name": "Ipek Cetin",
+   "branch": "Istanbul",
+   "level": "A2",
+   "teacher": "Sibel Toprak",
+   "attendance_rate": 93,
+   "attendance_recent": 92,
+   "exam_1": 82,
+   "exam_2": 83,
+   "exam_3": 84,
+   "exam_4": 87,
+   "speaking_score": 78,
+   "writing_score": 88,
+   "listening_score": 89,
+   "reading_score": 93,
+   "participation_score": 7,
+   "homework_completion": 80,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.0,
+     "last_exam": 87,
+     "monotonic_decline": false,
+     "recent_avg": 85.5,
+     "cohort_gap_pct": -2.6
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 78,
+     "own_avg": 87,
+     "spread": 9,
+     "cohort_gap_pct": -6.6,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 80,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 92,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S049",
+   "name": "Bilge Dogan",
+   "branch": "Bursa",
+   "level": "B2",
+   "teacher": "Tolga Simsek",
+   "attendance_rate": 88,
+   "attendance_recent": 85,
+   "exam_1": 78,
+   "exam_2": 83,
+   "exam_3": 82,
+   "exam_4": 81,
+   "speaking_score": 79,
+   "writing_score": 78,
+   "listening_score": 88,
+   "reading_score": 86,
+   "participation_score": 8,
+   "homework_completion": 85,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 1.0,
+     "last_exam": 81,
+     "monotonic_decline": false,
+     "recent_avg": 81.5,
+     "cohort_gap_pct": 6.1
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 78,
+     "own_avg": 82.8,
+     "spread": 4.8,
+     "cohort_gap_pct": 2.6,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 85,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 88,
+     "recent": 85,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S056",
+   "name": "Kerem Koc",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 91,
+   "attendance_recent": 87,
+   "exam_1": 74,
+   "exam_2": 75,
+   "exam_3": 78,
+   "exam_4": 78,
+   "speaking_score": 80,
+   "writing_score": 84,
+   "listening_score": 70,
+   "reading_score": 83,
+   "participation_score": 9,
+   "homework_completion": 80,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.5,
+     "last_exam": 78,
+     "monotonic_decline": false,
+     "recent_avg": 78,
+     "cohort_gap_pct": 6.4
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 70,
+     "own_avg": 79.2,
+     "spread": 9.2,
+     "cohort_gap_pct": 2.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 80,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 87,
+     "drop": 4
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S066",
+   "name": "Serkan Simsek",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 90,
+   "attendance_recent": 90,
+   "exam_1": 79,
+   "exam_2": 82,
+   "exam_3": 82,
+   "exam_4": 83,
+   "speaking_score": 89,
+   "writing_score": 83,
+   "listening_score": 77,
+   "reading_score": 86,
+   "participation_score": 7,
+   "homework_completion": 94,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.0,
+     "last_exam": 83,
+     "monotonic_decline": false,
+     "recent_avg": 82.5,
+     "cohort_gap_pct": -1.0
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 77,
+     "own_avg": 83.8,
+     "spread": 6.8,
+     "cohort_gap_pct": -3.0,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 94,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 90,
+     "drop": 0
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S067",
+   "name": "Ozan Aslan",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 92,
+   "attendance_recent": 90,
+   "exam_1": 76,
+   "exam_2": 74,
+   "exam_3": 76,
+   "exam_4": 81,
+   "speaking_score": 85,
+   "writing_score": 76,
+   "listening_score": 84,
+   "reading_score": 76,
+   "participation_score": 8,
+   "homework_completion": 82,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.5,
+     "last_exam": 81,
+     "monotonic_decline": false,
+     "recent_avg": 78.5,
+     "cohort_gap_pct": 5.8
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 76,
+     "own_avg": 80.2,
+     "spread": 4.2,
+     "cohort_gap_pct": 1.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 82,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 92,
+     "recent": 90,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S068",
+   "name": "Baris Kaya",
+   "branch": "Istanbul",
+   "level": "A1",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 95,
+   "attendance_recent": 97,
+   "exam_1": 76,
+   "exam_2": 75,
+   "exam_3": 74,
+   "exam_4": 77,
+   "speaking_score": 77,
+   "writing_score": 69,
+   "listening_score": 78,
+   "reading_score": 76,
+   "participation_score": 8,
+   "homework_completion": 100,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.0,
+     "last_exam": 77,
+     "monotonic_decline": false,
+     "recent_avg": 75.5,
+     "cohort_gap_pct": 7.6
+    },
+    "skill": {
+     "weakest": "Writing",
+     "weakest_score": 69,
+     "own_avg": 75,
+     "spread": 6,
+     "cohort_gap_pct": 7.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 100,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 95,
+     "recent": 97,
+     "drop": -2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 12,
+   "prev_risk_level": "LOW",
+   "delta": -12,
+   "transition": "same"
+  },
+  {
+   "student_id": "S079",
+   "name": "Damla Kurt",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Pinar Acar",
+   "attendance_rate": 93,
+   "attendance_recent": 92,
+   "exam_1": 79,
+   "exam_2": 80,
+   "exam_3": 79,
+   "exam_4": 81,
+   "speaking_score": 76,
+   "writing_score": 80,
+   "listening_score": 76,
+   "reading_score": 86,
+   "participation_score": 10,
+   "homework_completion": 89,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.5,
+     "last_exam": 81,
+     "monotonic_decline": false,
+     "recent_avg": 80,
+     "cohort_gap_pct": 2.0
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 76,
+     "own_avg": 79.5,
+     "spread": 3.5,
+     "cohort_gap_pct": 2.3,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 89,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 93,
+     "recent": 92,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S082",
+   "name": "Aylin Tas",
+   "branch": "Ankara",
+   "level": "C1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 90,
+   "attendance_recent": 88,
+   "exam_1": 75,
+   "exam_2": 78,
+   "exam_3": 83,
+   "exam_4": 83,
+   "speaking_score": 77,
+   "writing_score": 80,
+   "listening_score": 81,
+   "reading_score": 79,
+   "participation_score": 7,
+   "homework_completion": 84,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 6.5,
+     "last_exam": 83,
+     "monotonic_decline": false,
+     "recent_avg": 83,
+     "cohort_gap_pct": 2.1
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 77,
+     "own_avg": 79.2,
+     "spread": 2.2,
+     "cohort_gap_pct": 5.9,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 84,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 90,
+     "recent": 88,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Sinav trendi yukselisde (+6.5)"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S085",
+   "name": "Kaan Arslan",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Mehmet Kaya",
+   "attendance_rate": 91,
+   "attendance_recent": 90,
+   "exam_1": 83,
+   "exam_2": 85,
+   "exam_3": 82,
+   "exam_4": 86,
+   "speaking_score": 80,
+   "writing_score": 89,
+   "listening_score": 77,
+   "reading_score": 81,
+   "participation_score": 9,
+   "homework_completion": 88,
+   "teacher_concern": false,
+   "satisfaction_score": 7,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0,
+     "last_exam": 86,
+     "monotonic_decline": false,
+     "recent_avg": 84,
+     "cohort_gap_pct": 3.2
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 77,
+     "own_avg": 81.8,
+     "spread": 4.8,
+     "cohort_gap_pct": 3.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 9,
+     "homework": 88,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 91,
+     "recent": 90,
+     "drop": 1
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S094",
+   "name": "Ahmet Simsek",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 96,
+   "attendance_recent": 94,
+   "exam_1": 81,
+   "exam_2": 79,
+   "exam_3": 83,
+   "exam_4": 84,
+   "speaking_score": 73,
+   "writing_score": 79,
+   "listening_score": 84,
+   "reading_score": 84,
+   "participation_score": 10,
+   "homework_completion": 90,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 3.5,
+     "last_exam": 84,
+     "monotonic_decline": false,
+     "recent_avg": 83.5,
+     "cohort_gap_pct": -2.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 73,
+     "own_avg": 80,
+     "spread": 7,
+     "cohort_gap_pct": 1.6,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 90,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 96,
+     "recent": 94,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S097",
+   "name": "Efe Polat",
+   "branch": "Ankara",
+   "level": "A2",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 89,
+   "attendance_recent": 86,
+   "exam_1": 83,
+   "exam_2": 80,
+   "exam_3": 80,
+   "exam_4": 83,
+   "speaking_score": 74,
+   "writing_score": 82,
+   "listening_score": 88,
+   "reading_score": 79,
+   "participation_score": 7,
+   "homework_completion": 83,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 0.0,
+     "last_exam": 83,
+     "monotonic_decline": false,
+     "recent_avg": 81.5,
+     "cohort_gap_pct": 2.2
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 74,
+     "own_avg": 80.8,
+     "spread": 6.8,
+     "cohort_gap_pct": 1.1,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 7,
+     "homework": 83,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 89,
+     "recent": 86,
+     "drop": 3
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 6,
+   "prev_risk_level": "LOW",
+   "delta": -6,
+   "transition": "same"
+  },
+  {
+   "student_id": "S098",
+   "name": "Kuzey Tas",
+   "branch": "Istanbul",
+   "level": "B2",
+   "teacher": "Onur Ergin",
+   "attendance_rate": 95,
+   "attendance_recent": 95,
+   "exam_1": 76,
+   "exam_2": 82,
+   "exam_3": 79,
+   "exam_4": 87,
+   "speaking_score": 80,
+   "writing_score": 87,
+   "listening_score": 84,
+   "reading_score": 86,
+   "participation_score": 8,
+   "homework_completion": 93,
+   "teacher_concern": false,
+   "satisfaction_score": 9,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 4,
+     "last_exam": 87,
+     "monotonic_decline": false,
+     "recent_avg": 83,
+     "cohort_gap_pct": 4.3
+    },
+    "skill": {
+     "weakest": "Speaking",
+     "weakest_score": 80,
+     "own_avg": 84.2,
+     "spread": 4.2,
+     "cohort_gap_pct": 0.8,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 8,
+     "homework": 93,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 95,
+     "recent": 95,
+     "drop": 0
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  },
+  {
+   "student_id": "S100",
+   "name": "Bilge Kaya",
+   "branch": "Ankara",
+   "level": "A1",
+   "teacher": "Ayse Yilmaz",
+   "attendance_rate": 98,
+   "attendance_recent": 96,
+   "exam_1": 81,
+   "exam_2": 80,
+   "exam_3": 80,
+   "exam_4": 85,
+   "speaking_score": 80,
+   "writing_score": 84,
+   "listening_score": 77,
+   "reading_score": 90,
+   "participation_score": 10,
+   "homework_completion": 81,
+   "teacher_concern": false,
+   "satisfaction_score": 8,
+   "dimensions": {
+    "test": 0,
+    "skill": 0,
+    "classroom": 0,
+    "attendance": 0
+   },
+   "dimension_detail": {
+    "test": {
+     "delta": 2.0,
+     "last_exam": 85,
+     "monotonic_decline": false,
+     "recent_avg": 82.5,
+     "cohort_gap_pct": -1.0
+    },
+    "skill": {
+     "weakest": "Listening",
+     "weakest_score": 77,
+     "own_avg": 82.8,
+     "spread": 5.8,
+     "cohort_gap_pct": -1.7,
+     "diagnosis": "temiz"
+    },
+    "classroom": {
+     "participation": 10,
+     "homework": 81,
+     "teacher_concern": false
+    },
+    "attendance": {
+     "rate": 98,
+     "recent": 96,
+     "drop": 2
+    }
+   },
+   "critical_dimensions": [],
+   "elevated_dimensions": [],
+   "top_dimension": "test",
+   "weighted_avg": 0.0,
+   "escalation": 0,
+   "risk_score": 0,
+   "risk_score_raw": 0.0,
+   "risk_level": "LOW",
+   "risk_reasons": [
+    "Belirgin risk sinyali yok"
+   ],
+   "recommended_action": "Aksiyon gerekmiyor — rutin takip",
+   "prev_risk_score": 0,
+   "prev_risk_level": "LOW",
+   "delta": 0,
+   "transition": "same"
+  }
+ ]
+}
