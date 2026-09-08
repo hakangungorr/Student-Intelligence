@@ -26,8 +26,9 @@ gerektiğini** söylüyor.
 | `risk_engine_v4.py` | Risk motoru v0.4 · deterministik, LLM yok |
 | `demo_dataset.json` | 100 sentetik öğrenci · 4 şube · A1–C1 · iki haftalık karşılaştırma |
 | `HANDOFF.md` | Ürün kararlarının gerekçeleri ve yeniden açılmayacak kararlar |
-| `src/app/` | Next.js giriş, kurulum ve korumalı çalışma alanı |
-| `src/lib/` | Sunucu tarafı oturum ve ortam ayarları |
+| `src/app/` | Next.js giriş ve dört ekranlı korumalı çalışma alanı |
+| `src/lib/` | Oturum, risk gündemi, öğrenci kartı ve soru-cevap katmanı |
+| `scripts/build_demo_seed.py` | `demo_dataset.json`'u staging'e yazan SQL'i üretir |
 | `supabase/migrations/` | Kurum, şube, öğrenci, risk geçmişi ve RLS şeması |
 | `tests/` | Gerçek PostgreSQL üzerinde erişim sınırı ve ortam ayarı testleri |
 | `docs/PRODUCTION.md` | Kurulum, yetkilendirme ve staging / production rehberi |
@@ -45,17 +46,35 @@ npm run dev
 ```
 
 `http://127.0.0.1:3000` adresini açın. Örnek ortam dosyası açıkça
-`APP_DATA_MODE=demo` seçer; onaylanan dört ekranlı HTML demosu Next.js içindeki
-`/demo` yolunda çalışır. Bu HTML henüz React bileşenlerine dönüştürülmemiştir.
+`APP_DATA_MODE=demo` seçer; özgün tek dosyalık HTML demosu `/demo` yolunda
+referans olarak durmaya devam eder.
 
 Kurum modu için `APP_DATA_MODE=supabase`, Supabase URL ve publishable key
 tanımlanır. `/login` ve `/workspace` yerel Next.js sayfalarıdır. Oturum sunucuda
 doğrulanır, tüm sorgular kullanıcının RLS yetkileriyle yapılır. Varsayılan mod
 `supabase` olduğundan eksik ayarlar kamuya açık demo erişimini açmaz.
 
-Kurum modunda şube listesi, aktif öğrenci sayısı ve kullanıcının erişimleri
-veritabanına bağlıdır. Gerçek risk panosu, veri içe aktarımı, kullanıcı yönetimi
-arayüzü ve otomatik risk hesaplama henüz bu temele bağlanmadı.
+Kurum modunda onaylanan dört ekranın tamamı veritabanına bağlıdır:
+
+| Yol | Ekran |
+|---|---|
+| `/workspace` | Öğrenci gündemi — KPI'lar, öncelik listesi, şube ve kur ısı haritaları |
+| `/workspace/students` | Öğrenci listesi — kur, risk ve sorun alanına göre süzülür |
+| `/workspace/students/[id]` | Öğrenci kartı — kanıt, sınav trendi, dört boyut, aksiyon |
+| `/workspace/ask` | Soru sor — cevaplar veritabanından hesaplanır, dil modeli yok |
+
+Ekranlar risk skorlarını yeniden hesaplamaz; `risk_snapshots` tablosundan okur.
+Veri içe aktarımı, kullanıcı yönetimi arayüzü ve zamanlanmış risk hesaplama henüz
+bu temele bağlanmadı.
+
+Staging'e örnek veriyi yazmak için:
+
+```bash
+python3 scripts/build_demo_seed.py > demo_seed.sql
+```
+
+Üretilen SQL'i Supabase SQL Editor'de bir kez çalıştırın. Yeniden
+çalıştırılabilir: kendi yazdığı satırları silip baştan yazar.
 
 ```bash
 npm run check     # lint, TypeScript, 15 test, production build
