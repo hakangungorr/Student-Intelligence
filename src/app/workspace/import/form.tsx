@@ -27,7 +27,7 @@ export function ImportForm({ today, columns }: { today: string; columns: string[
       {state.issues && state.issues.length > 0 && <IssueList issues={state.issues} />}
     </section>}
 
-    {state.status === "ready" && <Confirm state={state} />}
+    {state.status === "ready" && <Confirm key={state.token} state={state} />}
   </>;
 }
 

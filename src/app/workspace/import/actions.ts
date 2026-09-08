@@ -9,6 +9,9 @@ const MAX_BYTES = 2_000_000;   // a term's roster is tens of KB; this is a wide 
 
 export type PreviewState = {
   status: "empty" | "ready" | "error" | "done";
+  /** Fresh for every preview, so a finished import cannot leave its result on
+   *  screen while the next file is being reviewed. */
+  token?: string;
   message?: string;
   filename?: string;
   text?: string;
@@ -56,7 +59,7 @@ export async function preview(_prev: PreviewState, form: FormData): Promise<Prev
   };
 
   return {
-    status: "ready", filename: file.name, text, periodEnd: when.data,
+    status: "ready", token: crypto.randomUUID(), filename: file.name, text, periodEnd: when.data,
     accepted: parsed.rows.length, issues: parsed.issues, unknown: parsed.unknown,
     sample: parsed.rows.slice(0, 8).map(r =>
       ({ line: r.line, externalId: r.externalId, name: r.name, branch: r.branch, level: r.level }))
