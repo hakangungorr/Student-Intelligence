@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 const db = new PGlite();
@@ -16,7 +16,11 @@ beforeAll(async()=>{
     create function auth.uid() returns uuid language sql stable as
     $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;`);
-  await db.exec(await readFile(new URL("../supabase/migrations/202609080001_foundation.sql",import.meta.url),"utf8"));
+  // Every migration, in order: a policy added later must not quietly widen an
+  // earlier boundary, and these tests are the only place that would notice.
+  const dir = new URL("../supabase/migrations/",import.meta.url);
+  for (const file of (await readdir(dir)).filter(f=>f.endsWith(".sql")).sort())
+    await db.exec(await readFile(new URL(file,dir),"utf8"));
   await db.exec(`insert into auth.users values ${[1,2,3,4,5,6].map(n=>`('${id(n)}')`).join(",")};
     insert into public.organizations(id,name) values ('${id(10)}','American LIFE'),('${id(11)}','Other school');
     insert into public.branches(id,organization_id,name) values
@@ -79,5 +83,35 @@ describe("database tenant and branch boundaries",()=>{
   });
   it("clients cannot write computed risk scores",async()=>{
     await expect(asUser(1,"delete from public.risk_snapshots")).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("roster import boundaries", () => {
+  const write = (branch: number, code: string) =>
+    `insert into public.students(organization_id,branch_id,external_id,name)
+     values ('${id(10)}','${id(branch)}','${code}','Aktarılan')`;
+
+  it("institution admin writes into every branch it administers", async () => {
+    await expect(asUser(1, write(20, "IMP1"))).resolves.toBeDefined();
+    await expect(asUser(1, write(21, "IMP2"))).resolves.toBeDefined();
+  });
+  it("branch manager writes only into its own branch", async () => {
+    await expect(asUser(2, write(20, "IMP3"))).resolves.toBeDefined();
+    await expect(asUser(2, write(21, "IMP4"))).rejects.toThrow();
+  });
+  it("teacher never creates students", async () => {
+    await expect(asUser(3, write(20, "IMP5"))).rejects.toThrow();
+  });
+  it("nobody moves a student to another institution", async () => {
+    await expect(asUser(1,
+      `update public.students set organization_id = '${id(11)}' where external_id = 'IMP1'`
+    )).rejects.toThrow();
+  });
+  it("only managers record an import", async () => {
+    const batch = (n: number) =>
+      `insert into public.import_batches(organization_id,filename,row_count,created_count,updated_count)
+       values ('${id(10)}','roster-${n}.csv',1,1,0)`;
+    await expect(asUser(1, batch(1))).resolves.toBeDefined();
+    await expect(asUser(3, batch(3))).rejects.toThrow();
   });
 });
