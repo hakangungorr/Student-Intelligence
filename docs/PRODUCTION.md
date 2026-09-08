@@ -95,17 +95,32 @@ veritabanı içindir; yerel mevcut veriyi siler. Otomatik seed kapalıdır.
 
 | Rol | Okuma | Yazma |
 |---|---|---|
-| Kurum yöneticisi | Kendi kurumunun tüm şubeleri | Erişilebilir öğrencide aksiyon ve gözlem |
-| Şube yöneticisi | Üye olduğu şube | Erişilebilir öğrencide aksiyon ve gözlem |
+| Kurum yöneticisi | Kendi kurumunun tüm şubeleri | Aksiyon, gözlem, öğrenci / kur kaydı / ölçüm aktarımı, risk skoru |
+| Şube yöneticisi | Üye olduğu şube | Aksiyon, gözlem, kendi şubesinde aktarım. Risk skoru **yazamaz** |
 | Eğitmen | Üye olduğu şubede aktif atanmış öğrenciler | Atanmış öğrencide aksiyon ve gözlem |
 | Görüntüleyici | Üye olduğu şube | Yok |
 | Üyeliği olmayan / anonim | Öğrenci verisi yok | Yok |
 
-Kullanıcılar kendi üyeliklerini okuyabilir, değiştiremez. Kullanıcı yönetimi,
-öğrenci / kur kaydı ve ölçüm aktarımı için istemci yazma yetkisi açılmamıştır;
-gelecek güvenilir sunucu işlemleri bu sınırları gözeterek geliştirilecektir.
-Risk çıktıları istemciye salt okunurdur. Kurum / şube / öğrenci eşleşmeleri birleşik
-yabancı anahtarlarla korunur. Tarayıcıdan farklı şube kimliği göndermek erişim sağlamaz.
+Kullanıcılar kendi üyeliklerini okuyabilir, değiştiremez. Kurum / şube / öğrenci
+eşleşmeleri birleşik yabancı anahtarlarla korunur. Tarayıcıdan farklı şube kimliği
+göndermek erişim sağlamaz.
+
+Öğrenci / kur kaydı / ölçüm aktarımı ve risk skoru yazma yetkisi, ilk tasarımda
+kapalıydı; veri aktarımı geldiğinde açıldı. Alternatif `service_role` anahtarıyla
+sunucu tarafında yazmaktı, ancak bu anahtar buradaki bütün politikaları atlar ve
+yalnızca tek bir kurumun kendi satırlarına dokunan bir iş için uygulamaya sınırsız
+bir kimlik verirdi. Ele geçen bir oturum yalnızca kendi kurumuna yazabilir; sızan
+bir `service_role` anahtarı her kuruma yazabilir. Bu yüzden aktarım RLS'in
+etrafından değil içinden geçer ve `service_role` kullanılmaz kararı korunur.
+
+Güncelleme yetkileri kolon bazlıdır: aktarım bir listenin içeriğini düzeltir, bir
+satırın hangi kuruma ait olduğunu değil. `organization_id` ve kimlik kolonları
+kurum yöneticisi için bile yazılamaz.
+
+Risk skoru yazmak yalnızca kurum yöneticisindedir ve gerekçe güven değil
+kalibrasyondur: her kurun benchmark'ı o kurun en iyi %25'inin ortalamasıdır, bu
+yüzden tek şubeyi puanlamak öğrenciyi kendi şubesiyle kıyaslar. Aynı öğrenci
+düğmeye kimin bastığına göre farklı skor alırdı.
 
 Aksiyonun sadece `status`, `due_on`, `note` alanları güncellenebilir. Kurum,
 öğrenci, yazar ve oluşturulma tarihi değiştirilemez. Audit tablosuna istemci
@@ -116,9 +131,24 @@ garantisi vermez; yönetici operasyonlarını ayrıca izlemek gerekir.
 
 `student_measurements` ortak tarih / tür / değer şemasıdır; tam bir yoklama
 sistemi değildir. Gerçek kaynak belirlendiğinde ders bazlı katılım ve eksik veri
-tanımları netleştirilecek. Risk hesaplaması henüz zamanlanmaz. Python motoru
-referans olarak korunur; hesaplama ve CSV/Excel aktarımı sonraki aşamadır.
-Risk geçmişi dönem ve motor sürümüyle saklanır; istemci skor yazamaz.
+tanımları netleştirilecek. Risk geçmişi dönem ve motor sürümüyle saklanır.
+
+CSV aktarımı çalışır durumdadır; Excel dosyası okunmaz, kurumun dosyayı CSV olarak
+dışa aktarması gerekir. Sütun sözleşmesi demo veri setinden türetilmiştir çünkü
+kurumun kendi dışa aktarımı henüz görülmedi. Sınav tarihleri dosyada olmadığı için
+bütün ölçümler seçilen dönem sonu tarihine yazılır; sıralama `source_reference`
+alanında taşınır.
+
+Risk motoru v0.4 TypeScript'e taşındı ve uygulamadan çalıştırılır. Python sürümü
+referans olarak korunur: `tests/engine.test.ts` yüz referans öğrenciyi porttan
+geçirir ve skor, seviye, dört boyut, teşhis, gerekçe ile aksiyonun birebir tutmasını
+şart koşar. Hesaplama elle tetiklenir; zamanlanmış iş kurulmadı.
+
+**PostgREST yanıtı varsayılan olarak 1000 satırda kesilir ve bunu bildirmez.**
+İstek başarılı döner, eksik satırlar için hata çıkmaz. Yüz iki öğrencinin bin yirmi
+ölçümü vardır; sayfalanmayan bir sorgu son iki öğrenciyi verisiz gösterip yanlış
+puanlamıştı. Listeyle birlikte büyüyen her okuma `src/lib/paginate.ts` üzerinden
+açıkça sayfalanmalıdır.
 
 ## Vercel yayınlama
 

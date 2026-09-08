@@ -23,11 +23,11 @@ gerektiğini** söylüyor.
 | Dosya | Ne işe yarar |
 |---|---|
 | `dashboard.html` | Panonun tamamı — tek dosya, build yok, sunucu gerekmiyor |
-| `risk_engine_v4.py` | Risk motoru v0.4 · deterministik, LLM yok |
+| `risk_engine_v4.py` | Risk motoru v0.4 · referans uygulama; `src/lib/engine.ts` buna karşı test edilir |
 | `demo_dataset.json` | 100 sentetik öğrenci · 4 şube · A1–C1 · iki haftalık karşılaştırma |
 | `HANDOFF.md` | Ürün kararlarının gerekçeleri ve yeniden açılmayacak kararlar |
 | `src/app/` | Next.js giriş ve dört ekranlı korumalı çalışma alanı |
-| `src/lib/` | Oturum, risk gündemi, öğrenci kartı ve soru-cevap katmanı |
+| `src/lib/` | Oturum, risk gündemi, öğrenci kartı, soru-cevap, CSV aktarımı ve risk motoru |
 | `scripts/build_demo_seed.py` | `demo_dataset.json`'u staging'e yazan SQL'i üretir |
 | `supabase/migrations/` | Kurum, şube, öğrenci, risk geçmişi ve RLS şeması |
 | `tests/` | Gerçek PostgreSQL üzerinde erişim sınırı ve ortam ayarı testleri |
@@ -62,10 +62,15 @@ Kurum modunda onaylanan dört ekranın tamamı veritabanına bağlıdır:
 | `/workspace/students` | Öğrenci listesi — kur, risk ve sorun alanına göre süzülür |
 | `/workspace/students/[id]` | Öğrenci kartı — kanıt, sınav trendi, dört boyut, aksiyon |
 | `/workspace/ask` | Soru sor — cevaplar veritabanından hesaplanır, dil modeli yok |
+| `/workspace/import` | CSV aktarımı, risk hesaplama ve aktarım geçmişi |
 
 Ekranlar risk skorlarını yeniden hesaplamaz; `risk_snapshots` tablosundan okur.
-Veri içe aktarımı, kullanıcı yönetimi arayüzü ve zamanlanmış risk hesaplama henüz
-bu temele bağlanmadı.
+Skorları üreten motor `src/lib/engine.ts` içindedir ve `/workspace/import`
+sayfasından elle çalıştırılır.
+
+Kullanıcı yönetimi arayüzü, aksiyon takibi ve zamanlanmış risk hesaplama henüz
+bu temele bağlanmadı. Excel dosyası okunmaz; kurumun CSV olarak dışa aktarması
+gerekir.
 
 Staging'e örnek veriyi yazmak için:
 
