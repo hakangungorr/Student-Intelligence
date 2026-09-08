@@ -115,3 +115,15 @@ td.heat.good{background:rgb(var(--good-rgb)/.16)}
 .spark.good .dot-last{fill:rgb(var(--good-rgb))}
 .spark .tickval{font:10.5px "IBM Plex Mono",monospace;fill:var(--muted)}
 @media(max-width:900px){.cards2{grid-template-columns:1fr}.map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Öğrenci listesi ------------------------------------------------------- */
+.filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;padding:18px 20px}
+.filters label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.filters input,.filters select{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:170px}
+.filter-actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+.filter-actions .primary{padding:9px 18px}
+td.wrap,th.wrap{white-space:normal;min-width:230px}
+tbody th{font-weight:600;color:var(--ink)}
+tbody th a{text-decoration:none}
+tbody th a:hover{text-decoration:underline}
+tbody .quad{display:inline-flex;gap:3px}
