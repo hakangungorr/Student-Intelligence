@@ -10,3 +10,4 @@ node_modules/
 coverage/
 .vercel/
 supabase/.temp/
+demo_seed.sql
