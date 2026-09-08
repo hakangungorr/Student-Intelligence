@@ -1,8 +1,9 @@
 "use client";
 import { useActionState } from "react";
-import { preview, commit, type PreviewState } from "./actions";
+import { preview, commit, score, type PreviewState, type ScoreState } from "./actions";
 
 const empty: PreviewState = { status: "empty" };
+const idle: ScoreState = { status: "idle" };
 
 export function ImportForm({ today, columns }: { today: string; columns: string[] }) {
   const [state, choose, choosing] = useActionState(preview, empty);
@@ -84,4 +85,42 @@ function IssueList({ issues }: { issues: { line: number; column: string; message
     <li key={n}><b>Satır {i.line}</b> · {i.column} — {i.message}</li>)}</ul>
     {issues.length > shown.length &&
       <p className="note">…ve {issues.length - shown.length} sorun daha.</p>}</>;
+}
+
+/** Scoring is a separate button because it is a separate decision: an
+ *  administrator may load several branches' files before recalculating once. */
+export function ScoreForm({ today }: { today: string }) {
+  const [state, run, running] = useActionState(score, idle);
+  return <section className="panel pad">
+    <div className="card-hd"><h2>Risk skorlarını hesapla</h2></div>
+    <p className="note">Motor v0.4 · kurumdaki bütün öğrenciler yeniden puanlanır. Kur
+      benchmark&apos;ı her kurun kendi en iyi %25&apos;inden üretildiği için hesap kurum
+      genelinde yapılır; bir şubeyi tek başına puanlamak öğrenciyi kendi şubesiyle
+      kıyaslardı.</p>
+
+    <form action={run} className="filters">
+      <label>Dönem sonu tarihi
+        <input type="date" name="periodEnd" defaultValue={today} required /></label>
+      <span className="filter-actions">
+        <button type="submit" className="primary" disabled={running}>
+          {running ? "Hesaplanıyor…" : "Hesapla"}</button></span>
+    </form>
+
+    {state.status === "done" && <>
+      <p className="lead">{state.scored} öğrenci puanlandı — {state.created} yeni kayıt,
+        {" "}{state.updated} güncelleme.</p>
+      {state.skipped && state.skipped.length > 0 && <>
+        <p className="note">{state.skipped.length} öğrenci atlandı:</p>
+        <ul className="issues">{state.skipped.slice(0, 20).map(s =>
+          <li key={s.externalId}><b>{s.externalId}</b> — {s.reason}</li>)}</ul>
+        {state.skipped.length > 20 &&
+          <p className="note">…ve {state.skipped.length - 20} öğrenci daha.</p>}</>}
+    </>}
+    {state.status === "error" && <>
+      <p className="lead">{state.message}</p>
+      {state.skipped && state.skipped.length > 0 && <ul className="issues">
+        {state.skipped.slice(0, 10).map(s =>
+          <li key={s.externalId}><b>{s.externalId}</b> — {s.reason}</li>)}</ul>}
+    </>}
+  </section>;
 }

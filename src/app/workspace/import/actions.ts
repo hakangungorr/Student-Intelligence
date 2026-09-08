@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { parseRoster, type Issue } from "@/lib/csv";
 import { writeRoster } from "@/lib/import";
+import { scoreInstitution } from "@/lib/scoring";
 
 const MAX_BYTES = 2_000_000;   // a term's roster is tens of KB; this is a wide margin
 
@@ -100,4 +101,39 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
     status: "done", filename, result, accepted: parsed.rows.length, issues: parsed.issues,
     message: recorded.error ? "Veriler yazıldı, ancak aktarım geçmişine kaydedilemedi." : undefined
   };
+}
+
+export type ScoreState = {
+  status: "idle" | "done" | "error";
+  message?: string;
+  scored?: number; created?: number; updated?: number;
+  skipped?: { externalId: string; reason: string }[];
+};
+
+/** Recomputes every score the administrator can see and stores the result.
+ *  Separate from the import on purpose: a roster upload and a scoring run fail
+ *  for different reasons, and a partial import should not leave stale scores
+ *  looking freshly calculated. */
+export async function score(_prev: ScoreState, form: FormData): Promise<ScoreState> {
+  const when = period.safeParse(String(form.get("periodEnd") ?? ""));
+  if (!when.success) return { status: "error", message: when.error.issues[0].message };
+
+  const { client, organizationId } = await scope();
+  try {
+    const result = await scoreInstitution(client, organizationId, when.data);
+    if (!result.scored) return {
+      status: "error",
+      message: "Puanlanabilecek öğrenci yok — hepsinde eksik veri var.",
+      skipped: result.skipped
+    };
+    revalidatePath("/workspace");
+    revalidatePath("/workspace/students");
+    revalidatePath("/workspace/ask");
+    return {
+      status: "done", scored: result.scored, created: result.created,
+      updated: result.updated, skipped: result.skipped
+    };
+  } catch (e) {
+    return { status: "error", message: `Hesaplama yapılamadı: ${(e as Error).message}` };
+  }
 }

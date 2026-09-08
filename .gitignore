@@ -11,3 +11,4 @@ coverage/
 .vercel/
 supabase/.temp/
 demo_seed.sql
+ornek-aktarim.csv

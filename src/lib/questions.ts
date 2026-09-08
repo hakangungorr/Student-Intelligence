@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadAgenda, type Agenda, type AgendaStudent } from "@/lib/agenda";
 import { AREA, DIMENSIONS, STATE, type Dimension } from "@/lib/narrative";
 import { SKILL_ORDER } from "@/lib/student";
+import { fetchAll } from "@/lib/paginate";
 
 /** The assistant answers from the database, not from a language model.
  *
@@ -108,11 +109,12 @@ function bothSignals(a: Agenda): Answer {
 }
 
 async function weakestSpeaking(client: SupabaseClient, a: Agenda): Promise<Answer> {
-  const readings = await client.from("student_measurements")
-    .select("student_id,kind,value").eq("source_reference", "skill_profile");
-  if (readings.error) throw new Error("Beceri verisi okunamadı.");
+  const readings = await fetchAll<{ student_id: string; kind: string; value: number }>(
+    () => client.from("student_measurements").select("student_id,kind,value")
+      .eq("source_reference", "skill_profile"),
+    "Beceri verisi okunamadı");
   const byStudent = new Map<string, Map<string, number>>();
-  for (const m of readings.data) {
+  for (const m of readings) {
     const row = byStudent.get(m.student_id) ?? byStudent.set(m.student_id, new Map()).get(m.student_id)!;
     row.set(m.kind, Number(m.value));
   }

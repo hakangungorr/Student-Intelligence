@@ -5,6 +5,7 @@ import {
   type DimensionScores, type DimensionDetail, type Evidence, type Step
 } from "@/lib/narrative";
 import type { RiskLevel } from "@/lib/agenda";
+import { fetchAll } from "@/lib/paginate";
 
 export const SKILL_ORDER = ["speaking", "writing", "listening", "reading"] as const;
 export const SKILL_LABEL: Record<string, string> = {
@@ -77,15 +78,15 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
   const level = (mine?.level as string) ?? "—";
   const cohortIds = enrollments.data!.filter(e => e.level === level).map(e => e.student_id as string);
 
-  const readings = await client.from("student_measurements")
-    .select("student_id,kind,source_reference,value")
-    .in("student_id", cohortIds)
-    .in("source_reference", ["exam_1", "exam_2", "exam_3", "exam_4", "skill_profile", "term_rate", "last_four_weeks"]);
-  if (readings.error) throw new Error("Öğrenci kartı yüklenemedi.");
+  const readings = await fetchAll<{ student_id: string; kind: string; source_reference: string; value: number }>(
+    () => client.from("student_measurements").select("student_id,kind,source_reference,value")
+      .in("student_id", cohortIds)
+      .in("source_reference", ["exam_1", "exam_2", "exam_3", "exam_4", "skill_profile", "term_rate", "last_four_weeks"]),
+    "Öğrenci kartı yüklenemedi");
 
   const cohort = new Map<string, { exams: Map<string, number>; skills: Map<string, number> }>();
   const own = { term: null as number | null, recent: null as number | null };
-  for (const m of readings.data) {
+  for (const m of readings) {
     const row = cohort.get(m.student_id)
       ?? cohort.set(m.student_id, { exams: new Map(), skills: new Map() }).get(m.student_id)!;
     if (m.kind === "exam") row.exams.set(m.source_reference, Number(m.value));

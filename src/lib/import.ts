@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Row } from "@/lib/csv";
+import { fetchAll } from "@/lib/paginate";
 
 /** Writes a parsed roster.
  *
@@ -43,10 +44,12 @@ export async function writeRoster(
   const fail = (e: { message: string } | null) => { if (e) throw new Error(e.message); };
 
   const codes = rows.map(r => r.externalId);
-  const existing = await client.from("students")
-    .select("id,external_id,name,branch_id,satisfaction_score").in("external_id", codes);
-  fail(existing.error);
-  const byCode = new Map(existing.data!.map(s => [s.external_id as string, s]));
+  const existing = await fetchAll<{ id: string; external_id: string; name: string;
+    branch_id: string; satisfaction_score: number | null }>(
+    () => client.from("students").select("id,external_id,name,branch_id,satisfaction_score")
+      .in("external_id", codes), "Mevcut öğrenciler okunamadı");
+  const byCode = new Map<string, { id: string; external_id: string; name?: string;
+    branch_id?: string; satisfaction_score?: number | null }>(existing.map(s => [s.external_id, s]));
 
   const fresh = rows.filter(r => !byCode.has(r.externalId));
   if (fresh.length) {
@@ -56,14 +59,14 @@ export async function writeRoster(
       satisfaction_score: r.numbers.get("satisfaction_score") ?? null
     }))).select("id,external_id");
     fail(inserted.error);
-    for (const s of inserted.data!) byCode.set(s.external_id as string, { ...s } as never);
+    for (const s of inserted.data!) byCode.set(s.external_id as string, { id: s.id, external_id: s.external_id });
   }
 
   // Only rows whose visible fields actually moved; an unchanged re-upload should
   // not look like a hundred edits in the history.
   let updated = 0;
   for (const r of rows) {
-    const s = byCode.get(r.externalId)! as { id: string; name?: string; branch_id?: string; satisfaction_score?: number | null };
+    const s = byCode.get(r.externalId)!;
     if (s.name === undefined) continue;                        // just inserted
     const branchId = branchIds.get(r.branch)!;
     const satisfaction = r.numbers.get("satisfaction_score") ?? null;
@@ -74,14 +77,14 @@ export async function writeRoster(
     updated++;
   }
 
-  const idOf = (code: string) => (byCode.get(code) as { id: string }).id;
+  const idOf = (code: string) => byCode.get(code)!.id;
   const studentIds = rows.map(r => idOf(r.externalId));
   const branchOf = new Map(rows.map(r => [idOf(r.externalId), branchIds.get(r.branch)!]));
 
-  const enrolled = await client.from("enrollments")
-    .select("id,student_id,level,teacher_name").in("student_id", studentIds).eq("active", true);
-  fail(enrolled.error);
-  const byStudent = new Map(enrolled.data!.map(e => [e.student_id as string, e]));
+  const enrolled = await fetchAll<{ id: string; student_id: string; level: string; teacher_name: string | null }>(
+    () => client.from("enrollments").select("id,student_id,level,teacher_name")
+      .in("student_id", studentIds).eq("active", true), "Kur kayıtları okunamadı");
+  const byStudent = new Map(enrolled.map(e => [e.student_id, e]));
   const newEnrolments = rows.filter(r => !byStudent.has(idOf(r.externalId)));
   if (newEnrolments.length) fail((await client.from("enrollments").insert(newEnrolments.map(r => ({
     organization_id: organizationId, branch_id: branchIds.get(r.branch)!,
@@ -95,11 +98,12 @@ export async function writeRoster(
       .update({ level: r.level, teacher_name: r.teacher }).eq("id", e.id)).error);
   }
 
-  const priorReadings = await client.from("student_measurements")
-    .select("id,student_id,kind,source_reference,value").in("student_id", studentIds);
-  fail(priorReadings.error);
+  const priorReadings = await fetchAll<{ id: string; student_id: string; kind: string;
+    source_reference: string; value: number }>(
+    () => client.from("student_measurements").select("id,student_id,kind,source_reference,value")
+      .in("student_id", studentIds), "Mevcut ölçümler okunamadı");
   const readingKey = (s: string, k: string, r: string) => `${s}|${k}|${r}`;
-  const known = new Map(priorReadings.data!.map(m =>
+  const known = new Map(priorReadings.map(m =>
     [readingKey(m.student_id, m.kind, m.source_reference), m]));
 
   const insertReadings: Record<string, unknown>[] = [];
@@ -123,11 +127,12 @@ export async function writeRoster(
   }
   if (insertReadings.length) fail((await client.from("student_measurements").insert(insertReadings)).error);
 
-  const priorObs = await client.from("classroom_observations")
-    .select("id,student_id,participation,homework_completion,teacher_concern")
-    .in("student_id", studentIds).eq("observed_on", periodEnd);
-  fail(priorObs.error);
-  const obsByStudent = new Map(priorObs.data!.map(o => [o.student_id as string, o]));
+  const priorObs = await fetchAll<{ id: string; student_id: string; participation: number | null;
+    homework_completion: number | null; teacher_concern: boolean | null }>(
+    () => client.from("classroom_observations")
+      .select("id,student_id,participation,homework_completion,teacher_concern")
+      .in("student_id", studentIds).eq("observed_on", periodEnd), "Mevcut gözlemler okunamadı");
+  const obsByStudent = new Map(priorObs.map(o => [o.student_id, o]));
 
   const insertObs: Record<string, unknown>[] = [];
   let touchedObs = 0;

@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { REQUIRED, OPTIONAL } from "@/lib/csv";
-import { ImportForm } from "./form";
+import { ImportForm, ScoreForm } from "./form";
 
 export default async function Import() {
   const { client } = await requireUser();
@@ -19,6 +19,8 @@ export default async function Import() {
       tekrar yüklemek satırları çoğaltmaz, günceller.</p>
 
     <ImportForm today={today} columns={[...REQUIRED]} />
+
+    <ScoreForm today={today} />
 
     <section className="panel">
       <div className="panel-heading"><h2>Beklenen sütunlar</h2>

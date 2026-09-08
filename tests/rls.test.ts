@@ -115,3 +115,20 @@ describe("roster import boundaries", () => {
     await expect(asUser(3, batch(3))).rejects.toThrow();
   });
 });
+
+describe("risk scoring boundaries", () => {
+  const snapshot = (n: number) =>
+    `insert into public.risk_snapshots(organization_id,branch_id,student_id,period_end,
+       engine_version,risk_score,risk_score_raw,risk_level,dimensions,reasons,recommended_action)
+     values ('${id(10)}','${id(20)}','${id(30)}','2026-09-0${n}','v0.4',50,50,'MEDIUM','{}','[]','x')`;
+
+  it("institution admin writes scores", async () => {
+    await expect(asUser(1, snapshot(1))).resolves.toBeDefined();
+  });
+  it("branch manager does not, because a branch cannot calibrate itself", async () => {
+    await expect(asUser(2, snapshot(2))).rejects.toThrow();
+  });
+  it("teacher does not", async () => {
+    await expect(asUser(3, snapshot(3))).rejects.toThrow();
+  });
+});

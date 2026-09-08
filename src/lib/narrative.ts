@@ -19,8 +19,10 @@ const PASS_MARK = 60;
 
 export type DimensionScores = Record<Dimension, number>;
 export type DimensionDetail = {
-  test: { delta: number; last_exam: number; monotonic_decline: boolean; cohort_gap_pct: number };
-  skill: { weakest: string; weakest_score: number; spread: number; diagnosis: string };
+  test: { delta: number; last_exam: number; monotonic_decline: boolean; cohort_gap_pct: number;
+    recent_avg?: number };
+  skill: { weakest: string; weakest_score: number; spread: number; diagnosis: string;
+    own_avg?: number; cohort_gap_pct?: number };
   classroom: { participation: number; homework: number; teacher_concern: boolean };
   attendance: { rate: number; recent: number; drop: number };
 };

@@ -4,6 +4,7 @@ import {
   DIMENSIONS, type Dimension, type DimensionScores, type DimensionDetail,
   evidence, headline, steps, needsAction, type Evidence, type Step
 } from "@/lib/narrative";
+import { fetchAll } from "@/lib/paginate";
 
 export type AgendaStudent = {
   id: string; externalId: string; name: string;
@@ -37,42 +38,44 @@ type SnapshotRow = {
  * does not resolve into an embedded resource. Every row still passes through RLS.
  */
 export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
+  const oops = "Öğrenci gündemi yüklenemedi";
   const [students, branches, enrollments, snapshots, measurements] = await Promise.all([
-    client.from("students").select("id,external_id,name,branch_id").eq("active", true),
-    client.from("branches").select("id,name"),
-    client.from("enrollments").select("student_id,level,teacher_name").eq("active", true),
-    client.from("risk_snapshots")
+    fetchAll<{ id: string; external_id: string; name: string; branch_id: string }>(
+      () => client.from("students").select("id,external_id,name,branch_id").eq("active", true), oops),
+    fetchAll<{ id: string; name: string }>(() => client.from("branches").select("id,name"), oops),
+    fetchAll<{ student_id: string; level: string; teacher_name: string | null }>(
+      () => client.from("enrollments").select("student_id,level,teacher_name").eq("active", true), oops),
+    fetchAll<SnapshotRow>(() => client.from("risk_snapshots")
       .select("student_id,period_end,risk_score,risk_score_raw,risk_level,dimensions,dimension_detail,reasons,recommended_action")
-      .order("period_end", { ascending: false }),
-    client.from("student_measurements").select("student_id,source_reference,value")
-      .in("source_reference", ["exam_1", "exam_4", "term_rate"])
+      .order("period_end", { ascending: false }), oops),
+    fetchAll<{ student_id: string; source_reference: string; value: number }>(
+      () => client.from("student_measurements").select("student_id,source_reference,value")
+        .in("source_reference", ["exam_1", "exam_4", "term_rate"]), oops)
   ]);
-  for (const r of [students, branches, enrollments, snapshots, measurements])
-    if (r.error) throw new Error("Öğrenci gündemi yüklenemedi.");
 
-  const branchName = new Map(branches.data!.map(b => [b.id as string, b.name as string]));
-  const enrolment = new Map(enrollments.data!.map(e => [e.student_id as string, e]));
+  const branchName = new Map(branches.map(b => [b.id, b.name]));
+  const enrolment = new Map(enrollments.map(e => [e.student_id, e]));
   const reading = new Map<string, number>();
-  for (const m of measurements.data!) reading.set(`${m.student_id}:${m.source_reference}`, Number(m.value));
+  for (const m of measurements) reading.set(`${m.student_id}:${m.source_reference}`, Number(m.value));
 
   // Newest period wins; the one before it is what the change figures compare against.
-  const periods = [...new Set((snapshots.data as SnapshotRow[]).map(s => s.period_end))].sort().reverse();
+  const periods = [...new Set(snapshots.map(s => s.period_end))].sort().reverse();
   const [periodEnd = null, comparedTo = null] = periods;
   const current = new Map<string, SnapshotRow>();
   const previous = new Map<string, SnapshotRow>();
-  for (const s of snapshots.data as SnapshotRow[]) {
+  for (const s of snapshots) {
     if (s.period_end === periodEnd) current.set(s.student_id, s);
     else if (s.period_end === comparedTo) previous.set(s.student_id, s);
   }
 
   const rows: AgendaStudent[] = [];
-  for (const s of students.data!) {
+  for (const s of students) {
     const snap = current.get(s.id);
     if (!snap) continue;                      // no score yet: nothing to put on an agenda
     const e = enrolment.get(s.id);
     const source = {
       dimensions: snap.dimensions, detail: snap.dimension_detail,
-      level: (e?.level as string) ?? "—",
+      level: e?.level ?? "—",
       examFirst: reading.get(`${s.id}:exam_1`) ?? null,
       examLast: reading.get(`${s.id}:exam_4`) ?? null
     };
@@ -80,7 +83,7 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
     rows.push({
       id: s.id, externalId: s.external_id, name: s.name,
       branch: branchName.get(s.branch_id) ?? "—", level: source.level,
-      teacher: (e?.teacher_name as string) ?? null,
+      teacher: e?.teacher_name ?? null,
       score: Number(snap.risk_score), raw: Number(snap.risk_score_raw), level_: snap.risk_level,
       dimensions: snap.dimensions, detail: snap.dimension_detail,
       attendanceRate: reading.get(`${s.id}:term_rate`) ?? null,
