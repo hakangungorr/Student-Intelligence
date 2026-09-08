@@ -9,7 +9,7 @@ export type AgendaStudent = {
   id: string; externalId: string; name: string;
   branch: string; level: string; teacher: string | null;
   score: number; raw: number; level_: RiskLevel;
-  dimensions: DimensionScores; attendanceRate: number | null;
+  dimensions: DimensionScores; detail: DimensionDetail | null; attendanceRate: number | null;
   found: Evidence[]; headline: string; steps: Step[]; needsAction: boolean;
   previous: RiskLevel | null;
 };
@@ -82,7 +82,8 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
       branch: branchName.get(s.branch_id) ?? "—", level: source.level,
       teacher: (e?.teacher_name as string) ?? null,
       score: Number(snap.risk_score), raw: Number(snap.risk_score_raw), level_: snap.risk_level,
-      dimensions: snap.dimensions, attendanceRate: reading.get(`${s.id}:term_rate`) ?? null,
+      dimensions: snap.dimensions, detail: snap.dimension_detail,
+      attendanceRate: reading.get(`${s.id}:term_rate`) ?? null,
       found, headline: headline(source, found), steps: steps(snap.recommended_action),
       needsAction: needsAction(snap.recommended_action),
       previous: previous.get(s.id)?.risk_level ?? null
