@@ -52,3 +52,66 @@ td.heat.warn{background:rgb(var(--warn-rgb)/.2)}
 td.heat.good{background:rgb(var(--good-rgb)/.16)}
 @media(prefers-color-scheme:dark){:root{--crit-rgb:255 122 138;--warn-rgb:226 165 68;--good-rgb:106 200 156}}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Öğrenci kartı --------------------------------------------------------- */
+.backlink{display:inline-block;font-size:14px;text-decoration:none}
+.panel.pad{padding:24px}
+.card-hd{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.card-hd h2{font-size:17px}
+.stack-end{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.dname{font-size:clamp(24px,2.4vw,30px);margin:0}
+.lead{font-size:16px;margin-top:18px}
+.srow-hd a{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:17px;font-weight:600;text-decoration:none}
+.srow-hd a:hover{text-decoration:underline}
+.raw{margin-top:16px;font-size:14px}
+.raw summary{cursor:pointer;color:var(--muted)}
+.raw ul{margin:12px 0 0;padding-left:20px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+.map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.mapcell{display:flex;flex-direction:column;gap:5px}
+.mapcell .lab{font-size:13px;color:var(--muted)}
+.mapcell .st{font-weight:600}
+.mapcell .st.crit{color:rgb(var(--crit-rgb))}
+.mapcell .st.warn{color:rgb(var(--warn-rgb))}
+.mapcell .st.good{color:rgb(var(--good-rgb))}
+.mapbar{height:7px;border-radius:99px;background:var(--soft);overflow:hidden}
+.mapbar i{display:block;height:100%;border-radius:99px}
+.mapbar i.crit{background:rgb(var(--crit-rgb)/.8)}
+.mapbar i.warn{background:rgb(var(--warn-rgb)/.8)}
+.mapbar i.good{background:rgb(var(--good-rgb)/.8)}
+.cards2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.big-line{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0}
+.big{font:600 34px "Familjen Grotesk",Arial,sans-serif}
+.big.crit{color:rgb(var(--crit-rgb))}.big.warn{color:rgb(var(--warn-rgb))}.big.good{color:rgb(var(--good-rgb))}
+.crit-ink{color:rgb(var(--crit-rgb))}
+.kv{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border:0}
+.kv .k{color:var(--muted)}
+.kv .v{font-variant-numeric:tabular-nums}
+.bar{display:grid;grid-template-columns:74px 1fr 34px;align-items:center;gap:10px;margin:9px 0;font-size:14px}
+.bar .nm{color:var(--muted)}
+.bar .nm.is-weakest{color:var(--ink);font-weight:600}
+.bar .track{position:relative;height:9px;border-radius:99px;background:var(--soft);overflow:hidden}
+.bar .fill{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.bar .fill.crit{background:rgb(var(--crit-rgb)/.78)}
+.bar .fill.warn{background:rgb(var(--warn-rgb)/.78)}
+.bar .fill.good{background:rgb(var(--good-rgb)/.78)}
+.bar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--muted)}
+.bar .val{text-align:right;font-variant-numeric:tabular-nums}
+.legend{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:14px 0 0}
+.tick-key{width:2px;height:13px;background:var(--muted);flex:none}
+.spark{display:block;max-width:330px;margin-bottom:6px}
+.spark .passline{stroke:rgb(var(--warn-rgb));stroke-width:1}
+.spark .passlabel{font:10px "IBM Plex Mono",monospace;fill:rgb(var(--warn-rgb))}
+.spark.crit .area{fill:rgb(var(--crit-rgb));opacity:.08}
+.spark.good .area{fill:rgb(var(--good-rgb));opacity:.08}
+.spark.crit .line{stroke:rgb(var(--crit-rgb))}
+.spark.good .line{stroke:rgb(var(--good-rgb))}
+.spark .line{fill:none;stroke-width:2;stroke-linejoin:round}
+.spark circle{stroke-width:2}
+.spark.crit circle{stroke:rgb(var(--crit-rgb))}
+.spark.good circle{stroke:rgb(var(--good-rgb))}
+.spark .dot-mid{fill:var(--surface)}
+.spark.crit .dot-last{fill:rgb(var(--crit-rgb))}
+.spark.good .dot-last{fill:rgb(var(--good-rgb))}
+.spark .tickval{font:10.5px "IBM Plex Mono",monospace;fill:var(--muted)}
+@media(max-width:900px){.cards2{grid-template-columns:1fr}.map{grid-template-columns:repeat(2,minmax(0,1fr))}}

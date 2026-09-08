@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent, type HeatRow } from "@/lib/agenda";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
@@ -32,7 +33,7 @@ export default async function Workspace() {
     <section className="panel">
       <div className="panel-heading">
         <h2>Önce bu {Math.min(PRIORITY, a.students.length)} öğrenci</h2>
-        <span className="note">En acil olandan başlayarak</span>
+        <span className="note">En acil olandan başlayarak · ayrıntı için isme tıklayın</span>
       </div>
       <div className="quadkey">
         {DIMENSIONS.map((d, i) => <span key={d} className="qk"><i className="cell" />{i + 1}. {AREA[d]}</span>)}
@@ -66,7 +67,7 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
   return <article className="srow">
     <div className="srow-hd">
       <span className="srank">{String(rank).padStart(2, "0")}</span>
-      <b>{s.name}</b>
+      <Link href={`/workspace/students/${s.id}`}>{s.name}</Link>
       <span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span>
       <span className="note">{s.branch} · {s.level}</span>
     </div>
