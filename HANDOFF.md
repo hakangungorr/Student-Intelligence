@@ -10,9 +10,12 @@
 ## Güncel uygulama durumu — 8 Eylül 2026
 
 American LIFE UI/UX tasarımı uygulanmış ve kullanıcı tarafından onaylanmıştır.
-Çalışan uygulama `dashboard.html` içindedir; bağımlılık veya build adımı yoktur.
-Next.js/React ifadesi ve aşağıdaki “Yapılacak” ekran listesi ilk planın tarihsel
-kaydıdır. Güncel kurulum ve doğrulama bilgileri için `README.md` esas alınır.
+Bağımsız demo `dashboard.html` içindedir. Next.js / Supabase production temeli
+`src/`, `supabase/` ve `tests/` altında kurulmuştur. Giriş, korumalı çalışma alanı,
+erişim bilgileri, veri şeması ve RLS testleri vardır. Gerçek risk panosu ve veri
+aktarımı henüz bu temele bağlanmamıştır. Aşağıdaki “Yapılacak” ekran listesi ilk
+planın tarihsel kaydıdır. Güncel kurulum için `README.md` ve
+`docs/PRODUCTION.md` esas alınır.
 
 Gündem, öğrenci kartı, öğrenci listesi ve soru ekranı çalışır durumdadır.
 Geniş ekranda risk haritası öncelik listesinin yanındadır. Mobil menü iki

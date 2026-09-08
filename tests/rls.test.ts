@@ -1,0 +1,83 @@
+import { PGlite } from "@electric-sql/pglite";
+import { readFile } from "node:fs/promises";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
+
+const db = new PGlite();
+const id = (n:number) => `00000000-0000-0000-0000-${String(n).padStart(12,"0")}`;
+async function asUser(user:number, sql:string) {
+  await db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','${id(user)}',false);`);
+  return db.query(sql);
+}
+beforeAll(async()=>{
+  // Supabase supplies auth.users/auth.uid and these roles. Simulate the verified
+  // request identity, but execute the actual migration and PostgreSQL RLS rules.
+  await db.exec(`create role anon nologin; create role authenticated nologin;
+    create schema auth; create table auth.users(id uuid primary key);
+    create function auth.uid() returns uuid language sql stable as
+    $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+    grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;`);
+  await db.exec(await readFile(new URL("../supabase/migrations/202609080001_foundation.sql",import.meta.url),"utf8"));
+  await db.exec(`insert into auth.users values ${[1,2,3,4,5,6].map(n=>`('${id(n)}')`).join(",")};
+    insert into public.organizations(id,name) values ('${id(10)}','American LIFE'),('${id(11)}','Other school');
+    insert into public.branches(id,organization_id,name) values
+    ('${id(20)}','${id(10)}','İzmir'),('${id(21)}','${id(10)}','Ankara'),('${id(22)}','${id(11)}','Other branch');
+    insert into public.memberships(user_id,organization_id,branch_id,role) values
+    ('${id(1)}','${id(10)}',null,'org_admin'),
+    ('${id(2)}','${id(10)}','${id(20)}','branch_manager'),
+    ('${id(3)}','${id(10)}','${id(20)}','teacher'),
+    ('${id(4)}','${id(10)}','${id(20)}','viewer'),
+    ('${id(5)}','${id(11)}',null,'org_admin');
+    insert into public.students(id,organization_id,branch_id,external_id,name) values
+    ('${id(30)}','${id(10)}','${id(20)}','S1','Assigned'),
+    ('${id(31)}','${id(10)}','${id(20)}','S2','Unassigned'),
+    ('${id(32)}','${id(10)}','${id(21)}','S3','Ankara student'),
+    ('${id(33)}','${id(11)}','${id(22)}','S4','Other school student');
+    insert into public.enrollments(organization_id,branch_id,student_id,level,teacher_id,starts_on)
+    values ('${id(10)}','${id(20)}','${id(30)}','B1','${id(3)}','2026-09-01');`);
+},30000);
+afterAll(async()=>{await db.close();});
+describe("database tenant and branch boundaries",()=>{
+  it("institution admin sees own three students and own institution only",async()=>{
+    expect((await asUser(1,"select * from public.students")).rows).toHaveLength(3);
+    expect((await asUser(1,"select * from public.organizations")).rows).toHaveLength(1);
+  });
+  it("branch manager sees two students, never another branch",async()=>{
+    expect((await asUser(2,"select * from public.students")).rows).toHaveLength(2);
+    expect((await asUser(2,"select * from public.branches")).rows).toHaveLength(1);
+  });
+  it("teacher sees only assigned students, not every student in their branch",async()=>{
+    expect((await asUser(3,"select name from public.students")).rows).toEqual([{name:"Assigned"}]);
+  });
+  it("a user without membership sees nothing",async()=>{
+    expect((await asUser(6,"select * from public.students")).rows).toHaveLength(0);
+    expect((await asUser(6,"select * from public.organizations")).rows).toHaveLength(0);
+  });
+  it("cannot read another institution even with explicit ID",async()=>{
+    expect((await asUser(5,`select * from public.students where id='${id(30)}'`)).rows).toHaveLength(0);
+  });
+  it("anonymous users cannot query student tables",async()=>{
+    await db.exec("reset role; set role anon;");
+    await expect(db.query("select * from public.students")).rejects.toThrow(/permission denied/);
+  });
+  it("cannot promote oneself or change branch membership",async()=>{
+    await expect(asUser(4,"update public.memberships set role='org_admin',branch_id=null")).rejects.toThrow(/permission denied/);
+  });
+  const actionInsert = (student=30,branch=20) => `insert into public.actions(organization_id,branch_id,student_id,title)
+    values ('${id(10)}','${id(branch)}','${id(student)}','Öğrenci görüşmesi') returning id`;
+  it("viewer cannot create actions",async()=>{await expect(asUser(4,actionInsert())).rejects.toThrow(/row-level security/);});
+  it("teacher cannot act on unassigned student",async()=>{await expect(asUser(3,actionInsert(31))).rejects.toThrow(/row-level security/);});
+  it("manager creates action with immutable audit; author and scope cannot be edited",async()=>{
+    const result=await asUser(2,actionInsert());
+    const actionId=(result.rows[0] as {id:string}).id;
+    await asUser(2,`update public.actions set status='completed' where id='${actionId}'`);
+    expect((await asUser(2,`select * from public.audit_events where entity_id='${actionId}'`)).rows).toHaveLength(2);
+    await expect(asUser(2,`update public.actions set branch_id='${id(21)}' where id='${actionId}'`)).rejects.toThrow(/permission denied/);
+    await expect(asUser(2,"delete from public.audit_events")).rejects.toThrow(/permission denied/);
+  });
+  it("mismatched student/branch foreign keys are rejected, even by institution admin",async()=>{
+    await expect(asUser(1,actionInsert(30,21))).rejects.toThrow(/foreign key/);
+  });
+  it("clients cannot write computed risk scores",async()=>{
+    await expect(asUser(1,"delete from public.risk_snapshots")).rejects.toThrow(/permission denied/);
+  });
+});

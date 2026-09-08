@@ -1,7 +1,7 @@
 # Student Intelligence
 
 Eğitim kurumları için öğrenci risk tespit ve karar destek panosu.
-American LIFE pilotu için hazırlanan çalışan demo.
+American LIFE için çalışan demo ve Next.js / Supabase production temeli.
 
 > **Bu depodaki veri sentetiktir.** 100 öğrencinin tamamı üretilmiştir; gerçek
 > American LIFE verisi değildir. Arayüzde de "ÖRNEK VERİ" ibaresi görünür.
@@ -26,14 +26,51 @@ gerektiğini** söylüyor.
 | `risk_engine_v4.py` | Risk motoru v0.4 · deterministik, LLM yok |
 | `demo_dataset.json` | 100 sentetik öğrenci · 4 şube · A1–C1 · iki haftalık karşılaştırma |
 | `HANDOFF.md` | Ürün kararlarının gerekçeleri ve yeniden açılmayacak kararlar |
+| `src/app/` | Next.js giriş, kurulum ve korumalı çalışma alanı |
+| `src/lib/` | Sunucu tarafı oturum ve ortam ayarları |
+| `supabase/migrations/` | Kurum, şube, öğrenci, risk geçmişi ve RLS şeması |
+| `tests/` | Gerçek PostgreSQL üzerinde erişim sınırı ve ortam ayarı testleri |
+| `docs/PRODUCTION.md` | Kurulum, yetkilendirme ve staging / production rehberi |
 
 ## Çalıştırma
+
+### Next.js uygulaması
+
+Node.js 22+ (CI: 24) ve npm gerekir.
+
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+`http://127.0.0.1:3000` adresini açın. Örnek ortam dosyası açıkça
+`APP_DATA_MODE=demo` seçer; onaylanan dört ekranlı HTML demosu Next.js içindeki
+`/demo` yolunda çalışır. Bu HTML henüz React bileşenlerine dönüştürülmemiştir.
+
+Kurum modu için `APP_DATA_MODE=supabase`, Supabase URL ve publishable key
+tanımlanır. `/login` ve `/workspace` yerel Next.js sayfalarıdır. Oturum sunucuda
+doğrulanır, tüm sorgular kullanıcının RLS yetkileriyle yapılır. Varsayılan mod
+`supabase` olduğundan eksik ayarlar kamuya açık demo erişimini açmaz.
+
+Kurum modunda şube listesi, aktif öğrenci sayısı ve kullanıcının erişimleri
+veritabanına bağlıdır. Gerçek risk panosu, veri içe aktarımı, kullanıcı yönetimi
+arayüzü ve otomatik risk hesaplama henüz bu temele bağlanmadı.
+
+```bash
+npm run check     # lint, TypeScript, 15 test, production build
+npm run start     # önce npm run build
+```
+
+Supabase kurulumu ve ilk kullanıcı ataması: [Production rehberi](docs/PRODUCTION.md).
+
+### Bağımsız demo
 
 ```bash
 open dashboard.html          # macOS
 ```
 
-Hepsi bu. Veri, yazı tipleri ve mantık dosyanın içinde gömülü; internet
+Bağımsız demoda veri, yazı tipleri ve mantık dosyanın içinde gömülü; internet
 bağlantısı, paket kurulumu veya sunucu gerekmiyor.
 
 Risk motorunu ayrıca çalıştırmak için:
@@ -116,7 +153,8 @@ tablodan üretiliyor.
 
 ## Teknik notlar
 
-Bağımlılık yok. Tek `.html` dosyası; veri, yazı tipleri ve mantık gömülü.
+Bağımsız demo tek `.html` dosyasıdır; veri, yazı tipleri ve mantık gömülüdür.
+Next.js production temeli ayrıca npm bağımlılıkları ve Supabase gerektirir.
 
 - **Yazı tipleri** dosyaya `data:` URI olarak gömülüdür (latin + latin-ext, tam
   Türkçe kapsama). Kurumsal ağ Google Fonts'u keserse görünüm bozulmaz.
