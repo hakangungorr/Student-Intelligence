@@ -23,7 +23,7 @@ export type StudentRisk = {
 };
 export type StudentCard = {
   id: string; name: string; branch: string; level: string; teacher: string | null;
-  risk: StudentRisk | null;
+  risk: StudentRisk | null; done: boolean;
   exams: { label: string; value: number }[];
   skills: { key: string; label: string; value: number }[];
   attendanceRate: number | null; attendanceRecent: number | null;
@@ -67,15 +67,17 @@ function benchmarks(cohort: Map<string, { exams: Map<string, number>; skills: Ma
 }
 
 export async function loadStudent(client: SupabaseClient, id: string): Promise<StudentCard | null> {
-  const [student, enrollments, branches, snapshots] = await Promise.all([
+  const [student, enrollments, branches, snapshots, lastAction] = await Promise.all([
     client.from("students").select("id,name,branch_id,satisfaction_score").eq("id", id).maybeSingle(),
     client.from("enrollments").select("student_id,level,teacher_name").eq("active", true),
     client.from("branches").select("id,name"),
     client.from("risk_snapshots")
       .select("student_id,period_end,risk_score,risk_level,dimensions,dimension_detail,reasons,recommended_action")
-      .eq("student_id", id).order("period_end", { ascending: false })
+      .eq("student_id", id).order("period_end", { ascending: false }),
+    client.from("actions").select("status")
+      .eq("student_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle()
   ]);
-  for (const r of [student, enrollments, branches, snapshots])
+  for (const r of [student, enrollments, branches, snapshots, lastAction])
     if (r.error) throw new Error("Öğrenci kartı yüklenemedi.");
   if (!student.data) return null;
 
@@ -128,7 +130,7 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
     id, name: student.data.name, level,
     branch: branches.data!.find(b => b.id === student.data!.branch_id)?.name ?? "—",
     teacher: (mine?.teacher_name as string) ?? null,
-    risk,
+    risk, done: lastAction.data?.status === "completed",
     exams: ["exam_1", "exam_2", "exam_3", "exam_4"]
       .map((k, i) => ({ label: `${i + 1}. sınav`, value: me.exams.get(k) ?? NaN }))
       .filter(e => Number.isFinite(e.value)),

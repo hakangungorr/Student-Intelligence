@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { loadStudent, PASS_MARK, type StudentCard, type StudentRisk } from "@/lib/student";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
+import { MarkDone } from "../../mark-button";
 
 const areaWord = (v: number) => v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
 
@@ -33,7 +34,7 @@ export default async function Student({ params }: { params: Promise<{ id: string
         </div>}
       </div>
 
-      {s.risk ? <Assessment risk={s.risk} /> : <>
+      {s.risk ? <Assessment risk={s.risk} studentId={s.id} done={s.done} /> : <>
         <p className="srow-head lead">Bu öğrenci henüz puanlanmadı.</p>
         <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav, beceri,
           devam ve sınıf içi bilgilerini <Link href="/workspace/entry">veri girişi</Link> sayfasından
@@ -120,7 +121,9 @@ export default async function Student({ params }: { params: Promise<{ id: string
   </>;
 }
 
-function Assessment({ risk }: { risk: StudentRisk }) {
+function Assessment({ risk, studentId, done }: {
+  risk: StudentRisk; studentId: string; done: boolean;
+}) {
   const whos = [...new Set(risk.steps.map(x => x.who).filter(Boolean))];
   return <>
     <p className="srow-head lead">{risk.headline}</p>
@@ -133,6 +136,8 @@ function Assessment({ risk }: { risk: StudentRisk }) {
       <div className="todo-hd">NE YAPMALI</div>
       <ul>{risk.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
       {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
+      {risk.needsAction &&
+        <MarkDone studentId={studentId} title={risk.steps.map(x => x.text).join(" + ")} done={done} />}
     </div>
     {risk.reasons.length > 0 && <details className="raw">
       <summary>Sistemin tespit ettiği ham sinyaller ({risk.reasons.length})</summary>

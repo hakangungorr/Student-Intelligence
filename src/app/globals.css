@@ -160,3 +160,27 @@ table.sheet tbody tr:nth-child(even){background:color-mix(in srgb, var(--soft) 4
 .error-note{color:rgb(var(--crit-rgb))}
 .form-stack select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .form-stack .note{font-weight:400}
+
+/* Aksiyon takibi, bulgular ve toparlananlar ------------------------------- */
+.progress{height:6px;border-radius:99px;background:var(--soft);overflow:hidden;margin:-14px 0 10px;max-width:640px}
+.progress i{display:block;height:100%;border-radius:99px;background:var(--navy)}
+.mark{margin-top:14px}
+.markbtn,.undo{font-size:13px;padding:8px 14px}
+.undo{background:var(--soft);color:var(--muted)}
+.srow.is-done{opacity:.62}
+.srow.is-done .todo{background:transparent;border:1px dashed var(--line)}
+.findings{display:flex;flex-direction:column}
+.finding{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.finding:last-child{border:0}
+.finding>span:last-child{display:flex;flex-direction:column;gap:4px}
+.fmark{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600}
+.fmark.crit{background:rgb(var(--crit-rgb)/.15);color:rgb(var(--crit-rgb))}
+.fmark.good{background:rgb(var(--good-rgb)/.15);color:rgb(var(--good-rgb))}
+.recovered{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:20px}
+.recovered-card{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:10px;padding:14px 16px;text-decoration:none;color:inherit}
+.recovered-card:hover{border-color:var(--navy)}
+.recovered-card b{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;color:var(--navy)}
+.shift{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:8px}
+.shift .faded{opacity:.55}
+.arrow{color:var(--muted)}
+.panel>.empty{padding:24px}

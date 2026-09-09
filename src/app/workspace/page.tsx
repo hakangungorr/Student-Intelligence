@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { loadAgenda, type AgendaStudent, type HeatRow } from "@/lib/agenda";
+import { loadAgenda, type AgendaStudent, type HeatRow, type Finding } from "@/lib/agenda";
+import { MarkDone } from "./mark-button";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
 
 const PRIORITY = 10;
@@ -28,9 +29,12 @@ export default async function Workspace() {
     <h1>{a.urgent
       ? `${a.urgent} öğrenci acil ilgi bekliyor.`
       : "Acil ilgi bekleyen öğrenci yok."}</h1>
-    <p className="intro">{a.students.filter(s => s.needsAction).length} öğrenci için önerilen bir
-      aksiyon var{a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
+    <p className="intro">{a.actionable} aksiyonun <b>{a.completed}</b> tanesi tamamlandı
+      {a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
       {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.</p>
+    {a.actionable > 0 && <div className="progress" role="img"
+      aria-label={`${a.actionable} aksiyonun ${a.completed} tanesi tamamlandı`}>
+      <i style={{ width: `${Math.round(a.completed / a.actionable * 100)}%` }} /></div>}
 
     <div className="metrics kpis">
       <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent}
@@ -55,6 +59,33 @@ export default async function Workspace() {
       {a.students.slice(0, PRIORITY).map((s, i) => <Row key={s.id} s={s} rank={i + 1} />)}
     </section>
 
+    {a.findings.length > 0 && <section className="panel">
+      <div className="panel-heading"><h2>Şubelerde öne çıkanlar</h2>
+        <span className="note">Bir şubede veya kurda herkesi etkileyen durumlar</span></div>
+      <div className="findings">{a.findings.map((f, i) =>
+        <Note key={i} finding={f} index={i + 1} />)}</div>
+    </section>}
+
+    <section className="panel">
+      <div className="panel-heading"><h2>İyiye giden öğrenciler</h2>
+        <span className="note">Önceki ölçüme göre durumu düzelenler</span></div>
+      {!a.comparedTo
+        ? <p className="empty">Bu panel önceki ölçümle karşılaştırma yapar. İlk ölçümde
+          karşılaştırılacak bir kesit yok — ikincisinden itibaren durumu düzelen öğrenciler
+          burada listelenir.</p>
+        : a.recovered.length === 0
+          ? <p className="empty">Bu kesitte durumu düzelen öğrenci yok.</p>
+          : <div className="recovered">{a.recovered.map(s => <Link key={s.id} className="recovered-card"
+            href={`/workspace/students/${s.id}`}>
+            <b>{s.name}</b><span className="note">{s.branch} · {s.level}</span>
+            <span className="shift">
+              <span className={`state ${STATE[s.previous!].cls} faded`}><i className="dot" />{STATE[s.previous!].word}</span>
+              <span className="arrow">→</span>
+              <span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span>
+            </span>
+          </Link>)}</div>}
+    </section>
+
     <Heat title="Şube risk haritası" rows={a.byBranch} unit="öğrenci" />
     <Heat title="Kur risk haritası" rows={a.byLevel} unit="öğrenci" />
   </>;
@@ -76,9 +107,16 @@ function Kpi({ value, label, was, when, note, worseIsUp }: {
   </section>;
 }
 
+function Note({ finding, index }: { finding: Finding; index: number }) {
+  return <div className="finding">
+    <span className={`fmark ${finding.tone}`}>{finding.tone === "good" ? "✓" : index}</span>
+    <span><b>{finding.title}</b><span className="note">{finding.text}</span></span>
+  </div>;
+}
+
 function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
   const whos = [...new Set(s.steps.map(x => x.who).filter(Boolean))];
-  return <article className="srow">
+  return <article className={`srow${s.done ? " is-done" : ""}`}>
     <div className="srow-hd">
       <span className="srank">{String(rank).padStart(2, "0")}</span>
       <Link href={`/workspace/students/${s.id}`}>{s.name}</Link>
@@ -97,6 +135,7 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
       <div className="todo-hd">NE YAPMALI</div>
       <ul>{s.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
       {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
+      {s.needsAction && <MarkDone studentId={s.id} title={s.steps.map(x => x.text).join(" + ")} done={s.done} />}
     </div>
   </article>;
 }
