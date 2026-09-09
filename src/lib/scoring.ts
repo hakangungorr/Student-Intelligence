@@ -22,6 +22,19 @@ type Observation = { student_id: string; participation: number | null;
 const EXAMS = ["exam_1", "exam_2", "exam_3", "exam_4"];
 const SKILLS = ["speaking", "writing", "listening", "reading"] as const;
 
+/** The period a snapshot belongs to is a reporting checkpoint the institution
+ *  chooses, not the day somebody happened to type a mark in. Saving a class sheet
+ *  updates the current checkpoint; a new one is opened deliberately, from the
+ *  scoring form. Otherwise every entry would open a fresh period and the
+ *  week-over-week comparison the agenda is built on would compare today with
+ *  today. */
+export async function latestPeriod(client: SupabaseClient): Promise<string | null> {
+  const { data, error } = await client.from("risk_snapshots")
+    .select("period_end").order("period_end", { ascending: false }).limit(1).maybeSingle();
+  if (error) throw new Error("Dönem okunamadı.");
+  return (data?.period_end as string) ?? null;
+}
+
 export async function scoreInstitution(
   client: SupabaseClient, organizationId: string, periodEnd: string
 ): Promise<ScoringResult> {

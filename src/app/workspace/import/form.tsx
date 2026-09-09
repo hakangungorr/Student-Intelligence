@@ -43,7 +43,9 @@ function Confirm({ state }: { state: PreviewState }) {
     {done.issues && done.issues.length > 0 && <>
       <p className="note">{done.issues.length} satır atlandı:</p>
       <IssueList issues={done.issues} /></>}
-    <p className="note">Risk skorları bu veriden otomatik hesaplanmaz; motor ayrı bir adımda bağlanacak.</p>
+    <p className="note">{done.scored === null
+      ? "Risk skorları kurum yöneticisi hesaplamayı çalıştırınca güncellenecek."
+      : `Risk skorları yeniden hesaplandı — ${done.scored} öğrenci.`}</p>
   </section>;
 
   if (done.status === "error") return <section className="panel pad">
@@ -97,9 +99,13 @@ export function ScoreForm({ today }: { today: string }) {
       benchmark&apos;ı her kurun kendi en iyi %25&apos;inden üretildiği için hesap kurum
       genelinde yapılır; bir şubeyi tek başına puanlamak öğrenciyi kendi şubesiyle
       kıyaslardı.</p>
+    <p className="note">Buradaki tarih bir <b>değerlendirme kesiti</b> açar. Var olan bir kesiti
+      seçmek onu günceller; yeni bir tarih seçmek yeni kesit açar ve gündemdeki
+      &ldquo;önceki ölçüme göre&rdquo; karşılaştırması bundan sonra o kesitle yapılır. Veri
+      girişi kesit açmaz, mevcut kesiti tazeler.</p>
 
     <form action={run} className="filters">
-      <label>Dönem sonu tarihi
+      <label>Değerlendirme kesiti
         <input type="date" name="periodEnd" defaultValue={today} required /></label>
       <span className="filter-actions">
         <button type="submit" className="primary" disabled={running}>

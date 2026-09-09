@@ -44,7 +44,9 @@ export function Sheet({ rows, fields, kind, on }: {
         {state.written === 0
           ? "Değişen bir şey yoktu."
           : `${state.written} değer kaydedildi${state.unchanged ? `, ${state.unchanged} değer zaten aynıydı` : ""}.`}
-        {" "}Skorları güncellemek için Veri aktarımı sayfasından hesaplama çalıştırın.</span>}
+        {state.written! > 0 && (state.scored === null
+          ? " Risk skorları kurum yöneticisi hesaplamayı çalıştırınca güncellenecek."
+          : ` Risk skorları yeniden hesaplandı (${state.scored} öğrenci).`)}</span>}
       {state.status === "error" && <span className="note error-note">{state.message}</span>}
     </div>
   </form>;

@@ -3,7 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { ENTRY_KINDS, fieldsOf, isEntryKind, loadSheet, type EntryKind } from "@/lib/entry";
 import { Sheet } from "./form";
 
-type Query = { tur?: string; sube?: string; kur?: string; tarih?: string };
+type Query = { tur?: string; sube?: string; kur?: string; tarih?: string; ara?: string };
 
 export default async function Entry({ searchParams }: { searchParams: Promise<Query> }) {
   const q = await searchParams;
@@ -15,7 +15,8 @@ export default async function Entry({ searchParams }: { searchParams: Promise<Qu
   const on = /^\d{4}-\d{2}-\d{2}$/.test(q.tarih ?? "")
     ? q.tarih! : new Date().toISOString().slice(0, 10);
 
-  const sheet = await loadSheet(client, kind, branch, level);
+  const search = q.ara?.trim() || null;
+  const sheet = await loadSheet(client, kind, branch, level, search);
   const fields = fieldsOf(kind);
   const chosen = ENTRY_KINDS.find(k => k.key === kind)!;
 
@@ -26,6 +27,8 @@ export default async function Entry({ searchParams }: { searchParams: Promise<Qu
       inin. Boş bıraktığınız hücreye dokunulmaz.</p>
 
     <form className="panel filters" method="get">
+      <label>Öğrenci ara<input type="search" name="ara" defaultValue={search ?? ""}
+        placeholder="İsim ya da numara" autoComplete="off" /></label>
       <label>Ne giriyorsunuz<select name="tur" defaultValue={kind}>
         {ENTRY_KINDS.map(k => <option key={k.key} value={k.key}>{k.label}</option>)}</select></label>
       <label>Şube<select name="sube" defaultValue={branch ?? ""}>
@@ -40,7 +43,7 @@ export default async function Entry({ searchParams }: { searchParams: Promise<Qu
 
     {sheet.rows.length === 0
       ? <section className="panel empty"><h2>Bu seçimde öğrenci yok.</h2>
-        <p>Şube veya kur süzgecini gevşetin. Yeni bir öğrenci eklemek için{" "}
+        <p>Arama ya da süzgeçleri gevşetin. Yeni bir öğrenci eklemek için{" "}
           <Link href="/workspace/students/new">öğrenci kaydı</Link> sayfasını kullanın.</p></section>
       : <Sheet rows={sheet.rows} fields={fields} kind={kind} on={on} />}
   </>;

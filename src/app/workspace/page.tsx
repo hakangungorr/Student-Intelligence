@@ -5,6 +5,15 @@ import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
 
 const PRIORITY = 10;
 
+/** Periods are whatever dates somebody recorded on, not necessarily weeks apart:
+ *  saving a class sheet scores that day. Naming the date keeps the comparison
+ *  honest where "geçen hafta" would quietly stop being true. */
+function shortDate(iso: string) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" })
+    .format(new Date(y, m - 1, d));
+}
+
 export default async function Workspace() {
   const { client } = await requireUser();
   const a = await loadAgenda(client);
@@ -20,11 +29,14 @@ export default async function Workspace() {
       ? `${a.urgent} öğrenci acil ilgi bekliyor.`
       : "Acil ilgi bekleyen öğrenci yok."}</h1>
     <p className="intro">{a.students.filter(s => s.needsAction).length} öğrenci için önerilen bir
-      aksiyon var{a.comparedTo && <> · geçen haftayla karşılaştırılıyor</>}.</p>
+      aksiyon var{a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
+      {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.</p>
 
     <div className="metrics kpis">
-      <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent} worseIsUp />
-      <Kpi value={a.watched} label="Yakın takipte" was={a.previousWatched} worseIsUp />
+      <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent}
+        when={a.comparedTo} worseIsUp />
+      <Kpi value={a.watched} label="Yakın takipte" was={a.previousWatched}
+        when={a.comparedTo} worseIsUp />
       <Kpi value={a.enteredUrgent} label="Bu hafta riske girenler" note="geçen hafta acil değildi" />
       <Kpi value={a.attendanceCritical} label="Devamsızlığı kritik"
         note="derslerin dörtte birinden fazlasını kaçırdı" />
@@ -48,16 +60,18 @@ export default async function Workspace() {
   </>;
 }
 
-function Kpi({ value, label, was, note, worseIsUp }: {
-  value: number; label: string; was?: number | null; note?: string; worseIsUp?: boolean;
+function Kpi({ value, label, was, when, note, worseIsUp }: {
+  value: number; label: string; was?: number | null; when?: string | null;
+  note?: string; worseIsUp?: boolean;
 }) {
   const delta = was === null || was === undefined ? null : value - was;
   const bad = delta !== null && delta !== 0 && (worseIsUp ? delta > 0 : delta < 0);
   return <section className="panel metric">
     <strong>{value}</strong><span>{label}</span>
     {delta !== null && delta !== 0 && <span className={`trend ${bad ? "up" : "down"}`}>
-      {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} <em>geçen hafta {was}</em></span>}
-    {delta === 0 && <span className="trend flat">değişmedi · geçen hafta {was}</span>}
+      {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} <em>{when ? shortDate(when) : "önceki ölçüm"}: {was}</em></span>}
+    {delta === 0 && <span className="trend flat">
+      değişmedi · {when ? shortDate(when) : "önceki ölçüm"}: {was}</span>}
     {note && <span className="note">{note}</span>}
   </section>;
 }

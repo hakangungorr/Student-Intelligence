@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { parseRoster, type Issue } from "@/lib/csv";
 import { writeRoster } from "@/lib/import";
-import { scoreInstitution } from "@/lib/scoring";
+import { latestPeriod, scoreInstitution } from "@/lib/scoring";
 
 const MAX_BYTES = 2_000_000;   // a term's roster is tens of KB; this is a wide margin
 
@@ -22,18 +22,20 @@ export type PreviewState = {
   issues?: Issue[];
   unknown?: string[];
   result?: { created: number; updated: number; measurements: number; observations: number };
+  scored?: number | null;
 };
 
 const period = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-AA-GG biçiminde olmalı.");
 
 async function scope() {
   const { client } = await requireUser();
-  const membership = await client.from("memberships").select("organization_id").limit(1).maybeSingle();
+  const membership = await client.from("memberships").select("organization_id,role").limit(1).maybeSingle();
   if (membership.error || !membership.data) throw new Error("Kurum erişiminiz bulunamadı.");
   const branches = await client.from("branches").select("id,name").order("name");
   if (branches.error) throw new Error("Şubeler okunamadı.");
   return {
     client, organizationId: membership.data.organization_id as string,
+    canScore: membership.data.role === "org_admin",
     branchIds: new Map(branches.data.map(b => [b.name as string, b.id as string])),
     branchNames: branches.data.map(b => b.name as string)
   };
@@ -74,7 +76,7 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
   if (!when.success) return { status: "error", message: when.error.issues[0].message };
   if (!text) return { status: "error", message: "Önizlenen dosya kayboldu, yeniden yükleyin." };
 
-  const { client, organizationId, branchIds, branchNames } = await scope();
+  const { client, organizationId, branchIds, branchNames, canScore } = await scope();
   const parsed = parseRoster(text, branchNames);
   if (!parsed.rows.length) return { status: "error", message: "Aktarılabilecek satır yok." };
 
@@ -95,10 +97,19 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
     skipped_count: parsed.issues.length
   });
 
+  // An import that leaves the agenda showing yesterday's scores has not finished
+  // the job it was asked to do.
+  let scored: number | null = null;
+  if (canScore) {
+    const period = (await latestPeriod(client)) ?? when.data;
+    scored = (await scoreInstitution(client, organizationId, period)).scored;
+  }
+
   revalidatePath("/workspace");
   revalidatePath("/workspace/students");
+  revalidatePath("/workspace/ask");
   return {
-    status: "done", filename, result, accepted: parsed.rows.length, issues: parsed.issues,
+    status: "done", filename, result, scored, accepted: parsed.rows.length, issues: parsed.issues,
     message: recorded.error ? "Veriler yazıldı, ancak aktarım geçmişine kaydedilemedi." : undefined
   };
 }

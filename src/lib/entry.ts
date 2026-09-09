@@ -63,7 +63,8 @@ const MEASURED: Record<string, { kind: string; source: string }> = {
 const OBSERVED = new Set(["participation", "homework", "concern"]);
 
 export async function loadSheet(
-  client: SupabaseClient, kind: EntryKind, branch: string | null, level: string | null
+  client: SupabaseClient, kind: EntryKind,
+  branch: string | null, level: string | null, search: string | null
 ): Promise<EntrySheet> {
   const oops = "Sınıf listesi yüklenemedi";
   const [students, branchRows, enrollments] = await Promise.all([
@@ -76,9 +77,14 @@ export async function loadSheet(
   const branchName = new Map(branchRows.map(b => [b.id, b.name]));
   const levelOf = new Map(enrollments.map(e => [e.student_id, e.level]));
 
+  // Looking somebody up by name is how a teacher finds one student in a term's
+  // roster; the branch and level filters answer a different question.
+  const needle = search?.trim().toLocaleLowerCase("tr") ?? "";
   const inScope = students.filter(s =>
     (!branch || branchName.get(s.branch_id) === branch)
-    && (!level || levelOf.get(s.id) === level));
+    && (!level || levelOf.get(s.id) === level)
+    && (!needle || s.name.toLocaleLowerCase("tr").includes(needle)
+      || s.external_id.toLocaleLowerCase("tr").includes(needle)));
   const ids = inScope.map(s => s.id);
 
   const fields = fieldsOf(kind);

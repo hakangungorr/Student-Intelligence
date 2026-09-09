@@ -28,8 +28,8 @@ export default async function Student({ params }: { params: Promise<{ id: string
         </div>
         {s.risk && <div className="stack-end">
           <span className={`state ${STATE[s.risk.riskLevel].cls}`}><i className="dot" />{STATE[s.risk.riskLevel].word}</span>
-          {s.risk.change !== null && <span className="note">{s.risk.change === 0 ? "geçen haftayla aynı"
-            : s.risk.change > 0 ? "geçen haftaya göre kötüleşti" : "geçen haftaya göre düzeldi"}</span>}
+          {s.risk.change !== null && <span className="note">{s.risk.change === 0 ? "önceki ölçümle aynı"
+            : s.risk.change > 0 ? "önceki ölçüme göre kötüleşti" : "önceki ölçüme göre düzeldi"}</span>}
         </div>}
       </div>
 

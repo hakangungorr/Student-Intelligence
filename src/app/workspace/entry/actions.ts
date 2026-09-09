@@ -3,8 +3,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { fieldsOf, isEntryKind, saveSheet, type EntryKind } from "@/lib/entry";
+import { latestPeriod, scoreInstitution } from "@/lib/scoring";
 
-export type SaveState = { status: "idle" | "done" | "error"; message?: string; written?: number; unchanged?: number };
+export type SaveState = {
+  status: "idle" | "done" | "error"; message?: string;
+  written?: number; unchanged?: number;
+  /** null when the signed-in user may not score, so the screen can say who will. */
+  scored?: number | null;
+};
 
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-AA-GG biçiminde olmalı.");
 
@@ -15,7 +21,7 @@ export async function save(_prev: SaveState, form: FormData): Promise<SaveState>
   if (!on.success) return { status: "error", message: on.error.issues[0].message };
 
   const { client } = await requireUser();
-  const membership = await client.from("memberships").select("organization_id").limit(1).maybeSingle();
+  const membership = await client.from("memberships").select("organization_id,role").limit(1).maybeSingle();
   if (membership.error || !membership.data) return { status: "error", message: "Kurum erişiminiz bulunamadı." };
   const { data: session } = await client.auth.getUser();
   if (!session.user) return { status: "error", message: "Oturum bulunamadı." };
@@ -49,11 +55,29 @@ export async function save(_prev: SaveState, form: FormData): Promise<SaveState>
   if (problems.length) return { status: "error", message: problems.slice(0, 3).join(" ") };
 
   try {
-    const result = await saveSheet(client, membership.data.organization_id as string,
+    const organizationId = membership.data.organization_id as string;
+    const result = await saveSheet(client, organizationId,
       kind as EntryKind, on.data, session.user.id,
       [...byStudent].map(([studentId, values]) => ({ studentId, values })));
+
+    // Numbers that do not move the score are numbers nobody acts on, so scoring
+    // runs with the save rather than waiting for somebody to remember a button.
+    // It is institution-wide, which only an institution admin may do — anybody
+    // else is told who has to run it, instead of being shown a stale agenda.
+    let scored: number | null = null;
+    if (membership.data.role === "org_admin") {
+      if (result.written > 0) {
+        // Into the current checkpoint, not the date on the sheet: entering a mark
+        // records when it was measured, it does not declare a new reporting period.
+        const period = (await latestPeriod(client)) ?? on.data;
+        scored = (await scoreInstitution(client, organizationId, period)).scored;
+      } else scored = 0;
+    }
+
+    revalidatePath("/workspace");
+    revalidatePath("/workspace/students");
     revalidatePath("/workspace/entry");
-    return { status: "done", written: result.written, unchanged: result.unchanged };
+    return { status: "done", written: result.written, unchanged: result.unchanged, scored };
   } catch (e) {
     return { status: "error", message: `Kaydedilemedi: ${(e as Error).message}` };
   }
