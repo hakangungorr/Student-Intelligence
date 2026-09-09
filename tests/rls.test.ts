@@ -200,3 +200,40 @@ describe("team management boundaries", () => {
       `delete from public.memberships where user_id = '${id(4)}'`)).affectedRows).toBe(1);
   });
 });
+
+describe("institution settings boundaries", () => {
+  const write = (org: number) =>
+    `insert into public.organization_settings(organization_id,pass_mark,attendance_floor,levels)
+     values ('${id(org)}',70,80,array['A1','A2','B1','B2','C1'])`;
+
+  it("only an institution admin sets them, because they rescore every branch at once", async () => {
+    await expect(asUser(2, write(10))).rejects.toThrow(/row-level security/);
+    await expect(asUser(1, write(10))).resolves.toBeDefined();
+  });
+  it("everybody in the institution reads them: the screens spell the values out", async () => {
+    expect((await asUser(3, "select pass_mark from public.organization_settings")).rows)
+      .toEqual([{ pass_mark: 70 }]);
+  });
+  it("a branch manager cannot amend them", async () => {
+    expect((await asUser(2, "update public.organization_settings set pass_mark = 50")).affectedRows).toBe(0);
+    expect((await asUser(1, "select pass_mark from public.organization_settings")).rows)
+      .toEqual([{ pass_mark: 70 }]);
+  });
+  it("another institution neither reads nor writes them", async () => {
+    expect((await asUser(5, "select * from public.organization_settings")).rows).toHaveLength(0);
+    await expect(asUser(5, write(10))).rejects.toThrow(/row-level security/);
+  });
+  it("a level list cannot be empty or contain a blank name", async () => {
+    await expect(asUser(1,
+      "update public.organization_settings set levels = array[]::text[]")).rejects.toThrow(/levels_are_named/);
+    await expect(asUser(1,
+      "update public.organization_settings set levels = array['A1','']")).rejects.toThrow(/levels_are_named/);
+  });
+  // The column used to enumerate the five levels the demo happened to use, which
+  // turned "our courses are called something else" into a schema change.
+  it("accepts a level name the demo never used", async () => {
+    await expect(asUser(1,
+      `insert into public.enrollments(organization_id,branch_id,student_id,level,starts_on)
+       values ('${id(10)}','${id(21)}','${id(32)}','Starter','2026-09-01')`)).resolves.toBeDefined();
+  });
+});

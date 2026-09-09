@@ -5,6 +5,8 @@
  * the wording can be reviewed in one place.
  */
 
+import { DEFAULTS } from "@/lib/settings";
+
 export const DIMENSIONS = ["test", "skill", "classroom", "attendance"] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
 
@@ -15,7 +17,6 @@ export const AREA: Record<Dimension, string> = {
 const SKILL: Record<string, string> = {
   speaking: "Konuşma", writing: "Yazma", listening: "Dinleme", reading: "Okuma"
 };
-const PASS_MARK = 60;
 
 export type DimensionScores = Record<Dimension, number>;
 export type DimensionDetail = {
@@ -59,10 +60,13 @@ export type Evidence = { dim: Dimension; score: number; text: string };
 type Source = {
   dimensions: DimensionScores; detail: DimensionDetail | null;
   level: string; examFirst: number | null; examLast: number | null;
+  /** The institution's passing mark; absent means the default it was scored with. */
+  passMark?: number;
 };
 
 /** One sentence per dimension that is at least elevated, worst first. */
 export function evidence(s: Source): Evidence[] {
+  const passMark = s.passMark ?? DEFAULTS.passMark;
   const d = s.detail;
   if (!d) return [];
   const out: Evidence[] = [];
@@ -84,9 +88,9 @@ export function evidence(s: Source): Evidence[] {
       t = `Sınav notları dört sınavdır üst üste düşüyor (${s.examFirst} → ${s.examLast})`;
     else if (t0.delta <= -8) t = `Sınav ortalaması ${Math.abs(t0.delta)} puan düştü`;
     else if (t0.delta <= -4) t = `Sınav ortalaması ${Math.abs(t0.delta)} puan geriledi`;
-    else if (t0.last_exam < PASS_MARK) t = `Son sınavdan ${t0.last_exam} aldı — geçme notu ${PASS_MARK}`;
+    else if (t0.last_exam < passMark) t = `Son sınavdan ${t0.last_exam} aldı — geçme notu ${passMark}`;
     else t = `Sınavlarda sınıfının %${Math.round(t0.cohort_gap_pct)} gerisinde`;
-    if (t0.last_exam < PASS_MARK && !t.includes("geçme notu")) t += `; son sınavı ${t0.last_exam}`;
+    if (t0.last_exam < passMark && !t.includes("geçme notu")) t += `; son sınavı ${t0.last_exam}`;
     out.push({ dim: "test", score: s.dimensions.test, text: t });
   }
 

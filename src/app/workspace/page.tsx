@@ -43,7 +43,7 @@ export default async function Workspace() {
         when={a.comparedTo} worseIsUp />
       <Kpi value={a.enteredUrgent} label="Bu hafta riske girenler" note="geçen hafta acil değildi" />
       <Kpi value={a.attendanceCritical} label="Devamsızlığı kritik"
-        note="derslerin dörtte birinden fazlasını kaçırdı" />
+        note={`devam oranı %${a.settings.attendanceFloor} sınırının altında`} />
     </div>
 
     <section className="panel">

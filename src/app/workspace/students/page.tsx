@@ -3,7 +3,6 @@ import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent } from "@/lib/agenda";
 import { AREA, DIMENSIONS, STATE, band, type Dimension } from "@/lib/narrative";
 
-const LEVELS = ["A1", "A2", "B1", "B2", "C1"];
 const RISKS: [string, string][] = [["HIGH", "Acil"], ["MEDIUM", "Takipte"], ["LOW", "Düşük risk"]];
 
 type Query = { q?: string; kur?: string; risk?: string; alan?: string };
@@ -36,7 +35,7 @@ export default async function Students({ searchParams }: { searchParams: Promise
         placeholder="İsim ya da numara" autoComplete="off" /></label>
       <label>Kur<select name="kur" defaultValue={f.kur ?? ""}>
         <option value="">Bütün kurlar</option>
-        {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}</select></label>
+        {a.settings.levels.map(l => <option key={l} value={l}>{l}</option>)}</select></label>
       <label>Risk<select name="risk" defaultValue={f.risk ?? ""}>
         <option value="">Hepsi</option>
         {RISKS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>

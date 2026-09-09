@@ -17,6 +17,12 @@ aktarımı henüz bu temele bağlanmamıştır. Aşağıdaki “Yapılacak” ek
 planın tarihsel kaydıdır. Güncel kurulum için `README.md` ve
 `docs/PRODUCTION.md` esas alınır.
 
+Kurumun kararı olan üç değer — geçme notu, devamsızlıkta kritik sınır ve kur
+adları — artık kurum ayarları ekranındadır ve kaydedildiğinde skorlar yeniden
+hesaplanır. Aşağıdaki §9'un birinci ve beşinci maddeleri bu yüzden kapandı:
+kurumdan cevap beklemek yerine varsayımla başlanır, doğrusu toplantıda otuz
+saniyede yazılır. Toplantı hazırlığı `docs/PILOT.md` içindedir.
+
 Gündem, öğrenci kartı, öğrenci listesi ve soru ekranı çalışır durumdadır.
 Geniş ekranda risk haritası öncelik listesinin yanındadır. Mobil menü iki
 sütunludur. Gündemde ilk iki risk nedeni, detayda tüm sinyaller gösterilir.
@@ -274,6 +280,6 @@ Feature listesi gezdirilmeyecek. Tek hikâye:
 2. Devamsızlık tarihli mi tutuluyor, yoksa sadece dönem sonu oranı mı? *(Trend için en az iki zaman noktası gerekiyor.)*
 3. Beceri skorları nasıl üretiliyor — kur içi müfredattan mı, mutlak yeterlilik mi?
 4. Kayıt yenileme ve ödeme geçmişi hangi sistemde? *(Bağlılık boyutunun ön koşulu.)*
-5. Geçme notu kaç? *(Şu an 60 varsayıldı.)*
+5. ~~Geçme notu kaç?~~ *(Ayarlanabilir; varsayılan 60. Cevap beklemiyoruz.)*
 
 **Pilotta gelecekler:** davranışsal bağlılık boyutu (kayıt yenileme, ödeme gecikmesi, kurlar arası boşluk), eğitmen kırılımı (kurumla konuşulduktan sonra), gerçek veri entegrasyonu.

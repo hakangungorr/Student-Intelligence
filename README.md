@@ -32,6 +32,7 @@ gerektiğini** söylüyor.
 | `supabase/migrations/` | Kurum, şube, öğrenci, risk geçmişi ve RLS şeması |
 | `tests/` | Gerçek PostgreSQL üzerinde erişim sınırı ve ortam ayarı testleri |
 | `docs/PRODUCTION.md` | Kurulum, yetkilendirme ve staging / production rehberi |
+| `docs/PILOT.md` | Kuruma gitmeden önce: varsayımlar, toplantı akışı, hazır cevaplar |
 
 ## Çalıştırma
 
@@ -63,14 +64,19 @@ Kurum modunda onaylanan dört ekranın tamamı veritabanına bağlıdır:
 | `/workspace/students/[id]` | Öğrenci kartı — kanıt, sınav trendi, dört boyut, aksiyon |
 | `/workspace/ask` | Soru sor — cevaplar veritabanından hesaplanır, dil modeli yok |
 | `/workspace/import` | CSV aktarımı, risk hesaplama ve aktarım geçmişi |
+| `/workspace/team` | Ekip, roller ve eğitmenlere sınıf ataması |
+| `/workspace/settings` | Geçme notu, devam sınırı ve kur adları — kaydedince skorlar yenilenir |
 
 Ekranlar risk skorlarını yeniden hesaplamaz; `risk_snapshots` tablosundan okur.
 Skorları üreten motor `src/lib/engine.ts` içindedir ve `/workspace/import`
 sayfasından elle çalıştırılır.
 
-Kullanıcı yönetimi arayüzü, aksiyon takibi ve zamanlanmış risk hesaplama henüz
-bu temele bağlanmadı. Excel dosyası okunmaz; kurumun CSV olarak dışa aktarması
-gerekir.
+Zamanlanmış risk hesaplama henüz bu temele bağlanmadı. Excel dosyası okunmaz;
+kurumun CSV olarak dışa aktarması gerekir. Sütun başlıkları Türkçe olabilir
+(`Öğrenci No`, `Ad Soyad`, `Şube`, `Kur`, `Devam Oranı`, `Sınav 1`…); ayırıcı
+olarak virgül, noktalı virgül ve sekme tanınır. Hazır dışa aktarımı olmayan
+kurum için `/workspace/import/template` kendi şube ve kur adlarıyla boş bir
+şablon üretir.
 
 Staging'e örnek veriyi yazmak için:
 
@@ -82,7 +88,7 @@ python3 scripts/build_demo_seed.py > demo_seed.sql
 çalıştırılabilir: kendi yazdığı satırları silip baştan yazar.
 
 ```bash
-npm run check     # lint, TypeScript, 15 test, production build
+npm run check     # lint, TypeScript, 55 test, production build
 npm run start     # önce npm run build
 ```
 
@@ -121,7 +127,7 @@ bileşik skorun yanında güvenlik kuralları var.
 - **Eşikler:** HIGH ≥ 65 · MEDIUM ≥ 30 · altı LOW
 - **Güvenlik kuralı:** 3+ boyut ≥ 60 ise bileşik skor ne olursa olsun HIGH
 - **Kohort referansı:** her kurun en iyi %25'inin ortalaması
-- **Mutlak taban:** geçme notu 60 *(kuruma doğrulatılacak — aşağıya bakınız)*
+- **Mutlak taban:** kurumun ayarladığı geçme notu; varsayılan 60
 - **Sıralama** tavansız `risk_score_raw` ile yapılır; gösterimdeki skor 100'de sınırlıdır
 
 Skoru dil modeli hesaplamaz. Arayüz de hesaplamaz — yalnızca motorun çıktısını
@@ -162,14 +168,24 @@ tablodan üretiliyor.
   "kimler kaydını yenilemeyecek" sorusu bugün cevaplanamıyor. Pilotta CRM ve
   ödeme verisi bağlandığında açılacak.
 
+## Kurumun kararı olan üç değer
+
+Geçme notu, devamsızlıkta kritik sınır ve kur adları `/workspace/settings`
+ekranından belirlenir; varsayılanları 60, %75 ve A1–C1'dir. Kaydedildiğinde
+bütün öğrencilerin skoru yeni değerlerle yeniden hesaplanır. Aynı ekran,
+kaydetmeden önce her geçme notunun kaç öğrenciyi etkileyeceğini kurumun kendi
+verisi üzerinde gösterir.
+
+Ağırlıklar, risk eşikleri ve kohort yüzdesi kasten ayarlanabilir değildir: veri
+üzerinde kalibre edildiler ve ekrandan değiştirilmeleri aynı öğrencinin kimin
+baktığına göre farklı skor almasına yol açar.
+
 ## Açık kalanlar
 
-1. **Geçme notu 60 varsayımı doğrulanmadı.** Değişirse "geçme notunun altında"
-   uyarılarının kimlere çıkacağı değişir (60'ta 19 öğrenci, 50'de 13, 70'te 36).
-2. **İlk hafta karşılaştırma yapılamaz.** "Geçen haftaya göre" metrikleri ve
+1. **İlk hafta karşılaştırma yapılamaz.** "Geçen haftaya göre" metrikleri ve
    "iyiye giden öğrenciler" paneli ikinci haftadan itibaren dolar; geçmiş veri
    yoksa bu bölümler kendiliğinden gizlenir.
-3. **Sınıf içi verisi öğretmen tarafından girilir ve yöneticiye görünür.**
+2. **Sınıf içi verisi öğretmen tarafından girilir ve yöneticiye görünür.**
    Bu şeffaflığın öğretmenle konuşulması gerekir; en büyük farklılaştırıcı bu
    veriye bağlı.
 

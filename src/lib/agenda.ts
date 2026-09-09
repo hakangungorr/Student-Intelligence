@@ -5,6 +5,7 @@ import {
   evidence, headline, steps, needsAction, type Evidence, type Step
 } from "@/lib/narrative";
 import { fetchAll } from "@/lib/paginate";
+import { loadSettings, type Settings } from "@/lib/settings";
 
 export type AgendaStudent = {
   id: string; externalId: string; name: string;
@@ -29,6 +30,9 @@ export type Agenda = {
   findings: Finding[]; recovered: AgendaStudent[];
   actionable: number; completed: number;
   periodEnd: string | null; comparedTo: string | null;
+  /** Carried on the agenda so every screen reading it says "below 75%" or
+   *  whatever the institution actually set, without asking again. */
+  settings: Settings;
 };
 
 type SnapshotRow = {
@@ -45,7 +49,8 @@ type SnapshotRow = {
  */
 export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
   const oops = "Öğrenci gündemi yüklenemedi";
-  const [students, branches, enrollments, snapshots, measurements, completedActions] = await Promise.all([
+  const [settings, students, branches, enrollments, snapshots, measurements, completedActions] = await Promise.all([
+    loadSettings(client),
     fetchAll<{ id: string; external_id: string; name: string; branch_id: string }>(
       () => client.from("students").select("id,external_id,name,branch_id").eq("active", true), oops),
     fetchAll<{ id: string; name: string }>(() => client.from("branches").select("id,name"), oops),
@@ -92,7 +97,8 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
       dimensions: snap.dimensions, detail: snap.dimension_detail,
       level: e?.level ?? "—",
       examFirst: reading.get(`${s.id}:exam_1`) ?? null,
-      examLast: reading.get(`${s.id}:exam_4`) ?? null
+      examLast: reading.get(`${s.id}:exam_4`) ?? null,
+      passMark: settings.passMark
     };
     const found = evidence(source);
     rows.push({
@@ -124,17 +130,18 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
     enteredUrgent: rows.filter(s => s.level_ === "HIGH" && s.previous && s.previous !== "HIGH").length,
     // The institution average hides the tail; the count of students below the line
     // is the same data in a form somebody can act on.
-    attendanceCritical: rows.filter(s => s.attendanceRate !== null && s.attendanceRate < 75).length,
+    attendanceCritical: rows.filter(s =>
+      s.attendanceRate !== null && s.attendanceRate < settings.attendanceFloor).length,
     previousUrgent: hasHistory ? [...previous.values()].filter(s => s.risk_level === "HIGH").length : null,
     previousWatched: hasHistory ? [...previous.values()].filter(s => s.risk_level === "MEDIUM").length : null,
     byBranch: branchHeat, byLevel: levelHeat,
-    findings: buildFindings(rows, branchHeat, levelHeat),
+    findings: buildFindings(rows, branchHeat, levelHeat, settings.attendanceFloor),
     // Improvement is the only evidence that acting on this list changes anything.
     recovered: rows.filter(s => s.previousScore !== null && s.score < s.previousScore)
       .sort((a, b) => (a.score - a.previousScore!) - (b.score - b.previousScore!)),
     actionable: rows.filter(s => s.needsAction).length,
     completed: rows.filter(s => s.needsAction && s.done).length,
-    periodEnd, comparedTo
+    periodEnd, comparedTo, settings
   };
 }
 
@@ -157,7 +164,9 @@ function topPeak(rows: HeatRow[]): [Dimension, HeatRow] | null {
 /** What is true of a whole branch or level, as opposed to a whole student. This
  *  is where the dimensional model earns its keep: institution-wide the four
  *  averages sit on top of each other and say nothing. */
-function buildFindings(rows: AgendaStudent[], byBranch: HeatRow[], byLevel: HeatRow[]): Finding[] {
+function buildFindings(
+  rows: AgendaStudent[], byBranch: HeatRow[], byLevel: HeatRow[], attendanceFloor: number
+): Finding[] {
   const out: Finding[] = [];
   const mean = (v: number[]) => v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0;
 
@@ -186,9 +195,10 @@ function buildFindings(rows: AgendaStudent[], byBranch: HeatRow[], byLevel: Heat
     const group = rows.filter(s => s.level === row.label);
     const small = row.count < 10;
     const extra = dimension === "attendance"
-      ? ` ${row.count} öğrencinin ${group.filter(s => s.attendanceRate !== null && s.attendanceRate < 75).length} tanesi `
-        + `derslerin dörtte birinden fazlasını kaçırıyor. Bu kurda içerik desteği vermeden önce `
-        + `öğrencileri derse getirmek gerekiyor.`
+      ? ` ${row.count} öğrencinin ${group.filter(s =>
+        s.attendanceRate !== null && s.attendanceRate < attendanceFloor).length} tanesinde `
+        + `devam oranı %${attendanceFloor} sınırının altında. Bu kurda içerik desteği vermeden `
+        + `önce öğrencileri derse getirmek gerekiyor.`
       : ` ${row.count} öğrencinin ${row.urgent} tanesi acil listede.`;
     out.push({
       tone: "crit", title: `${row.label} kurunda ${AREA[dimension].toLocaleLowerCase("tr")} en yüksek`,

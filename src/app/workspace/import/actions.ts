@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { parseRoster, type Issue } from "@/lib/csv";
 import { writeRoster } from "@/lib/import";
 import { latestPeriod, scoreInstitution } from "@/lib/scoring";
+import { loadSettings } from "@/lib/settings";
 
 const MAX_BYTES = 2_000_000;   // a term's roster is tens of KB; this is a wide margin
 
@@ -33,11 +34,13 @@ async function scope() {
   if (membership.error || !membership.data) throw new Error("Kurum erişiminiz bulunamadı.");
   const branches = await client.from("branches").select("id,name").order("name");
   if (branches.error) throw new Error("Şubeler okunamadı.");
+  const settings = await loadSettings(client);
   return {
     client, organizationId: membership.data.organization_id as string,
     canScore: membership.data.role === "org_admin",
     branchIds: new Map(branches.data.map(b => [b.name as string, b.id as string])),
-    branchNames: branches.data.map(b => b.name as string)
+    branchNames: branches.data.map(b => b.name as string),
+    levels: settings.levels
   };
 }
 
@@ -48,9 +51,9 @@ export async function preview(_prev: PreviewState, form: FormData): Promise<Prev
   if (!(file instanceof File) || file.size === 0) return { status: "error", message: "Bir CSV dosyası seçin." };
   if (file.size > MAX_BYTES) return { status: "error", message: "Dosya 2 MB sınırını aşıyor." };
 
-  const { branchNames } = await scope();
+  const { branchNames, levels } = await scope();
   const text = await file.text();
-  const parsed = parseRoster(text, branchNames);
+  const parsed = parseRoster(text, branchNames, levels);
 
   if (parsed.missing.length) return {
     status: "error", filename: file.name,
@@ -76,8 +79,8 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
   if (!when.success) return { status: "error", message: when.error.issues[0].message };
   if (!text) return { status: "error", message: "Önizlenen dosya kayboldu, yeniden yükleyin." };
 
-  const { client, organizationId, branchIds, branchNames, canScore } = await scope();
-  const parsed = parseRoster(text, branchNames);
+  const { client, organizationId, branchIds, branchNames, levels, canScore } = await scope();
+  const parsed = parseRoster(text, branchNames, levels);
   if (!parsed.rows.length) return { status: "error", message: "Aktarılabilecek satır yok." };
 
   const { data: session } = await client.auth.getUser();

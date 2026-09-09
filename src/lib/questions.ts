@@ -76,9 +76,10 @@ function worstLevel(a: Agenda): Answer {
   const { r } = rows[0];
   const worst = DIMENSIONS.map(d => [d, r.scores[d]] as [Dimension, number]).sort((x, y) => y[1] - x[1])[0];
   const group = a.students.filter(s => s.level === r.label);
-  const below = group.filter(s => s.attendanceRate !== null && s.attendanceRate < 75).length;
+  const floor = a.settings.attendanceFloor;
+  const below = group.filter(s => s.attendanceRate !== null && s.attendanceRate < floor).length;
   const extra = worst[0] === "attendance"
-    ? ` ${r.count} öğrencinin **${below} tanesi** derslerin dörtte birinden fazlasını kaçırıyor. `
+    ? ` ${r.count} öğrencinin **${below} tanesinde** devam oranı %${floor} sınırının altında. `
       + `Bu kurda önce öğrencileri derse getirmek gerekiyor; içerik desteği tek başına işe yaramaz.`
     : ` ${r.count} öğrencinin ${r.urgent} tanesi acil listede.`;
   return {

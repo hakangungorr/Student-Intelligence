@@ -6,13 +6,12 @@ import {
 } from "@/lib/narrative";
 import type { RiskLevel } from "@/lib/agenda";
 import { fetchAll } from "@/lib/paginate";
+import { loadSettings } from "@/lib/settings";
 
 export const SKILL_ORDER = ["speaking", "writing", "listening", "reading"] as const;
 export const SKILL_LABEL: Record<string, string> = {
   speaking: "Konuşma", writing: "Yazma", listening: "Dinleme", reading: "Okuma"
 };
-export const PASS_MARK = 60;
-
 /** A student who has just been enrolled has no score yet, and their card has to
  *  say so rather than behave as though the student does not exist. */
 export type StudentRisk = {
@@ -28,6 +27,9 @@ export type StudentCard = {
   skills: { key: string; label: string; value: number }[];
   attendanceRate: number | null; attendanceRecent: number | null;
   satisfaction: number | null;
+  /** The institution's passing mark, so the card draws its line where the
+   *  institution put it rather than where the engine's default was. */
+  passMark: number;
   benchmark: { exam: number; skill: number; cohort: number } | null;
 };
 
@@ -67,7 +69,8 @@ function benchmarks(cohort: Map<string, { exams: Map<string, number>; skills: Ma
 }
 
 export async function loadStudent(client: SupabaseClient, id: string): Promise<StudentCard | null> {
-  const [student, enrollments, branches, snapshots, lastAction] = await Promise.all([
+  const [settings, student, enrollments, branches, snapshots, lastAction] = await Promise.all([
+    loadSettings(client),
     client.from("students").select("id,name,branch_id,satisfaction_score").eq("id", id).maybeSingle(),
     client.from("enrollments").select("student_id,level,teacher_name").eq("active", true),
     client.from("branches").select("id,name"),
@@ -113,7 +116,8 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
       detail: now.dimension_detail as DimensionDetail | null,
       level,
       examFirst: me.exams.get("exam_1") ?? null,
-      examLast: me.exams.get("exam_4") ?? null
+      examLast: me.exams.get("exam_4") ?? null,
+      passMark: settings.passMark
     };
     const found = evidence(source);
     risk = {
@@ -137,7 +141,7 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
     skills: SKILL_ORDER.map(k => ({ key: k, label: SKILL_LABEL[k], value: me.skills.get(k) ?? NaN }))
       .filter(s => Number.isFinite(s.value)),
     attendanceRate: own.term, attendanceRecent: own.recent,
-    satisfaction: student.data.satisfaction_score,
+    satisfaction: student.data.satisfaction_score, passMark: settings.passMark,
     benchmark: benchmarks(cohort)
   };
 }

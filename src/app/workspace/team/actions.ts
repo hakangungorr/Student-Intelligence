@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { assignClass } from "@/lib/team";
 import { isRole } from "@/lib/roles";
-import { LEVELS } from "@/lib/csv";
+import { loadSettings, matchLevel } from "@/lib/settings";
 
 export type TeamState = { status: "idle" | "done" | "error"; message?: string };
 
@@ -71,7 +71,7 @@ const assignForm = z.object({
   userId: z.uuid("Bir eğitmen seçin."),
   name: z.string().trim().max(200).optional(),
   branchId: z.uuid("Bir şube seçin."),
-  level: z.enum(LEVELS as [string, ...string[]])
+  level: z.string().trim().min(1, "Bir kur seçin.")
 });
 
 export async function assign(_prev: TeamState, form: FormData): Promise<TeamState> {
@@ -81,9 +81,12 @@ export async function assign(_prev: TeamState, form: FormData): Promise<TeamStat
   });
   if (!parsed.success) return { status: "error", message: parsed.error.issues[0].message };
   const { client } = await admin();
+  const settings = await loadSettings(client);
+  const level = matchLevel(parsed.data.level, settings.levels);
+  if (!level) return { status: "error", message: `"${parsed.data.level}" tanımlı bir kur değil.` };
   try {
     const n = await assignClass(client, parsed.data.userId, parsed.data.name ?? null,
-      parsed.data.branchId, parsed.data.level);
+      parsed.data.branchId, level);
     revalidatePath("/workspace/team");
     revalidatePath("/workspace/students");
     return {

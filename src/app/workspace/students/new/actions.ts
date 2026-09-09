@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
-import { LEVELS } from "@/lib/csv";
+import { loadSettings, matchLevel } from "@/lib/settings";
 
 export type NewStudentState = { error?: string };
 
@@ -11,7 +11,7 @@ const form = z.object({
   externalId: z.string().trim().min(1, "Öğrenci numarası boş olamaz.").max(200),
   name: z.string().trim().min(1, "İsim boş olamaz.").max(200),
   branchId: z.uuid("Bir şube seçin."),
-  level: z.enum(LEVELS as [string, ...string[]]),
+  level: z.string().trim().min(1, "Bir kur seçin."),
   teacher: z.string().trim().max(200).optional()
 });
 
@@ -24,9 +24,12 @@ export async function createStudent(_prev: NewStudentState, data: FormData): Pro
     teacher: data.get("teacher") ?? undefined
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  const { externalId, name, branchId, level, teacher } = parsed.data;
+  const { externalId, name, branchId, teacher } = parsed.data;
 
   const { client } = await requireUser();
+  const settings = await loadSettings(client);
+  const level = matchLevel(parsed.data.level, settings.levels);
+  if (!level) return { error: `"${parsed.data.level}" tanımlı bir kur değil.` };
   const membership = await client.from("memberships").select("organization_id").limit(1).maybeSingle();
   if (membership.error || !membership.data) return { error: "Kurum erişiminiz bulunamadı." };
   const organizationId = membership.data.organization_id as string;

@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { scoreAll, ENGINE_VERSION, type Measures } from "@/lib/engine";
 import { fetchAll } from "@/lib/paginate";
+import { loadSettings } from "@/lib/settings";
 
 /** Scores everyone the signed-in administrator can see and stores the result.
  *
@@ -40,7 +41,8 @@ export async function scoreInstitution(
 ): Promise<ScoringResult> {
   const fail = (e: { message: string } | null) => { if (e) throw new Error(e.message); };
 
-  const [students, enrollments, readings, observations] = await Promise.all([
+  const [settings, students, enrollments, readings, observations] = await Promise.all([
+    loadSettings(client),
     fetchAll<{ id: string; external_id: string; branch_id: string }>(
       () => client.from("students").select("id,external_id,branch_id").eq("active", true),
       "Öğrenciler okunamadı"),
@@ -101,7 +103,10 @@ export async function scoreInstitution(
   }
   if (!scoreable.length) return { scored: 0, created: 0, updated: 0, skipped, periodEnd };
 
-  const { scores } = scoreAll(scoreable.map(s => s.measures));
+  // The passing mark is the institution's, so a school that sets 70 gets scores
+  // that treat 65 as a failed exam. Changing it therefore requires re-scoring,
+  // which is what the settings screen does after it saves.
+  const { scores } = scoreAll(scoreable.map(s => s.measures), settings.passMark);
 
   const priorSnapshots = await fetchAll<{ id: string; student_id: string }>(
     () => client.from("risk_snapshots").select("id,student_id")

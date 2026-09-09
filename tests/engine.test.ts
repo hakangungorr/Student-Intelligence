@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, it, expect, beforeAll } from "vitest";
-import { scoreAll, type Measures, type Score } from "../src/lib/engine";
+import { scoreAll, scoreStudent, type Measures, type Score } from "../src/lib/engine";
 
 /** The Python engine is the reference implementation: it produced the dataset
  *  the approved screens were designed against. This scores all hundred of those
@@ -97,5 +97,30 @@ describe("risk engine port matches the Python reference", () => {
       .filter(({ ref, got }) => repair(ref.recommended_action as string) !== got.action)
       .map(({ ref, got }) => `${ref.student_id}: "${repair(ref.recommended_action as string)}" → "${got.action}"`);
     expect(wrong).toEqual([]);
+  });
+});
+
+/** The passing mark is the one figure the engine does not derive from the
+ *  institution's own data, so it is handed in. Everything above still has to
+ *  hold at the default, which is what the reference dataset was scored with. */
+describe("the institution's passing mark", () => {
+  const benchmark = { exam: 80, skill: 80, cohortSize: 10 };
+  const student: Measures = {
+    level: "B1", exams: [70, 68, 66, 65],
+    speaking: 65, writing: 65, listening: 65, reading: 65,
+    participation: 8, homework: 90, concern: false,
+    attendanceRate: 95, attendanceRecent: 95
+  };
+
+  it("treats 65 as a pass at 60 and a fail at 70", () => {
+    const passing = scoreStudent(student, benchmark, 60);
+    const failing = scoreStudent(student, benchmark, 70);
+    expect(passing.reasons.some(r => r.includes("geçme notunun altında"))).toBe(false);
+    expect(failing.reasons.some(r => r.includes("geçme notunun altında"))).toBe(true);
+    expect(failing.riskScore).toBeGreaterThan(passing.riskScore);
+  });
+
+  it("defaults to 60, so an institution that never sets it is scored as before", () => {
+    expect(scoreStudent(student, benchmark)).toEqual(scoreStudent(student, benchmark, 60));
   });
 });

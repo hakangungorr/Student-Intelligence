@@ -11,6 +11,7 @@
  *  classroom stay absolute, because 60% attendance is bad at every level.
  */
 import { DIMENSIONS, type Dimension, type DimensionScores, type DimensionDetail } from "@/lib/narrative";
+import { DEFAULTS } from "@/lib/settings";
 
 export const ENGINE_VERSION = "v0.4";
 
@@ -20,7 +21,11 @@ const WEIGHTS: Record<Dimension, number> = { test: .30, skill: .25, classroom: .
 const MAX_DIMENSION_FLOOR = .60;
 const ESCALATION = [0, 0, 10, 22, 32];
 const ELEVATED_AT = 50;
-const PASS_MARK = 60;
+/** The only figure in here the institution sets. Everything else is calibrated
+ *  from the institution's own data; a passing mark is a rule somebody wrote
+ *  down, so it is handed in rather than guessed. The default is what the
+ *  reference dataset was scored with. */
+const PASS_MARK = DEFAULTS.passMark;
 const BENCHMARK_QUANTILE = .25;
 
 /** Python's round(), which JavaScript does not have.
@@ -105,7 +110,7 @@ function gapPoints(value: number, benchmark: number, scale: number): [number, nu
 
 type Part = { score: number; notes: string[] };
 
-function testDimension(s: Measures, bm: Benchmark): Part & { detail: DimensionDetail["test"] } {
+function testDimension(s: Measures, bm: Benchmark, passMark: number): Part & { detail: DimensionDetail["test"] } {
   const exams = s.exams;
   const delta = mean(exams.slice(-2)) - mean(exams.slice(0, 2));
   const recent = mean(exams.slice(-2));
@@ -114,7 +119,7 @@ function testDimension(s: Measures, bm: Benchmark): Part & { detail: DimensionDe
   const trend = delta <= -12 ? 45 : delta <= -8 ? 36 : delta <= -4 ? 22
     : delta <= -1.5 ? 10 : delta >= 6 ? -8 : 0;
   const [rel, gap] = gapPoints(recent, bm.exam, 40);
-  const floor = last < PASS_MARK - 10 ? 25 : last < PASS_MARK ? 15 : 0;
+  const floor = last < passMark - 10 ? 25 : last < passMark ? 15 : 0;
 
   // A student slipping a little every time is the case the product exists to
   // catch, and the delta alone can miss it: a trajectory, not a wobble.
@@ -124,7 +129,7 @@ function testDimension(s: Measures, bm: Benchmark): Part & { detail: DimensionDe
   if (delta <= -4) notes.push(`Son 4 sınavda ${fmt(Math.abs(delta), 1)} puan düşüş`);
   else if (delta >= 6) notes.push(`Sınav trendi yükselişte (+${fmt(delta, 1)})`);
   if (gap >= 15) notes.push(`${s.level} kur ortalamasının %${fmt(gap, 0)} altında`);
-  if (last < PASS_MARK) notes.push(`Son sınav ${last} — geçme notunun altında`);
+  if (last < passMark) notes.push(`Son sınav ${last} — geçme notunun altında`);
 
   return {
     score: clamp(trend + rel + floor + (monotonic ? 10 : 0)), notes,
@@ -142,7 +147,7 @@ const SKILL_LABEL: Record<string, string> = {
 
 /** Two different illnesses: one hole in an otherwise sound profile, or a level
  *  that is simply too high. Same score, different diagnosis, different action. */
-function skillDimension(s: Measures, bm: Benchmark): Part & { detail: DimensionDetail["skill"] } {
+function skillDimension(s: Measures, bm: Benchmark, passMark: number): Part & { detail: DimensionDetail["skill"] } {
   const values = SKILL_KEYS.map(k => s[k]);
   let weakestIndex = 0;
   for (let i = 1; i < values.length; i++) if (values[i] < values[weakestIndex]) weakestIndex = i;
@@ -152,13 +157,13 @@ function skillDimension(s: Measures, bm: Benchmark): Part & { detail: DimensionD
   const [rel, gap] = gapPoints(ownAvg, bm.skill, 45);
   const spread = ownAvg - weakest;
   const imbalance = spread >= 22 ? 35 : spread >= 16 ? 24 : spread >= 10 ? 12 : 0;
-  const floor = weakest < PASS_MARK - 10 ? 25 : weakest < PASS_MARK ? 14 : 0;
+  const floor = weakest < passMark - 10 ? 25 : weakest < passMark ? 14 : 0;
 
   const label = SKILL_LABEL[weakestKey];
   const notes: string[] = [];
   if (gap >= 15) notes.push(`Beceri ortalaması ${s.level} kurunun %${fmt(gap, 0)} altında`);
   if (imbalance >= 24) notes.push(`${label} ${weakest} — kendi ortalamasının ${fmt(spread, 0)} puan altında`);
-  else if (weakest < PASS_MARK) notes.push(`${label} ${weakest} — geçme notunun altında`);
+  else if (weakest < passMark) notes.push(`${label} ${weakest} — geçme notunun altında`);
 
   return {
     score: clamp(rel + imbalance + floor), notes,
@@ -205,8 +210,8 @@ export type Score = {
   reasons: string[]; action: string;
 };
 
-export function scoreStudent(s: Measures, bm: Benchmark): Score {
-  const test = testDimension(s, bm), skill = skillDimension(s, bm);
+export function scoreStudent(s: Measures, bm: Benchmark, passMark = PASS_MARK): Score {
+  const test = testDimension(s, bm, passMark), skill = skillDimension(s, bm, passMark);
   const classroom = classroomDimension(s), attendance = attendanceDimension(s);
   const parts = { test, skill, classroom, attendance };
   const dimensions = {
@@ -254,7 +259,11 @@ export function scoreStudent(s: Measures, bm: Benchmark): Score {
   };
 }
 
-export function scoreAll(students: Measures[]): { scores: Score[]; benchmarks: Map<string, Benchmark> } {
+export function scoreAll(students: Measures[], passMark = PASS_MARK):
+  { scores: Score[]; benchmarks: Map<string, Benchmark> } {
   const benchmarks = buildBenchmarks(students);
-  return { scores: students.map(s => scoreStudent(s, benchmarks.get(s.level)!)), benchmarks };
+  return {
+    scores: students.map(s => scoreStudent(s, benchmarks.get(s.level)!, passMark)),
+    benchmarks
+  };
 }

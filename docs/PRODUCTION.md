@@ -9,7 +9,8 @@ değildir. Mevcut dört ekranlı demo korunur. Kurum modu ayrı Next.js sayfalar
 - Sunucu aksiyonuyla e-posta / şifre girişi ve çıkış.
 - Proxy üzerinden cookie yenileme; korumalı sayfa ve veri erişiminde `getUser()`.
 - Demo ve kurum modlarının ayrılması; production'da `/demo` 404 verir.
-- Kurum, şube, üyelik, öğrenci, kur kaydı, ölçüm, gözlem, risk geçmişi ve aksiyon şeması.
+- Kurum, şube, üyelik, öğrenci, kur kaydı, ölçüm, gözlem, risk geçmişi, aksiyon
+  ve kurum ayarları şeması.
 - Kurum ve şube bazlı RLS; eğitmen için aktif öğrenci ataması kontrolü.
 - Aksiyon oluşturma / durum değişikliği ve gözlem ekleme için değiştirilemez işlem izi.
 - Veritabanına bağlı aktif öğrenci sayısı, şube listesi ve kişinin erişim bilgileri.
@@ -95,7 +96,7 @@ veritabanı içindir; yerel mevcut veriyi siler. Otomatik seed kapalıdır.
 
 | Rol | Okuma | Yazma |
 |---|---|---|
-| Kurum yöneticisi | Kendi kurumunun tüm şubeleri | Aksiyon, gözlem, öğrenci / kur kaydı / ölçüm aktarımı, risk skoru |
+| Kurum yöneticisi | Kendi kurumunun tüm şubeleri | Aksiyon, gözlem, öğrenci / kur kaydı / ölçüm aktarımı, risk skoru, kurum ayarları, üyelikler |
 | Şube yöneticisi | Üye olduğu şube | Aksiyon, gözlem, kendi şubesinde aktarım. Risk skoru **yazamaz** |
 | Eğitmen | Üye olduğu şubede aktif atanmış öğrenciler | Atanmış öğrencide aksiyon ve gözlem |
 | Görüntüleyici | Üye olduğu şube | Yok |
@@ -117,6 +118,15 @@ Güncelleme yetkileri kolon bazlıdır: aktarım bir listenin içeriğini düzel
 satırın hangi kuruma ait olduğunu değil. `organization_id` ve kimlik kolonları
 kurum yöneticisi için bile yazılamaz.
 
+Kurum ayarlarını (geçme notu, devamsızlıkta kritik sınır, kur adları) yazmak da
+yalnızca kurum yöneticisindedir ve gerekçe aynıdır: bu üç değer bütün şubelerdeki
+bütün öğrencilerin skorunu birden değiştirir, dolayısıyla tek şubenin kararı
+olamaz. Ayarları kaydetmek mevcut dönemin skorlarını yeniden hesaplar; aksi
+hâlde ekranlar eski geçme notuyla hesaplanmış skorları gösterirdi. Kur adları
+artık şemada sayılmaz — `enrollments.level` yalnızca uzunluk denetler, geçerli
+kur listesi `organization_settings.levels` tablosundadır ve uygulama girdileri
+ona karşı doğrular.
+
 Risk skoru yazmak yalnızca kurum yöneticisindedir ve gerekçe güven değil
 kalibrasyondur: her kurun benchmark'ı o kurun en iyi %25'inin ortalamasıdır, bu
 yüzden tek şubeyi puanlamak öğrenciyi kendi şubesiyle kıyaslar. Aynı öğrenci
@@ -135,7 +145,10 @@ tanımları netleştirilecek. Risk geçmişi dönem ve motor sürümüyle saklan
 
 CSV aktarımı çalışır durumdadır; Excel dosyası okunmaz, kurumun dosyayı CSV olarak
 dışa aktarması gerekir. Sütun sözleşmesi demo veri setinden türetilmiştir çünkü
-kurumun kendi dışa aktarımı henüz görülmedi. Sınav tarihleri dosyada olmadığı için
+kurumun kendi dışa aktarımı henüz görülmedi; bu yüzden başlıklar Türkçe adlarıyla
+da eşleşir (büyük harf, boşluk, noktalama ve Türkçe karakter farkı yok sayılır) ve
+`/workspace/import/template` kurumun kendi şube ve kur adlarıyla boş bir şablon
+üretir. Sınav tarihleri dosyada olmadığı için
 bütün ölçümler seçilen dönem sonu tarihine yazılır; sıralama `source_reference`
 alanında taşınır.
 
@@ -165,7 +178,7 @@ açıkça sayfalanmalıdır.
 
 ## Testler ve doğrulama
 
-`npm run check` lint, tip denetimi, 15 test ve production build çalıştırır.
+`npm run check` lint, tip denetimi, 55 test ve production build çalıştırır.
 RLS testleri PGlite içinde gerçek PostgreSQL SQL'ini ve migration'ı çalıştırır.
 `auth.users`, roller ve `auth.uid()` testte taklit edilir; gerçek Supabase Auth,
 PostgREST, cookie yaşam döngüsü ve barındırılan proje ayarları bu testin kapsamında
@@ -180,6 +193,7 @@ korumalı çalışma alanı yönlendirmesi, login hata durumu ve demo modunda es
 - CSV/Excel doğrulama, önizleme, tekrar yükleme güvenliği ve aktarım geçmişi.
 - Dört ekranın React'e taşınması ve gerçek risk sonuçlarına bağlanması.
 - Aksiyon sorumlusu / not / bitiş tarihi arayüzü; kullanıcı daveti ve parola sıfırlama.
+- Ayar değişikliğinin kaç öğrencinin risk seviyesini değiştirdiğinin kaydı.
 - Risk motorunun sunucu işi olarak bağlanması ve hesaplama sürümü takibi.
 - Gerçek Supabase oturumlarıyla uçtan uca test; parola / oturum / hesap iptali senaryoları.
 - İzleme, alarmlar, yedekten geri yükleme provası, veri saklama ve silme prosedürü.

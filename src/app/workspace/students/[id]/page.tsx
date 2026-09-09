@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { loadStudent, PASS_MARK, type StudentCard, type StudentRisk } from "@/lib/student";
+import { loadStudent, type StudentCard, type StudentRisk } from "@/lib/student";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
 import { MarkDone } from "../../mark-button";
 
@@ -72,13 +72,14 @@ export default async function Student({ params }: { params: Promise<{ id: string
 
       <section className="panel pad">
         <Head title="Sınav notları" score={scoreOf("test")} />
-        <Spark exams={s.exams} falling={!!detail && (detail.test.monotonic_decline || detail.test.delta <= -4)} />
+        <Spark exams={s.exams} passMark={s.passMark}
+          falling={!!detail && (detail.test.monotonic_decline || detail.test.delta <= -4)} />
         {s.exams.length > 1 && s.exams[s.exams.length - 1].value < s.exams[0].value &&
           <p className="note">İlk sınavdan bu yana <b className="crit-ink">
             {s.exams[0].value - s.exams[s.exams.length - 1].value} puan</b> kaybetti.</p>}
         {detail && <Kv k="Son sınav" v={String(detail.test.last_exam)}
-          alert={detail.test.last_exam < PASS_MARK}
-          suffix={detail.test.last_exam < PASS_MARK ? "· geçme notu altında" : undefined} />}
+          alert={detail.test.last_exam < s.passMark}
+          suffix={detail.test.last_exam < s.passMark ? "· geçme notu altında" : undefined} />}
         {s.benchmark && <Kv k={`${s.level} kurunun iyi öğrencileri`} v={s.benchmark.exam.toFixed(0)} />}
       </section>
 
@@ -86,7 +87,7 @@ export default async function Student({ params }: { params: Promise<{ id: string
         <Head title="Dil becerileri" score={scoreOf("skill")} />
         {s.skills.length === 0 ? <p className="note">Beceri puanı girilmemiş.</p> : s.skills.map(k => {
           const mark = s.benchmark?.skill ?? 100;
-          const tone = k.value < PASS_MARK ? "crit" : k.value < mark * .85 ? "warn" : "good";
+          const tone = k.value < s.passMark ? "crit" : k.value < mark * .85 ? "warn" : "good";
           const weakest = detail?.skill.weakest === k.key;
           return <div key={k.key} className="bar">
             <span className={`nm${weakest ? " is-weakest" : ""}`}>{k.label}</span>
@@ -158,7 +159,9 @@ function Kv({ k, v, alert, suffix }: { k: string; v: string; alert?: boolean; su
 
 /** Four exams is too few for a chart library and too many for a sentence.
  *  The pass mark is drawn because "is he failing?" is the question being asked. */
-function Spark({ exams, falling }: { exams: StudentCard["exams"]; falling: boolean }) {
+function Spark({ exams, passMark, falling }: {
+  exams: StudentCard["exams"]; passMark: number; falling: boolean;
+}) {
   if (exams.length < 2) return <p className="note">Sınav geçmişi yok.</p>;
   const W = 330, H = 126, PL = 6, PR = 26, PT = 16, PB = 24;
   const values = exams.map(e => e.value);
@@ -169,8 +172,8 @@ function Spark({ exams, falling }: { exams: StudentCard["exams"]; falling: boole
   const line = values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
   return <svg viewBox={`0 0 ${W} ${H}`} width="100%" className={`spark ${tone}`} role="img"
     aria-label={`Sınav notları: ${values.join(", ")}`}>
-    <line x1={PL} x2={W - PR} y1={y(PASS_MARK)} y2={y(PASS_MARK)} className="passline" strokeDasharray="3 3" />
-    <text x={W - PR + 4} y={y(PASS_MARK) + 3.5} className="passlabel">{PASS_MARK}</text>
+    <line x1={PL} x2={W - PR} y1={y(passMark)} y2={y(passMark)} className="passline" strokeDasharray="3 3" />
+    <text x={W - PR + 4} y={y(passMark) + 3.5} className="passlabel">{passMark}</text>
     <path d={`${line} L${x(exams.length - 1).toFixed(1)} ${H - PB} L${x(0).toFixed(1)} ${H - PB} Z`} className="area" />
     <path d={line} className="line" />
     {values.map((v, i) => <g key={i}>
