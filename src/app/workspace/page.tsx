@@ -69,7 +69,7 @@ function Kpi({ value, label, was, when, note, worseIsUp }: {
   return <section className="panel metric">
     <strong>{value}</strong><span>{label}</span>
     {delta !== null && delta !== 0 && <span className={`trend ${bad ? "up" : "down"}`}>
-      {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} <em>{when ? shortDate(when) : "önceki ölçüm"}: {was}</em></span>}
+      {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} <em>· {when ? shortDate(when) : "önceki ölçüm"}: {was}</em></span>}
     {delta === 0 && <span className="trend flat">
       değişmedi · {when ? shortDate(when) : "önceki ölçüm"}: {was}</span>}
     {note && <span className="note">{note}</span>}
