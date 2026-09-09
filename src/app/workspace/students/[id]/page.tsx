@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { loadStudent, PASS_MARK } from "@/lib/student";
+import { loadStudent, PASS_MARK, type StudentCard, type StudentRisk } from "@/lib/student";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
 
 const areaWord = (v: number) => v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
@@ -12,8 +12,9 @@ export default async function Student({ params }: { params: Promise<{ id: string
   const s = await loadStudent(client, id);
   if (!s) notFound();
 
-  const whos = [...new Set(s.steps.map(x => x.who).filter(Boolean))];
   const missed = s.attendanceRate === null ? null : Math.max(1, Math.round((100 - s.attendanceRate) / 10));
+  const detail = s.risk?.detail ?? null;
+  const scoreOf = (d: (typeof DIMENSIONS)[number]) => s.risk?.dimensions[d] ?? null;
 
   return <>
     <Link className="backlink" href="/workspace">← Gündeme dön</Link>
@@ -25,74 +26,67 @@ export default async function Student({ params }: { params: Promise<{ id: string
           <p className="note">{s.branch} şubesi · {s.level} kuru
             {s.teacher && <> · Eğitmeni {s.teacher}</>}</p>
         </div>
-        <div className="stack-end">
-          <span className={`state ${STATE[s.riskLevel].cls}`}><i className="dot" />{STATE[s.riskLevel].word}</span>
-          {s.change !== null && <span className="note">{s.change === 0 ? "geçen haftayla aynı"
-            : s.change > 0 ? "geçen haftaya göre kötüleşti" : "geçen haftaya göre düzeldi"}</span>}
-        </div>
+        {s.risk && <div className="stack-end">
+          <span className={`state ${STATE[s.risk.riskLevel].cls}`}><i className="dot" />{STATE[s.risk.riskLevel].word}</span>
+          {s.risk.change !== null && <span className="note">{s.risk.change === 0 ? "geçen haftayla aynı"
+            : s.risk.change > 0 ? "geçen haftaya göre kötüleşti" : "geçen haftaya göre düzeldi"}</span>}
+        </div>}
       </div>
-      <p className="srow-head lead">{s.headline}</p>
-      <ul className="facts">
-        {s.found.length
-          ? s.found.map(f => <li key={f.dim} className={band(f.score)}>{f.text}</li>)
-          : <li>Bu öğrencide belirgin bir risk sinyali yok.</li>}
-      </ul>
-      <div className="todo">
-        <div className="todo-hd">NE YAPMALI</div>
-        <ul>{s.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
-        {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
-      </div>
-      {s.reasons.length > 0 && <details className="raw">
-        <summary>Sistemin tespit ettiği ham sinyaller ({s.reasons.length})</summary>
-        <ul>{s.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
-      </details>}
+
+      {s.risk ? <Assessment risk={s.risk} /> : <>
+        <p className="srow-head lead">Bu öğrenci henüz puanlanmadı.</p>
+        <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav, beceri,
+          devam ve sınıf içi bilgilerini <Link href="/workspace/entry">veri girişi</Link> sayfasından
+          girin, sonra <Link href="/workspace/import">veri aktarımı</Link> sayfasından hesaplamayı
+          çalıştırın.</p>
+      </>}
     </section>
 
-    <section className="panel pad">
+    {s.risk && <section className="panel pad">
       <p className="eyebrow">SORUN NEREDE</p>
       <div className="map">{DIMENSIONS.map(d => {
-        const v = s.dimensions[d] ?? 0;
+        const v = s.risk!.dimensions[d] ?? 0;
         return <div key={d} className="mapcell">
           <span className="lab">{AREA[d]}</span>
           <span className={`st ${band(v)}`}>{areaWord(v)}</span>
           <span className="mapbar"><i className={band(v)} style={{ width: `${v}%` }} /></span>
         </div>;
       })}</div>
-    </section>
+    </section>}
 
     <div className="cards2">
       <section className="panel pad">
-        <Head title="Devamsızlık" score={s.dimensions.attendance ?? 0} />
+        <Head title="Devamsızlık" score={scoreOf("attendance")} />
         {s.attendanceRate === null ? <p className="note">Devam verisi yok.</p> : <>
-          <p className="big-line"><span className={`big ${band(s.dimensions.attendance ?? 0)}`}>%{s.attendanceRate}</span>
+          <p className="big-line"><span className={`big ${band(scoreOf("attendance") ?? 0)}`}>%{s.attendanceRate}</span>
             <span className="note">dönem geneli devam oranı</span></p>
           <p className="note">Her 10 dersin yaklaşık <b>{missed}</b> tanesine gelmiyor.</p>
           {s.attendanceRecent !== null && <Kv k="Son 4 hafta"
             v={`%${s.attendanceRecent}`}
-            alert={s.detail ? s.detail.attendance.drop >= 5 : false}
-            suffix={s.detail && s.detail.attendance.drop >= 5 ? `▼ ${s.detail.attendance.drop} puan` : undefined} />}
+            alert={detail ? detail.attendance.drop >= 5 : false}
+            suffix={detail && detail.attendance.drop >= 5 ? `▼ ${detail.attendance.drop} puan` : undefined} />}
           <Kv k="Kurumun kritik sınırı" v="%75" />
         </>}
       </section>
 
       <section className="panel pad">
-        <Head title="Sınav notları" score={s.dimensions.test ?? 0} />
-        <Spark exams={s.exams} falling={!!s.detail && (s.detail.test.monotonic_decline || s.detail.test.delta <= -4)} />
+        <Head title="Sınav notları" score={scoreOf("test")} />
+        <Spark exams={s.exams} falling={!!detail && (detail.test.monotonic_decline || detail.test.delta <= -4)} />
         {s.exams.length > 1 && s.exams[s.exams.length - 1].value < s.exams[0].value &&
           <p className="note">İlk sınavdan bu yana <b className="crit-ink">
             {s.exams[0].value - s.exams[s.exams.length - 1].value} puan</b> kaybetti.</p>}
-        {s.detail && <Kv k="Son sınav" v={String(s.detail.test.last_exam)}
-          alert={s.detail.test.last_exam < PASS_MARK}
-          suffix={s.detail.test.last_exam < PASS_MARK ? "· geçme notu altında" : undefined} />}
+        {detail && <Kv k="Son sınav" v={String(detail.test.last_exam)}
+          alert={detail.test.last_exam < PASS_MARK}
+          suffix={detail.test.last_exam < PASS_MARK ? "· geçme notu altında" : undefined} />}
         {s.benchmark && <Kv k={`${s.level} kurunun iyi öğrencileri`} v={s.benchmark.exam.toFixed(0)} />}
       </section>
 
       <section className="panel pad">
-        <Head title="Dil becerileri" score={s.dimensions.skill ?? 0} />
-        {s.skills.map(k => {
+        <Head title="Dil becerileri" score={scoreOf("skill")} />
+        {s.skills.length === 0 ? <p className="note">Beceri puanı girilmemiş.</p> : s.skills.map(k => {
           const mark = s.benchmark?.skill ?? 100;
           const tone = k.value < PASS_MARK ? "crit" : k.value < mark * .85 ? "warn" : "good";
-          const weakest = s.detail?.skill.weakest === k.key;
+          const weakest = detail?.skill.weakest === k.key;
           return <div key={k.key} className="bar">
             <span className={`nm${weakest ? " is-weakest" : ""}`}>{k.label}</span>
             <span className="track">
@@ -102,20 +96,20 @@ export default async function Student({ params }: { params: Promise<{ id: string
             <span className="val">{k.value}</span>
           </div>;
         })}
-        {s.benchmark && <p className="legend"><i className="tick-key" />
+        {s.benchmark && s.skills.length > 0 && <p className="legend"><i className="tick-key" />
           {s.level} kurunun iyi öğrencileri: {s.benchmark.skill.toFixed(0)}</p>}
       </section>
 
       <section className="panel pad">
-        <Head title="Derse katılım" score={s.dimensions.classroom ?? 0} />
-        {s.detail ? <>
-          <Kv k="Derse katılımı" v={`${s.detail.classroom.participation} / 10`}
-            alert={s.detail.classroom.participation <= 5} />
-          <Kv k="Ödevlerini yapma oranı" v={`%${s.detail.classroom.homework}`}
-            alert={s.detail.classroom.homework < 60} />
+        <Head title="Derse katılım" score={scoreOf("classroom")} />
+        {detail ? <>
+          <Kv k="Derse katılımı" v={`${detail.classroom.participation} / 10`}
+            alert={detail.classroom.participation <= 5} />
+          <Kv k="Ödevlerini yapma oranı" v={`%${detail.classroom.homework}`}
+            alert={detail.classroom.homework < 60} />
           <div className="kv"><span className="k">Öğretmeni endişeli mi</span>
-            <span className={`state ${s.detail.classroom.teacher_concern ? "crit" : "good"}`}>
-              <i className="dot" />{s.detail.classroom.teacher_concern ? "Evet" : "Hayır"}</span></div>
+            <span className={`state ${detail.classroom.teacher_concern ? "crit" : "good"}`}>
+              <i className="dot" />{detail.classroom.teacher_concern ? "Evet" : "Hayır"}</span></div>
         </> : <p className="note">Sınıf içi gözlem kaydı yok.</p>}
         {s.satisfaction !== null && <>
           <Kv k="Memnuniyet anketi" v={`${s.satisfaction} / 10`} />
@@ -126,9 +120,30 @@ export default async function Student({ params }: { params: Promise<{ id: string
   </>;
 }
 
-function Head({ title, score }: { title: string; score: number }) {
+function Assessment({ risk }: { risk: StudentRisk }) {
+  const whos = [...new Set(risk.steps.map(x => x.who).filter(Boolean))];
+  return <>
+    <p className="srow-head lead">{risk.headline}</p>
+    <ul className="facts">
+      {risk.found.length
+        ? risk.found.map(f => <li key={f.dim} className={band(f.score)}>{f.text}</li>)
+        : <li>Bu öğrencide belirgin bir risk sinyali yok.</li>}
+    </ul>
+    <div className="todo">
+      <div className="todo-hd">NE YAPMALI</div>
+      <ul>{risk.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
+      {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
+    </div>
+    {risk.reasons.length > 0 && <details className="raw">
+      <summary>Sistemin tespit ettiği ham sinyaller ({risk.reasons.length})</summary>
+      <ul>{risk.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
+    </details>}
+  </>;
+}
+
+function Head({ title, score }: { title: string; score: number | null }) {
   return <div className="card-hd"><h2>{title}</h2>
-    <span className={`state ${band(score)}`}><i className="dot" />{areaWord(score)}</span></div>;
+    {score !== null && <span className={`state ${band(score)}`}><i className="dot" />{areaWord(score)}</span>}</div>;
 }
 
 function Kv({ k, v, alert, suffix }: { k: string; v: string; alert?: boolean; suffix?: string }) {
@@ -138,7 +153,7 @@ function Kv({ k, v, alert, suffix }: { k: string; v: string; alert?: boolean; su
 
 /** Four exams is too few for a chart library and too many for a sentence.
  *  The pass mark is drawn because "is he failing?" is the question being asked. */
-function Spark({ exams, falling }: { exams: { label: string; value: number }[]; falling: boolean }) {
+function Spark({ exams, falling }: { exams: StudentCard["exams"]; falling: boolean }) {
   if (exams.length < 2) return <p className="note">Sınav geçmişi yok.</p>;
   const W = 330, H = 126, PL = 6, PR = 26, PT = 16, PB = 24;
   const values = exams.map(e => e.value);

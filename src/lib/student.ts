@@ -13,12 +13,17 @@ export const SKILL_LABEL: Record<string, string> = {
 };
 export const PASS_MARK = 60;
 
-export type StudentCard = {
-  id: string; name: string; branch: string; level: string; teacher: string | null;
+/** A student who has just been enrolled has no score yet, and their card has to
+ *  say so rather than behave as though the student does not exist. */
+export type StudentRisk = {
   riskLevel: RiskLevel; score: number; change: number | null;
   dimensions: DimensionScores; detail: DimensionDetail | null;
   reasons: string[]; found: Evidence[]; headline: string;
   steps: Step[]; needsAction: boolean;
+};
+export type StudentCard = {
+  id: string; name: string; branch: string; level: string; teacher: string | null;
+  risk: StudentRisk | null;
   exams: { label: string; value: number }[];
   skills: { key: string; label: string; value: number }[];
   attendanceRate: number | null; attendanceRecent: number | null;
@@ -72,7 +77,7 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
   ]);
   for (const r of [student, enrollments, branches, snapshots])
     if (r.error) throw new Error("Öğrenci kartı yüklenemedi.");
-  if (!student.data || !snapshots.data?.length) return null;
+  if (!student.data) return null;
 
   const mine = enrollments.data!.find(e => e.student_id === id);
   const level = (mine?.level as string) ?? "—";
@@ -98,26 +103,32 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
   }
   const me = cohort.get(id) ?? { exams: new Map(), skills: new Map() };
 
-  const [now, before] = snapshots.data;
-  const source = {
-    dimensions: now.dimensions as DimensionScores,
-    detail: now.dimension_detail as DimensionDetail | null,
-    level,
-    examFirst: me.exams.get("exam_1") ?? null,
-    examLast: me.exams.get("exam_4") ?? null
-  };
-  const found = evidence(source);
+  const [now, before] = snapshots.data ?? [];
+  let risk: StudentRisk | null = null;
+  if (now) {
+    const source = {
+      dimensions: now.dimensions as DimensionScores,
+      detail: now.dimension_detail as DimensionDetail | null,
+      level,
+      examFirst: me.exams.get("exam_1") ?? null,
+      examLast: me.exams.get("exam_4") ?? null
+    };
+    const found = evidence(source);
+    risk = {
+      riskLevel: now.risk_level as RiskLevel, score: Number(now.risk_score),
+      change: before ? Number(now.risk_score) - Number(before.risk_score) : null,
+      dimensions: source.dimensions, detail: source.detail,
+      reasons: (now.reasons as string[]) ?? [],
+      found, headline: headline(source, found),
+      steps: steps(now.recommended_action), needsAction: needsAction(now.recommended_action)
+    };
+  }
 
   return {
     id, name: student.data.name, level,
     branch: branches.data!.find(b => b.id === student.data!.branch_id)?.name ?? "—",
     teacher: (mine?.teacher_name as string) ?? null,
-    riskLevel: now.risk_level as RiskLevel, score: Number(now.risk_score),
-    change: before ? Number(now.risk_score) - Number(before.risk_score) : null,
-    dimensions: source.dimensions, detail: source.detail,
-    reasons: (now.reasons as string[]) ?? [],
-    found, headline: headline(source, found),
-    steps: steps(now.recommended_action), needsAction: needsAction(now.recommended_action),
+    risk,
     exams: ["exam_1", "exam_2", "exam_3", "exam_4"]
       .map((k, i) => ({ label: `${i + 1}. sınav`, value: me.exams.get(k) ?? NaN }))
       .filter(e => Number.isFinite(e.value)),

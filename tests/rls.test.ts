@@ -132,3 +132,28 @@ describe("risk scoring boundaries", () => {
     await expect(asUser(3, snapshot(3))).rejects.toThrow();
   });
 });
+
+describe("day-to-day entry boundaries", () => {
+  const measurement = (student: number, source: string) =>
+    `insert into public.student_measurements(organization_id,branch_id,student_id,measured_on,kind,value,source_reference)
+     values ('${id(10)}','${id(20)}','${id(student)}','2026-09-08','exam',72,'${source}')`;
+
+  it("teacher records a mark for a student assigned to them", async () => {
+    await expect(asUser(3, measurement(30, "entry-assigned"))).resolves.toBeDefined();
+  });
+  it("teacher cannot record one for a student in their branch they do not teach", async () => {
+    await expect(asUser(3, measurement(31, "entry-unassigned"))).rejects.toThrow();
+  });
+  it("branch manager records for any student in their branch", async () => {
+    await expect(asUser(2, measurement(31, "entry-manager"))).resolves.toBeDefined();
+  });
+  it("viewer records nothing", async () => {
+    await expect(asUser(4, measurement(30, "entry-viewer"))).rejects.toThrow();
+  });
+  it("teacher corrects their own entry", async () => {
+    await expect(asUser(3,
+      `update public.student_measurements set value = 80
+       where student_id = '${id(30)}' and source_reference = 'entry-assigned'`
+    )).resolves.toBeDefined();
+  });
+});

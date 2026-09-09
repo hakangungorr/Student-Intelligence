@@ -150,3 +150,13 @@ tbody .quad{display:inline-flex;gap:3px}
 .issues{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
 .issues b{color:var(--ink)}
 .confirm{margin-top:20px}
+
+/* Veri girişi ----------------------------------------------------------- */
+table.sheet th,table.sheet td{padding:10px 14px}
+table.sheet input[type=number]{width:82px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+table.sheet input[type=checkbox]{width:18px;height:18px}
+table.sheet tbody tr:nth-child(even){background:color-mix(in srgb, var(--soft) 45%, transparent)}
+.sheet-actions{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:4px}
+.error-note{color:rgb(var(--crit-rgb))}
+.form-stack select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.form-stack .note{font-weight:400}

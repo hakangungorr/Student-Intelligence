@@ -29,6 +29,8 @@ export default async function Students({ searchParams }: { searchParams: Promise
     <p className="intro">Şube, kur, risk ve sorun alanına göre süzün. Eğitmen kırılımı bilerek
       yok — şubenin kaynak sorununu bir öğretmenin performans sorunu gibi gösteriyordu.</p>
 
+    <p><Link className="primary" href="/workspace/students/new">Yeni öğrenci kaydet</Link></p>
+
     <form className="panel filters" method="get">
       <label>Ara<input type="search" name="q" defaultValue={f.q ?? ""}
         placeholder="İsim ya da numara" autoComplete="off" /></label>
