@@ -63,8 +63,12 @@ describe("database tenant and branch boundaries",()=>{
     await db.exec("reset role; set role anon;");
     await expect(db.query("select * from public.students")).rejects.toThrow(/permission denied/);
   });
+  // RLS filters rows on UPDATE and DELETE rather than raising, so a blocked write
+  // is a write that touched nothing. Asserting on the error would pass for the
+  // wrong reason the day the policy changed.
   it("cannot promote oneself or change branch membership",async()=>{
-    await expect(asUser(4,"update public.memberships set role='org_admin',branch_id=null")).rejects.toThrow(/permission denied/);
+    expect((await asUser(4,"update public.memberships set role='org_admin',branch_id=null")).affectedRows).toBe(0);
+    expect((await asUser(4,"select role from public.memberships")).rows).toEqual([{role:"viewer"}]);
   });
   const actionInsert = (student=30,branch=20) => `insert into public.actions(organization_id,branch_id,student_id,title)
     values ('${id(10)}','${id(branch)}','${id(student)}','Öğrenci görüşmesi') returning id`;
@@ -155,5 +159,44 @@ describe("day-to-day entry boundaries", () => {
       `update public.student_measurements set value = 80
        where student_id = '${id(30)}' and source_reference = 'entry-assigned'`
     )).resolves.toBeDefined();
+  });
+});
+
+describe("team management boundaries", () => {
+  const grant = (org: number, user: number, role: string, branch: string) =>
+    `insert into public.memberships(user_id,organization_id,branch_id,role,display_name)
+     values ('${id(user)}','${id(org)}',${branch},'${role}','Yeni Kişi')`;
+
+  it("institution admin sees the whole team, a teacher only itself", async () => {
+    expect((await asUser(1, "select * from public.memberships")).rows.length).toBeGreaterThan(1);
+    expect((await asUser(3, "select * from public.memberships")).rows).toHaveLength(1);
+  });
+  it("institution admin grants access inside its own institution", async () => {
+    await expect(asUser(1, grant(10, 6, "teacher", `'${id(20)}'`))).resolves.toBeDefined();
+  });
+  it("nobody grants access to another institution", async () => {
+    await expect(asUser(1, grant(11, 6, "teacher", `'${id(22)}'`))).rejects.toThrow();
+  });
+  it("a teacher grants nothing", async () => {
+    await expect(asUser(3, grant(10, 6, "org_admin", "null"))).rejects.toThrow();
+  });
+  // The two guards fail differently: a USING clause filters the row away, so the
+  // delete reports nothing deleted, while a WITH CHECK clause rejects the new row
+  // outright. Both leave the administrator in place, which is what matters.
+  it("an administrator cannot revoke its own access", async () => {
+    expect((await asUser(1,
+      `delete from public.memberships where user_id = '${id(1)}'`)).affectedRows).toBe(0);
+  });
+  it("an administrator cannot demote itself", async () => {
+    await expect(asUser(1,
+      `update public.memberships set role = 'viewer' where user_id = '${id(1)}'`
+    )).rejects.toThrow(/row-level security/);
+    expect((await asUser(1,
+      `select role from public.memberships where user_id = '${id(1)}'`)).rows)
+      .toEqual([{ role: "org_admin" }]);
+  });
+  it("but can revoke somebody else's", async () => {
+    expect((await asUser(1,
+      `delete from public.memberships where user_id = '${id(4)}'`)).affectedRows).toBe(1);
   });
 });
