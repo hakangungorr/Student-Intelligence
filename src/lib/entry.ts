@@ -1,13 +1,14 @@
-import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { fetchAll } from "@/lib/paginate";
-
-/** Entering results for a class, as opposed to importing a term.
+/** Entering results by hand, in the two shapes the work actually arrives in.
  *
- *  A teacher marking an exam has one number for each of twenty-four students,
- *  and wants one column, not twenty-four forms. So the unit of work here is a
- *  single kind of measurement across a whole class — pick what you are entering,
- *  then go down the list. Everything else about the student stays out of the way.
+ *  A teacher marking an exam has one number for each of twenty-four students and
+ *  wants one column, not twenty-four forms: that is the sheet, one kind of
+ *  measurement down a whole class.
+ *
+ *  A registration desk looking at one student has the opposite problem — every
+ *  number for one person — and sending them through the sheet six times, once
+ *  per kind, is the long way round. So the same fields are also served as groups
+ *  for a single student's card. Both write through `saveSheet`, which is why it
+ *  takes the fields rather than the kind.
  */
 export const ENTRY_KINDS = [
   { key: "exam_1", label: "1. sınav" }, { key: "exam_2", label: "2. sınav" },
@@ -21,10 +22,13 @@ export const isEntryKind = (v: string): v is EntryKind =>
 
 export type Field = {
   name: string; label: string; min: number; max: number; kind: "number" | "boolean";
+  /** Shown under the input on the single-student form, where there is room for it
+   *  and no column header to carry the unit. */
+  hint?: string;
 };
 const SCORE = { min: 0, max: 100, kind: "number" as const };
 
-/** Which inputs one entry kind puts on a row. */
+/** Which inputs one entry kind puts on a sheet row. */
 export function fieldsOf(kind: EntryKind): Field[] {
   if (kind === "skills") return [
     { name: "speaking", label: "Konuşma", ...SCORE },
@@ -42,15 +46,53 @@ export function fieldsOf(kind: EntryKind): Field[] {
   return [{ name: kind, label: "Not", ...SCORE }];
 }
 
+/** The same fields laid out for one student, grouped the way somebody filling in
+ *  a card reads them. Labels are longer here because there is no column header. */
+export const FIELD_GROUPS: { label: string; note: string; fields: Field[] }[] = [
+  {
+    label: "Sınav notları", note: "100 üzerinden",
+    fields: [1, 2, 3, 4].map(n => ({ name: `exam_${n}`, label: `${n}. sınav`, ...SCORE }))
+  },
+  {
+    label: "Dil becerileri", note: "100 üzerinden",
+    fields: fieldsOf("skills")
+  },
+  {
+    label: "Devam", note: "yüzde olarak",
+    fields: [
+      { name: "term_rate", label: "Dönem geneli", ...SCORE, hint: "%" },
+      { name: "last_four_weeks", label: "Son 4 hafta", ...SCORE, hint: "%" }
+    ]
+  },
+  {
+    label: "Sınıf içi", note: "eğitmenin gözlemi",
+    fields: [
+      { name: "participation", label: "Derse katılım", min: 1, max: 10, kind: "number", hint: "10 üzerinden" },
+      { name: "homework", label: "Ödev tamamlama", ...SCORE, hint: "%" },
+      { name: "concern", label: "Bu öğrenci için endişeliyim", min: 0, max: 1, kind: "boolean" }
+    ]
+  }
+];
+export const ALL_FIELDS: Field[] = FIELD_GROUPS.flatMap(g => g.fields);
+
 export type EntryRow = {
   id: string; externalId: string; name: string; branch: string; level: string;
   values: Record<string, number | boolean | null>;
 };
 export type EntrySheet = {
-  rows: EntryRow[]; branches: string[]; levels: string[]; observedOn: string | null;
+  rows: EntryRow[]; branches: string[]; levels: string[];
+  /** How many students the filters match, whether or not they were rendered. */
+  total: number;
+  /** True when the match was too wide to put on screen and the caller should ask
+   *  for a class first. A small institution never sees this. */
+  capped: boolean;
 };
 
-const MEASURED: Record<string, { kind: string; source: string }> = {
+/** Above this, an unfiltered sheet stops being a sheet and becomes a scroll. */
+export const SHEET_CAP = 60;
+
+/** Which stored reading each field is, used by the read and write paths alike. */
+export const MEASURED: Record<string, { kind: string; source: string }> = {
   exam_1: { kind: "exam", source: "exam_1" }, exam_2: { kind: "exam", source: "exam_2" },
   exam_3: { kind: "exam", source: "exam_3" }, exam_4: { kind: "exam", source: "exam_4" },
   speaking: { kind: "speaking", source: "skill_profile" },
@@ -60,164 +102,60 @@ const MEASURED: Record<string, { kind: string; source: string }> = {
   term_rate: { kind: "attendance", source: "term_rate" },
   last_four_weeks: { kind: "attendance", source: "last_four_weeks" }
 };
-const OBSERVED = new Set(["participation", "homework", "concern"]);
+export const OBSERVED = new Set(["participation", "homework", "concern"]);
 
-export async function loadSheet(
-  client: SupabaseClient, kind: EntryKind,
-  branch: string | null, level: string | null, search: string | null
-): Promise<EntrySheet> {
-  const oops = "Sınıf listesi yüklenemedi";
-  const [students, branchRows, enrollments] = await Promise.all([
-    fetchAll<{ id: string; external_id: string; name: string; branch_id: string }>(
-      () => client.from("students").select("id,external_id,name,branch_id").eq("active", true), oops),
-    fetchAll<{ id: string; name: string }>(() => client.from("branches").select("id,name"), oops),
-    fetchAll<{ student_id: string; level: string }>(
-      () => client.from("enrollments").select("student_id,level").eq("active", true), oops)
-  ]);
-  const branchName = new Map(branchRows.map(b => [b.id, b.name]));
-  const levelOf = new Map(enrollments.map(e => [e.student_id, e.level]));
 
-  // Looking somebody up by name is how a teacher finds one student in a term's
-  // roster; the branch and level filters answer a different question.
-  const needle = search?.trim().toLocaleLowerCase("tr") ?? "";
-  const inScope = students.filter(s =>
-    (!branch || branchName.get(s.branch_id) === branch)
-    && (!level || levelOf.get(s.id) === level)
-    && (!needle || s.name.toLocaleLowerCase("tr").includes(needle)
-      || s.external_id.toLocaleLowerCase("tr").includes(needle)));
-  const ids = inScope.map(s => s.id);
+export type EntryProblem = { studentId: string; field: string; label: string; text: string };
 
-  const fields = fieldsOf(kind);
-  const wantsMeasured = fields.some(f => MEASURED[f.name]);
-  const wantsObserved = fields.some(f => OBSERVED.has(f.name));
+/** Reads the `v:<student>:<field>` inputs both forms post.
+ *
+ *  A rejected value is reported with the student it belongs to, because "Katılım:
+ *  '12' 1-10 aralığında olmalı" sends somebody hunting down a sheet of
+ *  twenty-four rows for the one that is wrong.
+ */
+export function readEdits(form: FormData, fields: Field[]): {
+  edits: { studentId: string; values: Record<string, number | boolean | null> }[];
+  problems: EntryProblem[];
+} {
+  const byStudent = new Map<string, Record<string, number | boolean | null>>();
+  const problems: EntryProblem[] = [];
 
-  const readings = wantsMeasured && ids.length
-    ? await fetchAll<{ student_id: string; kind: string; source_reference: string; value: number }>(
-      () => client.from("student_measurements").select("student_id,kind,source_reference,value")
-        .in("student_id", ids), oops)
-    : [];
-  const observations = wantsObserved && ids.length
-    ? await fetchAll<{ student_id: string; observed_on: string; participation: number | null;
-      homework_completion: number | null; teacher_concern: boolean | null }>(
-      () => client.from("classroom_observations")
-        .select("student_id,observed_on,participation,homework_completion,teacher_concern")
-        .in("student_id", ids).order("observed_on", { ascending: false }), oops)
-    : [];
+  const bucket = (studentId: string) =>
+    byStudent.get(studentId) ?? byStudent.set(studentId, {}).get(studentId)!;
 
-  const readingAt = new Map<string, number>();
-  for (const m of readings) readingAt.set(`${m.student_id}|${m.kind}|${m.source_reference}`, Number(m.value));
-  const latest = new Map<string, (typeof observations)[number]>();
-  for (const o of observations) if (!latest.has(o.student_id)) latest.set(o.student_id, o);
+  for (const [name, raw] of form.entries()) {
+    // A row is present because the form said so, not because a value arrived:
+    // a row whose only input is an unticked checkbox posts nothing under `v:`,
+    // and clearing that box has to survive.
+    const prior = /^p:([^:]+):/.exec(name);
+    if (prior) { bucket(prior[1]); continue; }
+    const match = /^v:([^:]+):(.+)$/.exec(name);
+    if (!match) continue;
+    const [, studentId, fieldName] = match;
+    const field = fields.find(f => f.name === fieldName);
+    if (!field) continue;
+    const values = bucket(studentId);
 
-  const rows: EntryRow[] = inScope.map(s => {
-    const values: EntryRow["values"] = {};
+    if (field.kind === "boolean") { values[fieldName] = true; continue; }
+    const text = String(raw).trim();
+    if (text === "") { values[fieldName] = null; continue; }
+    const value = Number(text.replace(",", "."));
+    if (!Number.isFinite(value) || value < field.min || value > field.max) {
+      problems.push({ studentId, field: fieldName, label: field.label, text });
+      continue;
+    }
+    values[fieldName] = value;
+  }
+
+  // An unticked checkbox sends nothing at all, and reading that as "no concern"
+  // meant saving an untouched sheet wrote an empty observation for every student
+  // on it. It is only an answer when the box was ticked before — which the form
+  // states in a `p:` field — and otherwise a row nobody filled in.
+  for (const [studentId, values] of byStudent)
     for (const f of fields) {
-      const measured = MEASURED[f.name];
-      if (measured) {
-        values[f.name] = readingAt.get(`${s.id}|${measured.kind}|${measured.source}`) ?? null;
-      } else {
-        const o = latest.get(s.id);
-        values[f.name] = f.name === "participation" ? o?.participation ?? null
-          : f.name === "homework" ? (o?.homework_completion === null || o?.homework_completion === undefined
-            ? null : Number(o.homework_completion))
-            : o?.teacher_concern ?? null;
-      }
+      if (f.kind !== "boolean" || values[f.name] !== undefined) continue;
+      values[f.name] = form.get(`p:${studentId}:${f.name}`) === "1" ? false : null;
     }
-    return {
-      id: s.id, externalId: s.external_id, name: s.name,
-      branch: branchName.get(s.branch_id) ?? "—", level: levelOf.get(s.id) ?? "—", values
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name, "tr"));
 
-  return {
-    rows, branches: [...new Set(branchRows.map(b => b.name))].sort((a, b) => a.localeCompare(b, "tr")),
-    levels: [...new Set(enrollments.map(e => e.level))].sort(),
-    observedOn: [...latest.values()][0]?.observed_on ?? null
-  };
-}
-
-export type SaveResult = { written: number; unchanged: number };
-
-/** Writes only what changed, so re-saving a sheet nobody edited is a no-op and
- *  the audit trail does not fill with rewrites of the same numbers. */
-export async function saveSheet(
-  client: SupabaseClient, organizationId: string, kind: EntryKind, on: string, actorId: string,
-  edits: { studentId: string; values: Record<string, number | boolean | null> }[]
-): Promise<SaveResult> {
-  const fail = (e: { message: string } | null) => { if (e) throw new Error(e.message); };
-  if (!edits.length) return { written: 0, unchanged: 0 };
-
-  const ids = edits.map(e => e.studentId);
-  const students = await fetchAll<{ id: string; branch_id: string }>(
-    () => client.from("students").select("id,branch_id").in("id", ids), "Öğrenciler okunamadı");
-  const branchOf = new Map(students.map(s => [s.id, s.branch_id]));
-
-  const fields = fieldsOf(kind);
-  let written = 0, unchanged = 0;
-
-  const measuredFields = fields.filter(f => MEASURED[f.name]);
-  if (measuredFields.length) {
-    const prior = await fetchAll<{ id: string; student_id: string; kind: string;
-      source_reference: string; value: number }>(
-      () => client.from("student_measurements").select("id,student_id,kind,source_reference,value")
-        .in("student_id", ids), "Mevcut ölçümler okunamadı");
-    const known = new Map(prior.map(m => [`${m.student_id}|${m.kind}|${m.source_reference}`, m]));
-    const inserts: Record<string, unknown>[] = [];
-    for (const edit of edits) {
-      for (const f of measuredFields) {
-        const value = edit.values[f.name];
-        if (value === null || value === undefined) continue;
-        const { kind: k, source } = MEASURED[f.name];
-        const existing = known.get(`${edit.studentId}|${k}|${source}`);
-        if (!existing) {
-          inserts.push({
-            organization_id: organizationId, branch_id: branchOf.get(edit.studentId),
-            student_id: edit.studentId, measured_on: on, kind: k, value, source_reference: source
-          });
-          written++;
-        } else if (Number(existing.value) !== value) {
-          fail((await client.from("student_measurements")
-            .update({ value, measured_on: on }).eq("id", existing.id)).error);
-          written++;
-        } else unchanged++;
-      }
-    }
-    if (inserts.length) fail((await client.from("student_measurements").insert(inserts)).error);
-  }
-
-  if (fields.some(f => OBSERVED.has(f.name))) {
-    const prior = await fetchAll<{ id: string; student_id: string; participation: number | null;
-      homework_completion: number | null; teacher_concern: boolean | null }>(
-      () => client.from("classroom_observations")
-        .select("id,student_id,participation,homework_completion,teacher_concern")
-        .in("student_id", ids).eq("observed_on", on), "Mevcut gözlemler okunamadı");
-    const known = new Map(prior.map(o => [o.student_id, o]));
-    const inserts: Record<string, unknown>[] = [];
-    for (const edit of edits) {
-      const participation = edit.values.participation as number | null ?? null;
-      const homework = edit.values.homework as number | null ?? null;
-      const concern = edit.values.concern as boolean | null ?? null;
-      // The table requires at least one of the three to be present.
-      if (participation === null && homework === null && concern === null) continue;
-      const existing = known.get(edit.studentId);
-      if (!existing) {
-        inserts.push({
-          organization_id: organizationId, branch_id: branchOf.get(edit.studentId),
-          student_id: edit.studentId, observed_on: on, participation,
-          homework_completion: homework, teacher_concern: concern, created_by: actorId
-        });
-        written++;
-      } else if (existing.participation !== participation
-        || Number(existing.homework_completion ?? NaN) !== Number(homework ?? NaN)
-        || existing.teacher_concern !== concern) {
-        fail((await client.from("classroom_observations").update({
-          participation, homework_completion: homework, teacher_concern: concern
-        }).eq("id", existing.id)).error);
-        written++;
-      } else unchanged++;
-    }
-    if (inserts.length) fail((await client.from("classroom_observations").insert(inserts)).error);
-  }
-
-  return { written, unchanged };
+  return { edits: [...byStudent].map(([studentId, values]) => ({ studentId, values })), problems };
 }

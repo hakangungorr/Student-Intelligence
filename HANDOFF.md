@@ -28,6 +28,22 @@ Geniş ekranda risk haritası öncelik listesinin yanındadır. Mobil menü iki
 sütunludur. Gündemde ilk iki risk nedeni, detayda tüm sinyaller gösterilir.
 Risk motoru, veri ve aşağıdaki ürün kapsamı kararları korunmuştur.
 
+Elle veri girişi iki şekle ayrıldı. Çizelge eskisi gibi bir sınıfın tek tür
+verisini alır; öğrenci kartındaki yeni panel ise tek öğrencinin bütün alanlarını
+tek ekranda alır — bir öğrenciyi kaydedip notlarını girmek için artık tür seçip
+süzgeçten geçmek gerekmiyor. Öğrenci kaydı formu ilk ölçümleri de kabul eder ve
+"kaydet ve yenisini ekle" ile arka arkaya kayda devam eder. Çizelgede Enter bir
+alt satıra geçer, süzgeçler kendiliğinden uygulanır, reddedilen değer öğrencinin
+adıyla bildirilir ve süzgeçsiz açılış altmış öğrenciden sonra sınıf seçmeyi ister.
+İşaretlenmemiş "endişeliyim" kutusu artık dokunulmamış satır sayılır: boş bir
+çizelgeyi kaydetmek her öğrenciye boş gözlem yazıyordu, yazmıyor. `lib/entry.ts`
+bu iş için üçe ayrıldı — katalog ve form okuma, okuma yolu, yazma yolu — ve iki
+form da aynı kaydetme yolundan geçer.
+
+CSV aktarımı bu turda değişmedi. Bilinen pürüzler duruyor: Excel dosyası
+doğrudan kabul edilmiyor, dosyadaki şube ya da kur adı tanımlılarla tutmazsa
+satır atlanıyor ve önizleme kaçının yeni kaçının güncelleme olduğunu söylemiyor.
+
 ## 1. Bu dokümanın amacı
 
 Risk motoru ve demo dataseti **bitti**. Sırada 4 ekranlı dashboard var.

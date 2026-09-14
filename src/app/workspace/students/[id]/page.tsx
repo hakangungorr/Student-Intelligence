@@ -2,8 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { loadStudent, type StudentCard, type StudentRisk } from "@/lib/student";
+import { FIELD_GROUPS } from "@/lib/entry";
+import { loadStudentEntry } from "@/lib/entry-read";
 import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
 import { MarkDone } from "../../mark-button";
+import { EntryPanel } from "./entry-panel";
 
 const areaWord = (v: number) => v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
 
@@ -12,6 +15,8 @@ export default async function Student({ params }: { params: Promise<{ id: string
   const { client } = await requireUser();
   const s = await loadStudent(client, id);
   if (!s) notFound();
+  const entered = await loadStudentEntry(client, id);
+  const today = new Date().toISOString().slice(0, 10);
 
   const missed = s.attendanceRate === null ? null : Math.max(1, Math.round((100 - s.attendanceRate) / 10));
   const detail = s.risk?.detail ?? null;
@@ -36,12 +41,14 @@ export default async function Student({ params }: { params: Promise<{ id: string
 
       {s.risk ? <Assessment risk={s.risk} studentId={s.id} done={s.done} /> : <>
         <p className="srow-head lead">Bu öğrenci henüz puanlanmadı.</p>
-        <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav, beceri,
-          devam ve sınıf içi bilgilerini <Link href="/workspace/entry">veri girişi</Link> sayfasından
-          girin, sonra <Link href="/workspace/import">veri aktarımı</Link> sayfasından hesaplamayı
-          çalıştırın.</p>
+        <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav,
+          beceri, devam ve sınıf içi bilgilerini aşağıdaki formdan girin — kaydettiğinizde
+          skor hesaplanır.</p>
       </>}
     </section>
+
+    <EntryPanel studentId={s.id} name={s.name} values={entered} today={today}
+      groups={FIELD_GROUPS} open={!s.risk} />
 
     {s.risk && <section className="panel pad">
       <p className="eyebrow">SORUN NEREDE</p>

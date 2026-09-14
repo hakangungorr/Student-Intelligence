@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { loadSettings } from "@/lib/settings";
+import { FIELD_GROUPS } from "@/lib/entry";
 import { NewStudentForm } from "./form";
 
 export default async function NewStudent() {
@@ -16,8 +17,10 @@ export default async function NewStudent() {
     <p className="eyebrow">YENİ ÖĞRENCİ</p>
     <h1>Öğrenci kaydı.</h1>
     <p className="intro">Tek öğrenci için form; bir dönemin tamamını taşıyacaksanız{" "}
-      <Link href="/workspace/import">CSV aktarımı</Link> daha hızlıdır. Sınav ve devam bilgileri
-      kayıttan sonra <Link href="/workspace/entry">veri girişi</Link> sayfasından girilir.</p>
-    <NewStudentForm branches={branches.data} levels={settings.levels} />
+      <Link href="/workspace/import">CSV aktarımı</Link> daha hızlıdır. Elinizde varsa sınav,
+      devam ve sınıf içi bilgilerini de aynı formda girebilirsiniz; yoksa öğrencinin kartından
+      istediğiniz zaman eklersiniz.</p>
+    <NewStudentForm branches={branches.data} levels={settings.levels}
+      groups={FIELD_GROUPS} today={new Date().toISOString().slice(0, 10)} />
   </>;
 }
