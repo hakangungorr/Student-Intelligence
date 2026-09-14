@@ -10,22 +10,40 @@ import { DEFAULTS } from "@/lib/settings";
 export const DIMENSIONS = ["test", "skill", "classroom", "attendance"] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
 
+/** "üç sınavdır" reads; "3 sınavdır" does not. Only the counts a course can
+ *  plausibly run are spelled out; anything larger falls back to the digit. */
+const WRITTEN: Record<number, string> = {
+  2: "iki", 3: "üç", 4: "dört", 5: "beş", 6: "altı", 7: "yedi", 8: "sekiz"
+};
+
 export const AREA: Record<Dimension, string> = {
   test: "Sınav notları", skill: "Dil becerileri",
   classroom: "Derse katılım", attendance: "Devamsızlık"
 };
+/** What to say when a dimension has no data, phrased as the thing somebody has
+ *  to go and enter rather than as a state the student is in. */
+export const MISSING: Record<Dimension, string> = {
+  test: "Sınav notu girilmemiş", skill: "Beceri puanı girilmemiş",
+  classroom: "Sınıf içi gözlem girilmemiş", attendance: "Devam bilgisi girilmemiş"
+};
+/** The dimensions a snapshot could not answer for, in the declared order. */
+export const missingDimensions = (d: DimensionScores): Dimension[] =>
+  DIMENSIONS.filter(k => d[k] === undefined);
+
 const SKILL: Record<string, string> = {
   speaking: "Konuşma", writing: "Yazma", listening: "Dinleme", reading: "Okuma"
 };
 
-export type DimensionScores = Record<Dimension, number>;
+/** A dimension the student's data could not answer for is absent, never zero:
+ *  "no skill scores on file" and "skills are fine" must not look the same. */
+export type DimensionScores = Partial<Record<Dimension, number>>;
 export type DimensionDetail = {
-  test: { delta: number; last_exam: number; monotonic_decline: boolean; cohort_gap_pct: number;
-    recent_avg?: number };
-  skill: { weakest: string; weakest_score: number; spread: number; diagnosis: string;
+  test?: { delta: number; last_exam: number; monotonic_decline: boolean; cohort_gap_pct: number;
+    recent_avg?: number; exam_count?: number; first_exam?: number };
+  skill?: { weakest: string; weakest_score: number; spread: number; diagnosis: string;
     own_avg?: number; cohort_gap_pct?: number };
-  classroom: { participation: number; homework: number; teacher_concern: boolean };
-  attendance: { rate: number; recent: number; drop: number };
+  classroom?: { participation?: number; homework?: number; teacher_concern: boolean };
+  attendance?: { rate: number; recent: number; drop: number };
 };
 
 /* Turkish suffixes follow how the number is *read*, not its digits: "47'si" but
@@ -47,7 +65,11 @@ function possessiveDative(n: number) {           // 5'ine · 2'sine
   return "'" + p + (/[ıua]$/.test(p) ? "na" : "ne");
 }
 
-export const band = (v: number) => v >= 60 ? "crit" : v >= 30 ? "warn" : "good";
+/** The fourth state is not a severity. "none" means nobody has told us, and it
+ *  has to be drawn as an absence — a dimension with no data shown in green reads
+ *  as a clean bill of health the product never issued. */
+export const band = (v: number | undefined) =>
+  v === undefined ? "none" : v >= 60 ? "crit" : v >= 30 ? "warn" : "good";
 
 export const STATE = {
   HIGH: { cls: "crit", word: "Acil" },
@@ -71,49 +93,57 @@ export function evidence(s: Source): Evidence[] {
   if (!d) return [];
   const out: Evidence[] = [];
 
-  if (s.dimensions.attendance >= 30 && d.attendance) {
+  const at = s.dimensions.attendance;
+  if (at !== undefined && at >= 30 && d.attendance) {
     const a = d.attendance, missed = Math.max(1, Math.round((100 - a.rate) / 10));
     let t = a.rate < 85
       ? `Her 10 dersin ${missed}${possessiveDative(missed)} gelmiyor — devam oranı %${a.rate}`
       : `Devam oranı %${a.rate}`;
     if (a.drop >= 8) t += `, son bir ayda %${a.recent}${dative(a.recent)} düştü`;
     else if (a.drop >= 5) t += `, son bir ayda %${a.recent}${dative(a.recent)} geriledi`;
-    out.push({ dim: "attendance", score: s.dimensions.attendance, text: t });
+    out.push({ dim: "attendance", score: at, text: t });
   }
 
-  if (s.dimensions.test >= 30 && d.test) {
+  const te = s.dimensions.test;
+  if (te !== undefined && te >= 30 && d.test) {
     const t0 = d.test;
+    // How many exams there actually were. Older snapshots predate the field and
+    // were all scored on four.
+    const examCount = t0.exam_count ?? 4;
+    const first = t0.first_exam ?? s.examFirst;
     let t: string;
-    if (t0.monotonic_decline && s.examFirst !== null && s.examLast !== null)
-      t = `Sınav notları dört sınavdır üst üste düşüyor (${s.examFirst} → ${s.examLast})`;
+    if (t0.monotonic_decline && first !== null && first !== undefined)
+      t = `Sınav notları ${WRITTEN[examCount] ?? examCount} sınavdır üst üste düşüyor (${first} → ${t0.last_exam})`;
     else if (t0.delta <= -8) t = `Sınav ortalaması ${Math.abs(t0.delta)} puan düştü`;
     else if (t0.delta <= -4) t = `Sınav ortalaması ${Math.abs(t0.delta)} puan geriledi`;
     else if (t0.last_exam < passMark) t = `Son sınavdan ${t0.last_exam} aldı — geçme notu ${passMark}`;
     else t = `Sınavlarda sınıfının %${Math.round(t0.cohort_gap_pct)} gerisinde`;
     if (t0.last_exam < passMark && !t.includes("geçme notu")) t += `; son sınavı ${t0.last_exam}`;
-    out.push({ dim: "test", score: s.dimensions.test, text: t });
+    out.push({ dim: "test", score: te, text: t });
   }
 
-  if (s.dimensions.skill >= 30 && d.skill) {
+  const sk = s.dimensions.skill;
+  if (sk !== undefined && sk >= 30 && d.skill) {
     const k = d.skill, w = SKILL[k.weakest] ?? k.weakest;
     const t = k.diagnosis === "beceri_acigi"
       ? `${w} çok zayıf: ${k.weakest_score} puan — kendi diğer becerilerinin ${Math.round(k.spread)} puan gerisinde`
       : k.diagnosis === "seviye_dusuklugu"
         ? `Tüm dil becerileri ${s.level} seviyesinin altında (en zayıfı ${w.toLocaleLowerCase("tr")}, ${k.weakest_score})`
         : `${w} ${k.weakest_score} puan`;
-    out.push({ dim: "skill", score: s.dimensions.skill, text: t });
+    out.push({ dim: "skill", score: sk, text: t });
   }
 
-  if (s.dimensions.classroom >= 30 && d.classroom) {
+  const cl = s.dimensions.classroom;
+  if (cl !== undefined && cl >= 30 && d.classroom) {
     const c = d.classroom, bits: string[] = [];
-    if (c.participation <= 3) bits.push("derse neredeyse hiç katılmıyor");
-    else if (c.participation <= 5) bits.push(`derse katılımı zayıf (${c.participation}/10)`);
-    if (c.homework < 50) bits.push(`ödev tamamlama oranı sadece %${c.homework}`);
-    else if (c.homework < 75) bits.push(`ödev tamamlama oranı %${c.homework}`);
+    if (c.participation !== undefined && c.participation <= 3) bits.push("derse neredeyse hiç katılmıyor");
+    else if (c.participation !== undefined && c.participation <= 5) bits.push(`derse katılımı zayıf (${c.participation}/10)`);
+    if (c.homework !== undefined && c.homework < 50) bits.push(`ödev tamamlama oranı sadece %${c.homework}`);
+    else if (c.homework !== undefined && c.homework < 75) bits.push(`ödev tamamlama oranı %${c.homework}`);
     if (c.teacher_concern) bits.push("öğretmeni endişesini bildirdi");
     if (bits.length) {
       const t = bits.join(", ");
-      out.push({ dim: "classroom", score: s.dimensions.classroom, text: t[0].toLocaleUpperCase("tr") + t.slice(1) });
+      out.push({ dim: "classroom", score: cl, text: t[0].toLocaleUpperCase("tr") + t.slice(1) });
     }
   }
   return out.sort((a, b) => b.score - a.score);
@@ -121,13 +151,14 @@ export function evidence(s: Source): Evidence[] {
 
 function shortProblem(s: Source, dim: Dimension): string {
   const d = s.detail!;
-  if (dim === "attendance") return d.attendance.rate < 70 ? "derse gelmiyor" : "devamı düşüyor";
-  if (dim === "test") return (d.test.monotonic_decline || d.test.delta <= -4)
+  if (dim === "attendance") return (d.attendance?.rate ?? 0) < 70 ? "derse gelmiyor" : "devamı düşüyor";
+  if (dim === "test") return (d.test?.monotonic_decline || (d.test?.delta ?? 0) <= -4)
     ? "notları düşüyor" : "notları sınıfın gerisinde";
-  if (dim === "skill") return d.skill.diagnosis === "beceri_acigi"
+  if (dim === "skill") return d.skill?.diagnosis === "beceri_acigi"
     ? `${(SKILL[d.skill.weakest] ?? d.skill.weakest).toLocaleLowerCase("tr")}sı çok zayıf`
     : "seviyesi kurun altında";
-  return d.classroom.participation <= 5 ? "derse katılmıyor" : "ödevlerini yapmıyor";
+  const c = d.classroom;
+  return c?.participation !== undefined && c.participation <= 5 ? "derse katılmıyor" : "ödevlerini yapmıyor";
 }
 
 /** The one line that has to carry the row on its own. */

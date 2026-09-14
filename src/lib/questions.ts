@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { loadAgenda, type Agenda, type AgendaStudent } from "@/lib/agenda";
+import { loadAgenda, type Agenda, type AgendaStudent, type HeatRow } from "@/lib/agenda";
 import { AREA, DIMENSIONS, STATE, type Dimension } from "@/lib/narrative";
 import { SKILL_ORDER } from "@/lib/student";
 import { fetchAll } from "@/lib/paginate";
@@ -69,12 +69,17 @@ function priority(a: Agenda): Answer {
 }
 
 function worstLevel(a: Agenda): Answer {
-  const rows = a.byLevel.filter(r => r.count >= 5)
-    .map(r => ({ r, peak: Math.max(...DIMENSIONS.map(d => r.scores[d])) }))
+  // Only the dimensions the level actually has data for; a level nobody has
+  // measured at all cannot be the worst one.
+  const measured = (r: HeatRow) => DIMENSIONS
+    .map(d => [d, r.scores[d]] as const)
+    .filter((x): x is [Dimension, number] => x[1] !== undefined);
+  const rows = a.byLevel.filter(r => r.count >= 5 && measured(r).length)
+    .map(r => ({ r, peak: Math.max(...measured(r).map(([, v]) => v)) }))
     .sort((x, y) => y.peak - x.peak);
   if (!rows.length) return { lead: "Karşılaştırma yapacak kadar büyük bir kur yok.", rows: [], source: "" };
   const { r } = rows[0];
-  const worst = DIMENSIONS.map(d => [d, r.scores[d]] as [Dimension, number]).sort((x, y) => y[1] - x[1])[0];
+  const worst = [...measured(r)].sort((x, y) => y[1] - x[1])[0];
   const group = a.students.filter(s => s.level === r.label);
   const floor = a.settings.attendanceFloor;
   const below = group.filter(s => s.attendanceRate !== null && s.attendanceRate < floor).length;
@@ -84,7 +89,7 @@ function worstLevel(a: Agenda): Answer {
     : ` ${r.count} öğrencinin ${r.urgent} tanesi acil listede.`;
   return {
     lead: `**${r.label}.** En büyük sorunu ${AREA[worst[0]].toLocaleLowerCase("tr")}.` + extra,
-    rows: DIMENSIONS.map(d => ({ label: AREA[d], right: String(r.scores[d]) }))
+    rows: measured(r).map(([d, v]) => ({ label: AREA[d], right: String(v) }))
       .sort((x, y) => Number(y.right) - Number(x.right)),
     source: `Kaynak: ${r.label} kurundaki ${r.count} öğrencinin ortalaması · 0–100, yüksek = kötü`
   };
@@ -93,8 +98,11 @@ function worstLevel(a: Agenda): Answer {
 /** Two signals that are unremarkable apart and serious together. */
 function bothSignals(a: Agenda): Answer {
   const list = a.students
-    .filter(s => s.detail && s.detail.attendance.drop >= 8 && s.detail.test.delta <= -4)
-    .sort((x, y) => x.detail!.test.delta - y.detail!.test.delta);
+    // Both halves have to have been measured: the pairing is the point, and a
+    // student missing one of the two is not evidence either way.
+    .filter(s => s.detail?.attendance !== undefined && s.detail.test !== undefined
+      && s.detail.attendance.drop >= 8 && s.detail.test.delta <= -4)
+    .sort((x, y) => x.detail!.test!.delta - y.detail!.test!.delta);
   if (!list.length) return { lead: "İki sinyali birden veren öğrenci yok.", rows: [], source: "" };
   const urgent = list.filter(s => s.level_ === "HIGH").length;
   return {
@@ -103,7 +111,7 @@ function bothSignals(a: Agenda): Answer {
       + `öğrenci genelde okuldan kopuyor demektir — ayrı ayrı bakınca fark edilmez.`,
     rows: list.map(s => ({
       label: s.name, sub: `${s.branch} · ${s.level}`, href: link(s),
-      right: `devam %${s.detail!.attendance.rate}→%${s.detail!.attendance.recent} · not ${s.detail!.test.delta}`
+      right: `devam %${s.detail!.attendance!.rate}→%${s.detail!.attendance!.recent} · not ${s.detail!.test!.delta}`
     })),
     source: "Kaynak: devamı en az 8 puan düşen ve sınav ortalaması en az 4 puan gerileyen öğrenciler"
   };

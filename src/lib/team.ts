@@ -5,10 +5,27 @@ import { ROLES, type Role, type Member } from "@/lib/roles";
 
 export type { Member } from "@/lib/roles";
 
+/** One class as the two systems see it.
+ *
+ *  The roster file writes `teacher_name`; access runs through `teacher_id`. An
+ *  import can change the first without touching the second, so the card can name
+ *  one instructor while a different person — or nobody — is the one who can open
+ *  it. Nothing enforces that they agree, so the screen has to show when they do
+ *  not.
+ */
+export type ClassRow = {
+  branch: string; level: string; students: number;
+  fileTeacher: string | null; accessTeacher: string | null;
+  problem: "none" | "no-access" | "different";
+};
 export type Team = {
   members: Member[]; branches: { id: string; name: string }[]; levels: string[];
-  teachers: Member[];
+  teachers: Member[]; classes: ClassRow[];
 };
+
+const sameName = (a: string, b: string) =>
+  a.trim().replace(/\s+/g, " ").toLocaleLowerCase("tr")
+  === b.trim().replace(/\s+/g, " ").toLocaleLowerCase("tr");
 
 export async function loadTeam(client: SupabaseClient): Promise<Team> {
   const oops = "Ekip listesi yüklenemedi";
@@ -17,8 +34,10 @@ export async function loadTeam(client: SupabaseClient): Promise<Team> {
       () => client.from("memberships").select("id,user_id,display_name,role,branch_id"), oops),
     fetchAll<{ id: string; name: string }>(
       () => client.from("branches").select("id,name").order("name"), oops),
-    fetchAll<{ student_id: string; level: string; teacher_id: string | null }>(
-      () => client.from("enrollments").select("student_id,level,teacher_id").eq("active", true), oops)
+    fetchAll<{ student_id: string; level: string; teacher_id: string | null;
+      teacher_name: string | null; branch_id: string }>(
+      () => client.from("enrollments")
+        .select("student_id,level,teacher_id,teacher_name,branch_id").eq("active", true), oops)
   ]);
   const branchName = new Map(branches.map(b => [b.id, b.name]));
   const taught = new Map<string, number>();
@@ -33,9 +52,35 @@ export async function loadTeam(client: SupabaseClient): Promise<Team> {
     ROLES.findIndex(r => r.key === a.role) - ROLES.findIndex(r => r.key === b.role)
     || (a.name ?? "").localeCompare(b.name ?? "", "tr"));
 
+  const nameOfUser = new Map(memberships.map(m => [m.user_id, m.display_name]));
+  const grouped = new Map<string, typeof enrollments>();
+  for (const e of enrollments) {
+    const key = `${e.branch_id}|${e.level}`;
+    (grouped.get(key) ?? grouped.set(key, []).get(key)!).push(e);
+  }
+  const classes: ClassRow[] = [...grouped.values()].map(group => {
+    const [first] = group;
+    // The file's answer for the class, not one student's: whichever name the
+    // roster gave most of them.
+    const tally = new Map<string, number>();
+    for (const e of group) if (e.teacher_name)
+      tally.set(e.teacher_name, (tally.get(e.teacher_name) ?? 0) + 1);
+    const fileTeacher = [...tally.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const withAccess = group.find(e => e.teacher_id)?.teacher_id ?? null;
+    const accessTeacher = withAccess ? nameOfUser.get(withAccess) ?? null : null;
+    const problem: ClassRow["problem"] =
+      !withAccess ? (fileTeacher ? "no-access" : "none")
+        : fileTeacher && accessTeacher && !sameName(fileTeacher, accessTeacher) ? "different"
+          : "none";
+    return {
+      branch: branchName.get(first.branch_id) ?? "—", level: first.level,
+      students: group.length, fileTeacher, accessTeacher, problem
+    };
+  }).sort((a, b) => a.branch.localeCompare(b.branch, "tr") || a.level.localeCompare(b.level, "tr"));
+
   return {
     members, branches, levels: [...new Set(enrollments.map(e => e.level))].sort(),
-    teachers: members.filter(m => m.role === "teacher")
+    teachers: members.filter(m => m.role === "teacher"), classes
   };
 }
 

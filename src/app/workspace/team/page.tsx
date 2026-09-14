@@ -36,6 +36,31 @@ export default async function TeamPage() {
       </table></div>
     </section>
 
+    {team.classes.length > 0 && <section className="panel">
+      <div className="panel-heading"><h2>Sınıflar</h2>
+        <span className="note">Dosyadaki eğitmen ile erişimi olan kişi aynı mı</span></div>
+      <div className="table-scroll"><table>
+        <thead><tr><th>Sınıf</th><th>Öğrenci</th><th>Dosyadaki eğitmen</th>
+          <th>Erişimi olan</th></tr></thead>
+        <tbody>{team.classes.map(c => <tr key={`${c.branch}|${c.level}`}>
+          <th scope="row">{c.branch}<small>{c.level} kuru</small></th>
+          <td>{c.students}</td>
+          <td>{c.fileTeacher ?? "—"}</td>
+          <td>{c.problem === "none"
+            ? c.accessTeacher ?? "—"
+            : <span className="state warn"><i className="dot" />
+              {c.problem === "no-access"
+                ? "Kimse — atama yapılmadı"
+                : `${c.accessTeacher} · dosyadan farklı`}</span>}</td>
+        </tr>)}</tbody>
+      </table></div>
+      {team.classes.some(c => c.problem !== "none") && <div className="pad">
+        <p className="note">Dosyadaki isim öğrenci kartında görünür; uygulamayı açıp sınıfı
+          görebilen kişi ise buradaki atamadır. İkisi ayrı tutulur, çünkü aktarım eğitmen adını
+          günceller ama erişimi değiştirmez. Aşağıdaki formdan sınıfı doğru kişiye atayın.</p>
+      </div>}
+    </section>}
+
     <AssignForm teachers={team.teachers} branches={team.branches} levels={team.levels} />
     <GrantForm branches={team.branches} />
   </>;

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent } from "@/lib/agenda";
-import { AREA, DIMENSIONS, STATE, band, type Dimension } from "@/lib/narrative";
+import { AREA, DIMENSIONS, STATE, type Dimension } from "@/lib/narrative";
+import { Quad } from "../quad";
 
 const RISKS: [string, string][] = [["HIGH", "Acil"], ["MEDIUM", "Takipte"], ["LOW", "Düşük risk"]];
+const matches = (v: number | undefined) => v !== undefined && v >= 30;
 
-type Query = { q?: string; kur?: string; risk?: string; alan?: string };
+type Query = { q?: string; sube?: string; kur?: string; risk?: string; alan?: string };
 
 export default async function Students({ searchParams }: { searchParams: Promise<Query> }) {
   const f = await searchParams;
@@ -16,23 +18,34 @@ export default async function Students({ searchParams }: { searchParams: Promise
   const rows = a.students.filter(s =>
     (!needle || s.name.toLocaleLowerCase("tr").includes(needle)
       || s.externalId.toLocaleLowerCase("tr").includes(needle))
+    && (!f.sube || s.branch === f.sube)
     && (!f.kur || s.level === f.kur)
     && (!f.risk || s.level_ === f.risk)
-    && (!f.alan || (s.dimensions[f.alan as Dimension] ?? 0) >= 30));
+    // A dimension with no data does not match a problem-area filter: "students
+    // with a skill problem" must not answer with students nobody has scored for
+    // skills.
+    && (!f.alan || matches(s.dimensions[f.alan as Dimension])));
 
-  const filtered = Boolean(needle || f.kur || f.risk || f.alan);
+  const filtered = Boolean(needle || f.sube || f.kur || f.risk || f.alan);
+  // A branch manager or a teacher only ever sees one branch, and a dropdown with
+  // one option is a question with one answer.
+  const branches = a.byBranch.map(b => b.label);
 
   return <>
     <p className="eyebrow">ÖĞRENCİ LİSTESİ</p>
     <h1>{rows.length} öğrenci{filtered && <> · {a.total} içinden</>}</h1>
-    <p className="intro">Şube, kur, risk ve sorun alanına göre süzün. Eğitmen kırılımı bilerek
-      yok — şubenin kaynak sorununu bir öğretmenin performans sorunu gibi gösteriyordu.</p>
+    <p className="intro">{branches.length > 1 ? "Şube, kur" : "Kur"}, risk ve sorun alanına göre
+      süzün. Eğitmen kırılımı bilerek yok — şubenin kaynak sorununu bir öğretmenin performans
+      sorunu gibi gösteriyordu.</p>
 
     <p><Link className="primary" href="/workspace/students/new">Yeni öğrenci kaydet</Link></p>
 
     <form className="panel filters" method="get">
       <label>Ara<input type="search" name="q" defaultValue={f.q ?? ""}
         placeholder="İsim ya da numara" autoComplete="off" /></label>
+      {branches.length > 1 && <label>Şube<select name="sube" defaultValue={f.sube ?? ""}>
+        <option value="">Bütün şubeler</option>
+        {branches.map(b => <option key={b} value={b}>{b}</option>)}</select></label>}
       <label>Kur<select name="kur" defaultValue={f.kur ?? ""}>
         <option value="">Bütün kurlar</option>
         {a.settings.levels.map(l => <option key={l} value={l}>{l}</option>)}</select></label>
@@ -67,8 +80,7 @@ function Row({ s }: { s: AgendaStudent }) {
       <small>{s.externalId}</small></th>
     <td>{s.branch}</td><td>{s.level}</td>
     <td><span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span></td>
-    <td><span className="quad">{DIMENSIONS.map(d =>
-      <i key={d} className={`cell ${band(s.dimensions[d] ?? 0)}`} />)}</span></td>
+    <td><Quad dimensions={s.dimensions} /></td>
     <td className="wrap">{s.found[0]?.text ?? "—"}</td>
     <td className="wrap">{s.steps[0]?.text ?? "—"}</td>
   </tr>;

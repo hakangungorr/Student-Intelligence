@@ -24,6 +24,18 @@ export type PreviewState = {
   unknown?: string[];
   result?: { created: number; updated: number; measurements: number; observations: number };
   scored?: number | null;
+  /** Which evaluation checkpoint this import will refresh, already formatted.
+   *  The date on the form is when the marks were measured; the checkpoint they
+   *  are scored into is a separate decision, and the screen has to stop
+   *  implying they are the same one. */
+  refreshes?: string | null;
+  canScore?: boolean;
+};
+
+const dayText = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" })
+    .format(new Date(y, m - 1, d));
 };
 
 const period = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-AA-GG biçiminde olmalı.");
@@ -51,7 +63,8 @@ export async function preview(_prev: PreviewState, form: FormData): Promise<Prev
   if (!(file instanceof File) || file.size === 0) return { status: "error", message: "Bir CSV dosyası seçin." };
   if (file.size > MAX_BYTES) return { status: "error", message: "Dosya 2 MB sınırını aşıyor." };
 
-  const { branchNames, levels } = await scope();
+  const { client, branchNames, levels, canScore } = await scope();
+  const current = await latestPeriod(client);
   const text = await file.text();
   const parsed = parseRoster(text, branchNames, levels);
 
@@ -66,6 +79,7 @@ export async function preview(_prev: PreviewState, form: FormData): Promise<Prev
 
   return {
     status: "ready", token: crypto.randomUUID(), filename: file.name, text, periodEnd: when.data,
+    refreshes: current === null ? null : dayText(current), canScore,
     accepted: parsed.rows.length, issues: parsed.issues, unknown: parsed.unknown,
     sample: parsed.rows.slice(0, 8).map(r =>
       ({ line: r.line, externalId: r.externalId, name: r.name, branch: r.branch, level: r.level }))

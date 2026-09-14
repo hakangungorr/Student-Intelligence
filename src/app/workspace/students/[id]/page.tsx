@@ -4,11 +4,12 @@ import { requireUser } from "@/lib/auth";
 import { loadStudent, type StudentCard, type StudentRisk } from "@/lib/student";
 import { FIELD_GROUPS } from "@/lib/entry";
 import { loadStudentEntry } from "@/lib/entry-read";
-import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
+import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
 import { MarkDone } from "../../mark-button";
 import { EntryPanel } from "./entry-panel";
 
-const areaWord = (v: number) => v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
+const areaWord = (v: number | undefined) =>
+  v === undefined ? "Veri yok" : v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
 
 export default async function Student({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,7 +21,7 @@ export default async function Student({ params }: { params: Promise<{ id: string
 
   const missed = s.attendanceRate === null ? null : Math.max(1, Math.round((100 - s.attendanceRate) / 10));
   const detail = s.risk?.detail ?? null;
-  const scoreOf = (d: (typeof DIMENSIONS)[number]) => s.risk?.dimensions[d] ?? null;
+  const scoreOf = (d: (typeof DIMENSIONS)[number]) => s.risk?.dimensions[d];
 
   return <>
     <Link className="backlink" href="/workspace">← Gündeme dön</Link>
@@ -53,69 +54,74 @@ export default async function Student({ params }: { params: Promise<{ id: string
     {s.risk && <section className="panel pad">
       <p className="eyebrow">SORUN NEREDE</p>
       <div className="map">{DIMENSIONS.map(d => {
-        const v = s.risk!.dimensions[d] ?? 0;
+        const v = s.risk!.dimensions[d];
         return <div key={d} className="mapcell">
           <span className="lab">{AREA[d]}</span>
           <span className={`st ${band(v)}`}>{areaWord(v)}</span>
-          <span className="mapbar"><i className={band(v)} style={{ width: `${v}%` }} /></span>
+          <span className="mapbar"><i className={band(v)} style={{ width: `${v ?? 0}%` }} /></span>
+          {v === undefined && <span className="note">{MISSING[d]}</span>}
         </div>;
       })}</div>
     </section>}
 
     <div className="cards2">
       <section className="panel pad">
-        <Head title="Devamsızlık" score={scoreOf("attendance")} />
+        <Head title="Devamsızlık" score={scoreOf("attendance")} scored={!!s.risk} />
         {s.attendanceRate === null ? <p className="note">Devam verisi yok.</p> : <>
-          <p className="big-line"><span className={`big ${band(scoreOf("attendance") ?? 0)}`}>%{s.attendanceRate}</span>
+          <p className="big-line"><span className={`big ${band(scoreOf("attendance"))}`}>%{s.attendanceRate}</span>
             <span className="note">dönem geneli devam oranı</span></p>
           <p className="note">Her 10 dersin yaklaşık <b>{missed}</b> tanesine gelmiyor.</p>
           {s.attendanceRecent !== null && <Kv k="Son 4 hafta"
             v={`%${s.attendanceRecent}`}
-            alert={detail ? detail.attendance.drop >= 5 : false}
-            suffix={detail && detail.attendance.drop >= 5 ? `▼ ${detail.attendance.drop} puan` : undefined} />}
-          <Kv k="Kurumun kritik sınırı" v="%75" />
+            alert={(detail?.attendance?.drop ?? 0) >= 5}
+            suffix={(detail?.attendance?.drop ?? 0) >= 5 ? `▼ ${detail!.attendance!.drop} puan` : undefined} />}
+          <Kv k="Kurumun kritik sınırı" v={`%${s.attendanceFloor}`} />
         </>}
       </section>
 
       <section className="panel pad">
-        <Head title="Sınav notları" score={scoreOf("test")} />
+        <Head title="Sınav notları" score={scoreOf("test")} scored={!!s.risk} />
         <Spark exams={s.exams} passMark={s.passMark}
-          falling={!!detail && (detail.test.monotonic_decline || detail.test.delta <= -4)} />
+          falling={!!detail?.test && (detail.test.monotonic_decline || detail.test.delta <= -4)} />
         {s.exams.length > 1 && s.exams[s.exams.length - 1].value < s.exams[0].value &&
           <p className="note">İlk sınavdan bu yana <b className="crit-ink">
             {s.exams[0].value - s.exams[s.exams.length - 1].value} puan</b> kaybetti.</p>}
-        {detail && <Kv k="Son sınav" v={String(detail.test.last_exam)}
+        {detail?.test && <Kv k="Son sınav" v={String(detail.test.last_exam)}
           alert={detail.test.last_exam < s.passMark}
           suffix={detail.test.last_exam < s.passMark ? "· geçme notu altında" : undefined} />}
-        {s.benchmark && <Kv k={`${s.level} kurunun iyi öğrencileri`} v={s.benchmark.exam.toFixed(0)} />}
+        {s.benchmark?.exam != null &&
+          <Kv k={`${s.level} kurunun iyi öğrencileri`} v={s.benchmark.exam.toFixed(0)} />}
       </section>
 
       <section className="panel pad">
-        <Head title="Dil becerileri" score={scoreOf("skill")} />
+        <Head title="Dil becerileri" score={scoreOf("skill")} scored={!!s.risk} />
         {s.skills.length === 0 ? <p className="note">Beceri puanı girilmemiş.</p> : s.skills.map(k => {
           const mark = s.benchmark?.skill ?? 100;
+          const showTick = s.benchmark?.skill != null;
           const tone = k.value < s.passMark ? "crit" : k.value < mark * .85 ? "warn" : "good";
-          const weakest = detail?.skill.weakest === k.key;
+          const weakest = detail?.skill?.weakest === k.key;
           return <div key={k.key} className="bar">
             <span className={`nm${weakest ? " is-weakest" : ""}`}>{k.label}</span>
             <span className="track">
               <i className={`fill ${tone}`} style={{ width: `${k.value}%` }} />
-              {s.benchmark && <i className="tick" style={{ left: `${mark}%` }} />}
+              {showTick && <i className="tick" style={{ left: `${mark}%` }} />}
             </span>
             <span className="val">{k.value}</span>
           </div>;
         })}
-        {s.benchmark && s.skills.length > 0 && <p className="legend"><i className="tick-key" />
+        {s.benchmark?.skill != null && s.skills.length > 0 && <p className="legend"><i className="tick-key" />
           {s.level} kurunun iyi öğrencileri: {s.benchmark.skill.toFixed(0)}</p>}
       </section>
 
       <section className="panel pad">
-        <Head title="Derse katılım" score={scoreOf("classroom")} />
-        {detail ? <>
-          <Kv k="Derse katılımı" v={`${detail.classroom.participation} / 10`}
-            alert={detail.classroom.participation <= 5} />
-          <Kv k="Ödevlerini yapma oranı" v={`%${detail.classroom.homework}`}
-            alert={detail.classroom.homework < 60} />
+        <Head title="Derse katılım" score={scoreOf("classroom")} scored={!!s.risk} />
+        {detail?.classroom ? <>
+          {detail.classroom.participation !== undefined &&
+            <Kv k="Derse katılımı" v={`${detail.classroom.participation} / 10`}
+              alert={detail.classroom.participation <= 5} />}
+          {detail.classroom.homework !== undefined &&
+            <Kv k="Ödevlerini yapma oranı" v={`%${detail.classroom.homework}`}
+              alert={detail.classroom.homework < 60} />}
           <div className="kv"><span className="k">Öğretmeni endişeli mi</span>
             <span className={`state ${detail.classroom.teacher_concern ? "crit" : "good"}`}>
               <i className="dot" />{detail.classroom.teacher_concern ? "Evet" : "Hayır"}</span></div>
@@ -154,9 +160,11 @@ function Assessment({ risk, studentId, done }: {
   </>;
 }
 
-function Head({ title, score }: { title: string; score: number | null }) {
+/** The card's own verdict. An area with no data says so in the same place the
+ *  verdict would be, rather than leaving the reader to guess why it is blank. */
+function Head({ title, score, scored }: { title: string; score?: number; scored: boolean }) {
   return <div className="card-hd"><h2>{title}</h2>
-    {score !== null && <span className={`state ${band(score)}`}><i className="dot" />{areaWord(score)}</span>}</div>;
+    {scored && <span className={`state ${band(score)}`}><i className="dot" />{areaWord(score)}</span>}</div>;
 }
 
 function Kv({ k, v, alert, suffix }: { k: string; v: string; alert?: boolean; suffix?: string }) {

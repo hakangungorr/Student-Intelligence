@@ -44,6 +44,29 @@ CSV aktarımı bu turda değişmedi. Bilinen pürüzler duruyor: Excel dosyası
 doğrudan kabul edilmiyor, dosyadaki şube ya da kur adı tanımlılarla tutmazsa
 satır atlanıyor ve önizleme kaçının yeni kaçının güncelleme olduğunu söylemiyor.
 
+Puanlama artık kısmi veriyle çalışır. Dört boyutun her biri ayrı ayrı
+opsiyoneldir ve ağırlıklar mevcut boyutlara yeniden normalize edilir; öğrenci
+ancak hiçbir boyutu ölçülemiyorsa atlanır ve o zaman gerekçe hangi ölçümün
+eksik olduğunu söyler. Ölçülmemiş boyut `dimensions` içine hiç yazılmaz, sıfır
+olarak da yazılmaz: ekranlarda dolu gri kare "sorun yok", boş kontur "kimse
+girmemiş" demektir ve ısı haritası ortalaması eksik boyutu paydadan düşer.
+Sınav sayısı da serbesttir — eğilim, sınav dizisinin ilk yarısı ile son yarısı
+karşılaştırılarak bulunur, ki dört sınavda bu eski sabit indisin aynısıdır.
+Dolu veriye sahip öğrencinin skoru değişmedi; `tests/engine.test.ts` içindeki
+100 referans öğrenci motor sürümü v0.4'te aynı sonucu veriyor.
+
+Tamamlanan aksiyon artık bir değerlendirme kesitine bağlıdır
+(`actions.period_end`). Yeni kesit açıldığında herkes yeniden "yapılacak"
+durumuna döner, önceki kesitin kaydı denetim izi olarak durur. Bu sütundan önce
+yazılmış satırlar hiçbir kesitte sayılmaz — sonradan kesit atamak tahmin olurdu.
+
+Rol tutarsızlıkları kapandı: aktarım bağlantısı yalnızca yönetici ve şube
+yöneticisine, skor hesaplama formu yalnızca kurum yöneticisine görünür; sınıfı
+atanmamış eğitmen "öğrenci yok" yerine ne olduğunu söyleyen bir ekran görür;
+Ekip ekranı dosyadaki eğitmen adı ile erişimi olan kişinin ayrıştığı sınıfları
+listeler. Öğrenci listesine şube süzgeci eklendi (tek şube görene gizli).
+Öğrenci kartındaki devam sınırı artık kurum ayarından okunuyor.
+
 ## 1. Bu dokümanın amacı
 
 Risk motoru ve demo dataseti **bitti**. Sırada 4 ekranlı dashboard var.

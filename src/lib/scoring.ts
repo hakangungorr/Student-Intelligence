@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { scoreAll, ENGINE_VERSION, type Measures } from "@/lib/engine";
+import { scoreAll, availableDimensions, ENGINE_VERSION, type Measures } from "@/lib/engine";
+import { AREA, type Dimension } from "@/lib/narrative";
 import { fetchAll } from "@/lib/paginate";
 import { loadSettings } from "@/lib/settings";
 
@@ -20,8 +21,23 @@ export type ScoringResult = {
 type Observation = { student_id: string; participation: number | null;
   homework_completion: number | null; teacher_concern: boolean | null };
 
-const EXAMS = ["exam_1", "exam_2", "exam_3", "exam_4"];
 const SKILLS = ["speaking", "writing", "listening", "reading"] as const;
+
+/** Why a dimension could not be computed, in the institution's own terms.
+ *
+ *  A student is only skipped when every one of these is true at once, and then
+ *  the reason has to say which measurement is missing — "veri eksik" tells an
+ *  administrator nothing they can go and fix. */
+function unmeasurable(m: Measures): Partial<Record<Dimension, string>> {
+  const out: Partial<Record<Dimension, string>> = {};
+  if (m.exams.length === 0) out.test = "hiç sınav notu yok";
+  else if (m.exams.length < 2) out.test = "tek sınav notu var, eğilim için en az iki gerekiyor";
+  if (SKILLS.every(k => m[k] === undefined)) out.skill = "hiç beceri puanı yok";
+  if (m.participation === undefined && m.homework === undefined && m.concern === undefined)
+    out.classroom = "sınıf içi gözlem girilmemiş";
+  if (m.attendanceRate === undefined) out.attendance = "devam oranı yok";
+  return out;
+}
 
 /** The period a snapshot belongs to is a reporting checkpoint the institution
  *  chooses, not the day somebody happened to type a mark in. Saving a class sheet
@@ -61,10 +77,22 @@ export async function scoreInstitution(
 
   const level = new Map(enrollments.map(e => [e.student_id, e.level]));
   const byStudent = new Map<string, Map<string, number>>();
+  // Exams are kept apart and keyed by their own reference: how many a course runs
+  // is the institution's decision, so the engine is handed the run it finds in
+  // natural order rather than four fixed slots.
+  const examsOf = new Map<string, Map<string, number>>();
   for (const m of readings) {
+    if (m.kind === "exam") {
+      const row = examsOf.get(m.student_id) ?? examsOf.set(m.student_id, new Map()).get(m.student_id)!;
+      row.set(m.source_reference, Number(m.value));
+      continue;
+    }
     const row = byStudent.get(m.student_id) ?? byStudent.set(m.student_id, new Map()).get(m.student_id)!;
-    row.set(m.kind === "exam" || m.kind === "attendance" ? m.source_reference : m.kind, Number(m.value));
+    row.set(m.kind === "attendance" ? m.source_reference : m.kind, Number(m.value));
   }
+  const examRun = (id: string) => [...(examsOf.get(id) ?? new Map<string, number>()).entries()]
+    .sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))
+    .map(([, v]) => v);
   // Ordered newest first, so the first sighting of a student is their latest.
   const latestObservation = new Map<string, Observation>();
   for (const o of observations) if (!latestObservation.has(o.student_id)) latestObservation.set(o.student_id, o);
@@ -73,33 +101,40 @@ export async function scoreInstitution(
   const scoreable: { id: string; branchId: string; measures: Measures }[] = [];
 
   for (const s of students) {
-    const missing: string[] = [];
     const lvl = level.get(s.id);
-    if (!lvl) missing.push("kur kaydı");
+    if (!lvl) {
+      skipped.push({ externalId: s.external_id, reason: "aktif kur kaydı yok" });
+      continue;
+    }
     const values = byStudent.get(s.id) ?? new Map();
-    const exams = EXAMS.map(k => values.get(k));
-    if (exams.some(v => v === undefined)) missing.push("dört sınav notu");
-    if (SKILLS.some(k => values.get(k) === undefined)) missing.push("dört beceri puanı");
-    const rate = values.get("term_rate"), recent = values.get("last_four_weeks");
-    if (rate === undefined) missing.push("devam oranı");
     const observation = latestObservation.get(s.id);
-    if (!observation || observation.participation === null || observation.homework_completion === null)
-      missing.push("sınıf içi gözlem");
+    const homework = observation?.homework_completion;
 
-    if (missing.length) { skipped.push({ externalId: s.external_id, reason: missing.join(", ") + " eksik" }); continue; }
+    const measures: Measures = {
+      level: lvl, exams: examRun(s.id),
+      speaking: values.get("speaking"), writing: values.get("writing"),
+      listening: values.get("listening"), reading: values.get("reading"),
+      participation: observation?.participation ?? undefined,
+      homework: homework === null || homework === undefined ? undefined : Number(homework),
+      concern: observation?.teacher_concern ?? undefined,
+      attendanceRate: values.get("term_rate"), attendanceRecent: values.get("last_four_weeks")
+    };
 
-    scoreable.push({
-      id: s.id, branchId: s.branch_id,
-      measures: {
-        level: lvl!, exams: exams as number[],
-        speaking: values.get("speaking")!, writing: values.get("writing")!,
-        listening: values.get("listening")!, reading: values.get("reading")!,
-        participation: observation!.participation!, homework: Number(observation!.homework_completion),
-        concern: observation!.teacher_concern ?? false,
-        // A student with no recent figure has not moved, rather than collapsed.
-        attendanceRate: rate!, attendanceRecent: recent ?? rate!
-      }
-    });
+    // Partial data scores on what it has. Only a student with nothing at all to
+    // measure is left off, and then the reason names every dimension and why —
+    // an institution loading its first file needs to know what to add next, not
+    // that something unspecified was missing.
+    if (!availableDimensions(measures).length) {
+      const why = unmeasurable(measures);
+      skipped.push({
+        externalId: s.external_id,
+        reason: (Object.keys(why) as Dimension[])
+          .map(d => `${AREA[d].toLocaleLowerCase("tr")}: ${why[d]}`).join(" · ")
+      });
+      continue;
+    }
+
+    scoreable.push({ id: s.id, branchId: s.branch_id, measures });
   }
   if (!scoreable.length) return { scored: 0, created: 0, updated: 0, skipped, periodEnd };
 

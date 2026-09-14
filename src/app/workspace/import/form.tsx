@@ -12,14 +12,14 @@ export function ImportForm({ today, columns }: { today: string; columns: string[
       <div className="filters">
         <label>CSV dosyası
           <input type="file" name="file" accept=".csv,text/csv" required /></label>
-        <label>Dönem sonu tarihi
+        <label>Ölçüm tarihi
           <input type="date" name="periodEnd" defaultValue={today} required /></label>
         <span className="filter-actions">
           <button type="submit" className="primary" disabled={choosing}>
             {choosing ? "Okunuyor…" : "Önizle"}</button></span>
       </div>
-      <p className="note">Dosya önce okunur ve doğrulanır. Onaylamadan hiçbir şey yazılmaz.
-        Beklenen sütunlar: {columns.join(", ")}.</p>
+      <p className="note">Dosyadaki ölçümler bu tarihe yazılır. Dosya önce okunur ve
+        doğrulanır; onaylamadan hiçbir şey yazılmaz. Beklenen sütunlar: {columns.join(", ")}.</p>
     </form>
 
     {state.status === "error" && <section className="panel pad">
@@ -53,7 +53,17 @@ function Confirm({ state }: { state: PreviewState }) {
 
   return <section className="panel pad">
     <h2>{state.accepted} satır aktarılmaya hazır</h2>
-    <p className="note">{state.filename} · dönem sonu {state.periodEnd}</p>
+    <p className="note">{state.filename} · ölçüm tarihi {state.periodEnd}</p>
+
+    {/* The date above is when these marks were taken. Which checkpoint they are
+        scored into is a different decision, and saying so here is the only place
+        the two can stop being confused for each other. */}
+    <p className="note">{!state.canScore
+      ? "Skorlar, kurum yöneticiniz hesaplamayı çalıştırdıktan sonra güncellenecek."
+      : state.refreshes
+        ? `Bu aktarım ${state.refreshes} değerlendirme kesitini günceller — yeni bir kesit açmaz.
+           Yeni kesit açmak için aşağıdaki hesaplama formunu kullanın.`
+        : "İlk değerlendirme kesiti bu aktarımla açılacak."}</p>
 
     {state.unknown && state.unknown.length > 0 && <p className="note">
       Tanınmayan sütunlar yok sayılacak: {state.unknown.join(", ")}.</p>}

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent, type HeatRow, type Finding } from "@/lib/agenda";
 import { MarkDone } from "./mark-button";
-import { AREA, DIMENSIONS, STATE, band } from "@/lib/narrative";
+import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
+import { Quad } from "./quad";
 
 const PRIORITY = 10;
 
@@ -17,7 +18,19 @@ function shortDate(iso: string) {
 
 export default async function Workspace() {
   const { client } = await requireUser();
-  const a = await loadAgenda(client);
+  const [a, me] = await Promise.all([
+    loadAgenda(client),
+    client.from("memberships").select("role").limit(1).maybeSingle()
+  ]);
+
+  // A teacher's access runs through enrollments.teacher_id, and a roster import
+  // only writes teacher_name — so an unassigned teacher sees an empty institution
+  // and is told the students do not exist. They do; nobody has connected them.
+  if (!a.total && me.data?.role === "teacher") return <section className="panel empty">
+    <h1>Size henüz sınıf atanmadı.</h1>
+    <p>Kurumda öğrenci var, ancak hiçbiri size bağlanmamış. Kurum yöneticiniz
+      <b> Ekip ve sınıflar</b> ekranından şube ve kur seçerek sınıfınızı atayabilir.
+      Atama yapıldığı anda gündeminiz burada oluşur.</p></section>;
 
   if (!a.total) return <section className="panel empty">
     <h1>Henüz öğrenci kaydı yok.</h1>
@@ -123,11 +136,7 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
       <span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span>
       <span className="note">{s.branch} · {s.level}</span>
     </div>
-    <div className="quad" role="img" aria-label={DIMENSIONS.map(d =>
-      `${AREA[d]}: ${s.dimensions[d] >= 60 ? "ciddi sorun" : s.dimensions[d] >= 30 ? "dikkat" : "sorun yok"}`
-    ).join(", ")}>
-      {DIMENSIONS.map(d => <i key={d} className={`cell ${band(s.dimensions[d] ?? 0)}`} />)}
-    </div>
+    <Quad dimensions={s.dimensions} />
     <p className="srow-head">{s.headline}</p>
     <ul className="facts">{s.found.slice(0, 2).map(f =>
       <li key={f.dim} className={band(f.score)}>{f.text}</li>)}</ul>
@@ -149,7 +158,9 @@ function Heat({ title, rows, unit }: { title: string; rows: HeatRow[]; unit: str
         {DIMENSIONS.map(d => <th key={d}>{AREA[d]}</th>)}<th>Acil öğrenci</th></tr></thead>
       <tbody>{rows.map(r => <tr key={r.label}>
         <th scope="row">{r.label}<small>{r.count} {unit}</small></th>
-        {DIMENSIONS.map(d => <td key={d} className={`heat ${band(r.scores[d])}`}>{r.scores[d]}</td>)}
+        {DIMENSIONS.map(d => <td key={d} className={`heat ${band(r.scores[d])}`}
+          title={r.scores[d] === undefined ? MISSING[d] : undefined}>
+          {r.scores[d] ?? "—"}</td>)}
         <td>{r.urgent}</td>
       </tr>)}</tbody>
     </table></div>

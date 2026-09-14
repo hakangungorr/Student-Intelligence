@@ -6,6 +6,7 @@ import {
 } from "@/lib/narrative";
 import { fetchAll } from "@/lib/paginate";
 import { loadSettings, type Settings } from "@/lib/settings";
+import { latestPeriod } from "@/lib/scoring";
 
 export type AgendaStudent = {
   id: string; externalId: string; name: string;
@@ -20,7 +21,11 @@ export type AgendaStudent = {
 };
 export type RiskLevel = "HIGH" | "MEDIUM" | "LOW";
 
-export type HeatRow = { label: string; count: number; scores: Record<Dimension, number>; urgent: number };
+/** A dimension nobody in the group has data for is absent from `scores`, not
+ *  zero — a column of green for a measurement the institution never takes is the
+ *  same lie at group level as it is on a student row. */
+export type HeatRow = { label: string; count: number;
+  scores: Partial<Record<Dimension, number>>; urgent: number };
 export type Finding = { tone: "crit" | "good"; title: string; text: string };
 export type Agenda = {
   students: AgendaStudent[]; total: number;
@@ -49,6 +54,10 @@ type SnapshotRow = {
  */
 export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
   const oops = "Öğrenci gündemi yüklenemedi";
+  // Asked first, and on its own, because the completed-action query needs it:
+  // "tamamlandı" is a fact about one checkpoint, so reading every period's
+  // closed rows would carry September's decisions into October's list.
+  const currentPeriod = await latestPeriod(client);
   const [settings, students, branches, enrollments, snapshots, measurements, completedActions] = await Promise.all([
     loadSettings(client),
     fetchAll<{ id: string; external_id: string; name: string; branch_id: string }>(
@@ -62,8 +71,9 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
     fetchAll<{ student_id: string; kind: string; source_reference: string; value: number }>(
       () => client.from("student_measurements").select("student_id,kind,source_reference,value")
         .in("source_reference", ["exam_1", "exam_4", "term_rate", "skill_profile"]), oops),
-    fetchAll<{ student_id: string; status: string }>(
-      () => client.from("actions").select("student_id,status").eq("status", "completed"), oops)
+    currentPeriod === null ? Promise.resolve([]) : fetchAll<{ student_id: string; status: string }>(
+      () => client.from("actions").select("student_id,status")
+        .eq("status", "completed").eq("period_end", currentPeriod), oops)
   ]);
   const doneFor = new Set(completedActions.map(a => a.student_id));
 
@@ -149,15 +159,16 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
  *  clear 35 and beat the next group by 15%. Small groups are not peaks — three
  *  students having a bad month is not a branch-wide problem. */
 function peak(rows: HeatRow[], dimension: Dimension): HeatRow | null {
-  const big = rows.filter(r => r.count >= 5).sort((a, b) => b.scores[dimension] - a.scores[dimension]);
+  const big = rows.filter(r => r.count >= 5 && r.scores[dimension] !== undefined)
+    .sort((a, b) => b.scores[dimension]! - a.scores[dimension]!);
   if (big.length < 2) return null;
   const [top, next] = big;
-  return top.scores[dimension] >= 35 && top.scores[dimension] >= next.scores[dimension] * 1.15 ? top : null;
+  return top.scores[dimension]! >= 35 && top.scores[dimension]! >= next.scores[dimension]! * 1.15 ? top : null;
 }
 function topPeak(rows: HeatRow[]): [Dimension, HeatRow] | null {
   const found = DIMENSIONS.map(d => [d, peak(rows, d)] as const)
     .filter((x): x is [Dimension, HeatRow] => x[1] !== null)
-    .sort((a, b) => b[1].scores[b[0]] - a[1].scores[a[0]]);
+    .sort((a, b) => b[1].scores[b[0]]! - a[1].scores[a[0]]!);
   return found[0] ?? null;
 }
 
@@ -173,8 +184,9 @@ function buildFindings(
   const branchPeak = topPeak(byBranch);
   if (branchPeak) {
     const [dimension, row] = branchPeak;
+    const peakScore = row.scores[dimension]!;
     let text = `${row.label} şubesinde ${AREA[dimension].toLocaleLowerCase("tr")} ortalaması `
-      + `${row.scores[dimension]}, diğer şubelerin belirgin şekilde üzerinde.`;
+      + `${peakScore}, diğer şubelerin belirgin şekilde üzerinde.`;
     if (dimension === "skill") {
       const group = rows.filter(s => s.branch === row.label && s.skills.speaking !== undefined);
       if (group.length) {
@@ -202,7 +214,7 @@ function buildFindings(
       : ` ${row.count} öğrencinin ${row.urgent} tanesi acil listede.`;
     out.push({
       tone: "crit", title: `${row.label} kurunda ${AREA[dimension].toLocaleLowerCase("tr")} en yüksek`,
-      text: `${AREA[dimension]} ortalaması ${row.scores[dimension]}, diğer kurların `
+      text: `${AREA[dimension]} ortalaması ${row.scores[dimension]!}, diğer kurların `
         + `${small ? "üzerinde" : "belirgin şekilde üzerinde"}.` + extra
         + (small ? " Grup küçük olduğu için bunu bir eğilim değil, tek tek bakılacak bir işaret sayın." : "")
     });
@@ -210,7 +222,7 @@ function buildFindings(
 
   // A list of problems with no reference point reads as though everything is broken.
   const best = byBranch.filter(r => r.count >= 5)
-    .map(r => ({ r, average: mean(DIMENSIONS.map(d => r.scores[d])) }))
+    .map(r => ({ r, average: mean(DIMENSIONS.map(d => r.scores[d]).filter(v => v !== undefined)) }))
     .sort((a, b) => a.average - b.average)[0];
   if (best) out.push({
     tone: "good", title: `${best.r.label} şubesi dört alanda da en iyi durumda`,
@@ -230,8 +242,13 @@ function heat(rows: AgendaStudent[], key: (s: AgendaStudent) => string): HeatRow
   }
   return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "tr")).map(([label, list]) => ({
     label, count: list.length, urgent: list.filter(s => s.level_ === "HIGH").length,
-    scores: Object.fromEntries(DIMENSIONS.map(d =>
-      [d, Math.round(list.reduce((t, s) => t + (s.dimensions[d] ?? 0), 0) / list.length)]
-    )) as Record<Dimension, number>
+    // Averaged over the students who have the measurement, not over the group:
+    // counting a missing dimension as zero reported a branch as healthy in an
+    // area it had simply never filled in.
+    scores: Object.fromEntries(DIMENSIONS.flatMap(d => {
+      const values = list.map(s => s.dimensions[d]).filter(v => v !== undefined);
+      return values.length
+        ? [[d, Math.round(values.reduce((t, v) => t + v, 0) / values.length)]] : [];
+    })) as Partial<Record<Dimension, number>>
   }));
 }

@@ -7,6 +7,11 @@ import { ImportForm, ScoreForm } from "./form";
 export default async function Import() {
   const { client } = await requireUser();
   const settings = await loadSettings(client);
+  const me = await client.from("memberships").select("role").limit(1).maybeSingle();
+  // Scoring recalibrates the whole institution against itself, which is why the
+  // database only lets an institution admin do it. Rendering the form to anybody
+  // else offers a button whose only possible answer is "you may not".
+  const canScore = me.data?.role === "org_admin";
   const history = await client.from("import_batches")
     .select("id,filename,row_count,created_count,updated_count,skipped_count,created_at")
     .order("created_at", { ascending: false }).limit(10);
@@ -25,7 +30,15 @@ export default async function Import() {
 
     <ImportForm today={today} columns={[...REQUIRED]} />
 
-    <ScoreForm today={today} />
+    {canScore
+      ? <ScoreForm today={today} />
+      : <section className="panel pad">
+        <div className="card-hd"><h2>Risk skorları</h2></div>
+        <p className="note">Aktarımınız yazıldıktan sonra skorların güncellenmesi için kurum
+          yöneticinizin hesaplamayı çalıştırması gerekiyor. Hesaplama kurum genelinde yapılır —
+          her kurun karşılaştırma ölçütü kendi en iyi %25&apos;inden üretildiği için tek şubeyi
+          ayrı puanlamak öğrenciyi yalnız kendi şubesiyle kıyaslardı.</p>
+      </section>}
 
     <section className="panel">
       <div className="panel-heading"><h2>Beklenen sütunlar</h2>
@@ -44,7 +57,7 @@ export default async function Import() {
         <p className="note">Sütun adları demo veri setinden alındı; kurumun kendi dışa aktarımı
           görüldüğünde eşleme yeniden düzenlenecek. Ayırıcı olarak virgül, noktalı virgül ve
           sekme tanınır. Sınav tarihleri dosyada olmadığı için bütün ölçümler seçtiğiniz
-          dönem sonu tarihine yazılır; sıralama sütun adında taşınır.</p>
+          ölçüm tarihine yazılır; sıralama sütun adında taşınır.</p>
       </div>
     </section>
 

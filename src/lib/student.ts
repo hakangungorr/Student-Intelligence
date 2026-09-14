@@ -28,9 +28,12 @@ export type StudentCard = {
   attendanceRate: number | null; attendanceRecent: number | null;
   satisfaction: number | null;
   /** The institution's passing mark, so the card draws its line where the
-   *  institution put it rather than where the engine's default was. */
+   *  institution put it rather than where the engine's default was. The
+   *  attendance floor travels with it for the same reason: the card says
+   *  "kurumun kritik sınırı", and it has to be the one they set. */
   passMark: number;
-  benchmark: { exam: number; skill: number; cohort: number } | null;
+  attendanceFloor: number;
+  benchmark: { exam: number | null; skill: number | null; cohort: number } | null;
 };
 
 const mean = (v: number[]) => v.reduce((a, b) => a + b, 0) / v.length;
@@ -142,6 +145,7 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
       .filter(s => Number.isFinite(s.value)),
     attendanceRate: own.term, attendanceRecent: own.recent,
     satisfaction: student.data.satisfaction_score, passMark: settings.passMark,
+    attendanceFloor: settings.attendanceFloor,
     benchmark: benchmarks(cohort)
   };
 }

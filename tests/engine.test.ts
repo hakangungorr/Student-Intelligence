@@ -72,7 +72,7 @@ describe("risk engine port matches the Python reference", () => {
     const wrong: string[] = [];
     reference.forEach((ref, i) => {
       const expected = (ref.dimension_detail as { skill: { diagnosis: string; weakest: string } }).skill;
-      const got = scores[i].detail.skill;
+      const got = scores[i].detail.skill!;
       if (got.diagnosis !== expected.diagnosis)
         wrong.push(`${ref.student_id}: ${expected.diagnosis} → ${got.diagnosis}`);
       if (got.weakest !== expected.weakest.toLowerCase())
@@ -122,5 +122,91 @@ describe("the institution's passing mark", () => {
 
   it("defaults to 60, so an institution that never sets it is scored as before", () => {
     expect(scoreStudent(student, benchmark)).toEqual(scoreStudent(student, benchmark, 60));
+  });
+});
+
+/** Partial data.
+ *
+ *  An institution that does not record homework, or runs three exams instead of
+ *  four, still has students at risk. The rule is that a dimension nobody measured
+ *  must be absent from the result — never a zero, which every screen would draw
+ *  as a clean bill of health — and that a student is skipped only when there is
+ *  nothing at all to measure.
+ */
+describe("scoring what the institution actually has", () => {
+  const bm = { exam: 80, skill: 80, cohortSize: 20 };
+
+  it("scores a student who only has an attendance rate", () => {
+    const s = scoreStudent({ level: "B1", exams: [], attendanceRate: 62 }, bm);
+    expect(s.available).toEqual(["attendance"]);
+    expect(Object.keys(s.dimensions)).toEqual(["attendance"]);
+    expect(s.dimensions.attendance).toBe(60);
+    expect(s.riskScore).toBe(60);              // renormalised onto the one dimension
+    expect(s.riskLevel).toBe("MEDIUM");
+  });
+
+  it("leaves no key behind for a dimension it could not measure", () => {
+    const s = scoreStudent({ level: "B1", exams: [70, 55], attendanceRate: 90 }, bm);
+    expect(s.available).toEqual(["test", "attendance"]);
+    expect("skill" in s.dimensions).toBe(false);
+    expect("classroom" in s.dimensions).toBe(false);
+    expect(s.detail.skill).toBeUndefined();
+    expect(s.detail.classroom).toBeUndefined();
+  });
+
+  it("reads one skill score as a skill observation, with no imbalance to find", () => {
+    const s = scoreStudent(
+      { level: "B1", exams: [70, 68, 61, 55], speaking: 40 }, bm);
+    expect(s.available).toEqual(["test", "skill"]);
+    expect(s.detail.skill!.weakest).toBe("speaking");
+    expect(s.detail.skill!.spread).toBe(0);    // a profile of one cannot be lopsided
+  });
+
+  it("treats a single exam as no trend at all", () => {
+    const s = scoreStudent({ level: "B1", exams: [30], attendanceRate: 95 }, bm);
+    expect(s.available).toEqual(["attendance"]);
+  });
+
+  it("refuses to invent a score for a student with nothing on file", () => {
+    expect(() => scoreStudent({ level: "B1", exams: [] }, bm)).toThrow();
+  });
+});
+
+/** Exam runs other than four.
+ *
+ *  The trend is the same question at every length — where did this student start,
+ *  where are they now — so the run is split in half rather than indexed at fixed
+ *  positions. At four exams the split is the two-against-two the reference engine
+ *  used, which is why the hundred reference students above still agree.
+ */
+describe("however many exams the course runs", () => {
+  const bm = { exam: 80, skill: 80, cohortSize: 20 };
+  const withExams = (exams: number[]) =>
+    scoreStudent({ level: "B1", exams, attendanceRate: 95 }, bm);
+
+  it("compares the pair when there are two", () => {
+    expect(withExams([80, 60]).detail.test!.delta).toBe(-20);
+  });
+
+  it("ignores the middle one when there are three", () => {
+    const d = withExams([80, 70, 62].slice()).detail.test!;
+    expect(d.delta).toBe(-18);                 // last against first, middle skipped
+    expect(d.exam_count).toBe(3);
+  });
+
+  it("splits five into the first two against the last two", () => {
+    const d = withExams([90, 86, 70, 60, 50]).detail.test!;
+    expect(d.delta).toBe(-33);                 // (60+50)/2 - (90+86)/2
+    expect(d.exam_count).toBe(5);
+  });
+
+  it("still splits four two against two", () => {
+    const d = withExams([88, 84, 70, 62]).detail.test!;
+    expect(d.delta).toBe(-20);                 // (70+62)/2 - (88+84)/2
+  });
+
+  it("names the run length in the reason it writes", () => {
+    const s = withExams([80, 70, 62]);
+    expect(s.reasons.some(r => r.includes("Son 3 sınavın her biri"))).toBe(true);
   });
 });
