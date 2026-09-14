@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { scoreAll, availableDimensions, ENGINE_VERSION, type Measures } from "@/lib/engine";
 import { AREA, type Dimension } from "@/lib/narrative";
 import { fetchAll } from "@/lib/paginate";
+import { retrying } from "@/lib/retry";
 import { loadSettings } from "@/lib/settings";
 
 /** Scores everyone the signed-in administrator can see and stores the result.
@@ -46,9 +47,10 @@ function unmeasurable(m: Measures): Partial<Record<Dimension, string>> {
  *  week-over-week comparison the agenda is built on would compare today with
  *  today. */
 export async function latestPeriod(client: SupabaseClient): Promise<string | null> {
-  const { data, error } = await client.from("risk_snapshots")
-    .select("period_end").order("period_end", { ascending: false }).limit(1).maybeSingle();
-  if (error) throw new Error("Dönem okunamadı.");
+  const { data, error } = await retrying<{ period_end: string }>(() => client
+    .from("risk_snapshots").select("period_end")
+    .order("period_end", { ascending: false }).limit(1).maybeSingle());
+  if (error) throw new Error(`Dönem okunamadı: ${error.message}`);
   return (data?.period_end as string) ?? null;
 }
 

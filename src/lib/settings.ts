@@ -41,10 +41,17 @@ export function matchLevel(value: string, levels: string[]): string | undefined 
 /** An institution that has never opened the settings screen has no row, and a
  *  screen must not fail because of a table nobody has written to yet. A read
  *  that errors falls back the same way: the defaults are the values the column
- *  definitions would have supplied. */
+ *  definitions would have supplied.
+ *
+ *  But falling back quietly is how the settings table went missing from the live
+ *  database for days without anybody noticing — every screen showed the defaults
+ *  and looked perfectly healthy. The fallback stays, because a school should not
+ *  lose its agenda over a settings read; the silence does not. */
 export async function loadSettings(client: SupabaseClient): Promise<Settings> {
-  const { data } = await client.from("organization_settings")
+  const { data, error } = await client.from("organization_settings")
     .select("pass_mark,attendance_floor,levels").limit(1).maybeSingle();
+  if (error) console.warn(
+    `Kurum ayarları okunamadı, varsayılanlar kullanılıyor: ${error.message}`);
   if (!data) return DEFAULTS;
   const levels = Array.isArray(data.levels) ? (data.levels as string[]).filter(Boolean) : [];
   return {
