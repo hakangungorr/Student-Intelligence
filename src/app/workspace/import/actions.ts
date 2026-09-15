@@ -20,9 +20,17 @@ export type PreviewState = {
   periodEnd?: string;
   sample?: { line: number; externalId: string; name: string; branch: string; level: string }[];
   accepted?: number;
+  /** Distinct lines the parser refused, and the number of problems it found in
+   *  them. One line with three bad marks is one rejected student and three
+   *  issues; reporting the issue count as students was how the history came to
+   *  claim "3 satır aktarıldı, 4 atlandı" for a file of four rows. */
+  rejected?: number;
   issues?: Issue[];
   unknown?: string[];
   result?: { created: number; updated: number; measurements: number; observations: number };
+  /** Set when the write stopped part-way. The same file can simply be uploaded
+   *  again: every stage finds and corrects rather than re-inserting. */
+  stopped?: { stage: string; message: string };
   scored?: number | null;
   /** Which evaluation checkpoint this import will refresh, already formatted.
    *  The date on the form is when the marks were measured; the checkpoint they
@@ -37,6 +45,11 @@ const dayText = (iso: string) => {
   return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" })
     .format(new Date(y, m - 1, d));
 };
+
+/** How many students the file actually lost. Every rejection path in the parser
+ *  skips the line it complains about, so the distinct lines carrying an issue
+ *  are exactly the students who did not make it. */
+const rejectedLines = (issues: Issue[]) => new Set(issues.map(i => i.line)).size;
 
 const period = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tarih YYYY-AA-GG biçiminde olmalı.");
 
@@ -80,7 +93,8 @@ export async function preview(_prev: PreviewState, form: FormData): Promise<Prev
   return {
     status: "ready", token: crypto.randomUUID(), filename: file.name, text, periodEnd: when.data,
     refreshes: current === null ? null : dayText(current), canScore,
-    accepted: parsed.rows.length, issues: parsed.issues, unknown: parsed.unknown,
+    accepted: parsed.rows.length, rejected: rejectedLines(parsed.issues),
+    issues: parsed.issues, unknown: parsed.unknown,
     sample: parsed.rows.slice(0, 8).map(r =>
       ({ line: r.line, externalId: r.externalId, name: r.name, branch: r.branch, level: r.level }))
   };
@@ -107,17 +121,22 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
     return { status: "error", message: `Aktarım yazılamadı: ${(e as Error).message}` };
   }
 
+  const rejected = rejectedLines(parsed.issues);
   // Recorded after the write, so the history never claims an import that failed.
+  // skipped_count keeps being written as the rejected-row count so the column
+  // finally means what its header always said; the issue count moved to a column
+  // of its own rather than continuing to impersonate it.
   const recorded = await client.from("import_batches").insert({
     organization_id: organizationId, filename, row_count: parsed.rows.length,
     created_count: result.created, updated_count: result.updated,
-    skipped_count: parsed.issues.length
+    skipped_count: rejected, rejected_count: rejected, issue_count: parsed.issues.length
   });
 
   // An import that leaves the agenda showing yesterday's scores has not finished
-  // the job it was asked to do.
+  // the job it was asked to do. Not after a stopped write, though: scoring a
+  // half-written roster produces a checkpoint nobody can interpret.
   let scored: number | null = null;
-  if (canScore) {
+  if (canScore && !result.stopped) {
     const period = (await latestPeriod(client)) ?? when.data;
     scored = (await scoreInstitution(client, organizationId, period)).scored;
   }
@@ -126,7 +145,8 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
   revalidatePath("/workspace/students");
   revalidatePath("/workspace/ask");
   return {
-    status: "done", filename, result, scored, accepted: parsed.rows.length, issues: parsed.issues,
+    status: "done", filename, result, scored, stopped: result.stopped,
+    accepted: parsed.rows.length, rejected, issues: parsed.issues,
     message: recorded.error ? "Veriler yazıldı, ancak aktarım geçmişine kaydedilemedi." : undefined
   };
 }

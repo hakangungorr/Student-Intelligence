@@ -171,24 +171,47 @@ export function headline(s: Source, found: Evidence[]): string {
   return "Dört alanda birlikte destek gerekiyor.";
 }
 
-export type Step = { text: string; who: string | null };
+export type Step = { key: string; text: string; who: string | null };
 
 export const needsAction = (action: string) => !action.startsWith("Aksiyon gerekmiyor");
+
+/** A task's identity, taken from the task itself.
+ *
+ *  Recommendations are not stored with an id — the engine writes a sentence and
+ *  the screen splits it — so the only thing that can identify one task across a
+ *  page load is what the task says. Deriving the key from the text gives the two
+ *  properties this has to have at once: the same task stays the same task while
+ *  the recommendation holds, and a recommendation that is rewritten produces new
+ *  keys, so the new plan starts open instead of inheriting the old plan's ticks.
+ *
+ *  A readable slug rather than a hash, because this value ends up in the audit
+ *  trail and somebody reading the table should be able to tell what was closed.
+ */
+const FOLD: Record<string, string> = {
+  "ı": "i", "İ": "i", "ş": "s", "Ş": "s", "ğ": "g", "Ğ": "g",
+  "ü": "u", "Ü": "u", "ö": "o", "Ö": "o", "ç": "c", "Ç": "c"
+};
+export const taskKey = (text: string) => text.toLocaleLowerCase("tr")
+  .replace(/[ıİşŞğĞüÜöÖçÇ]/g, c => FOLD[c] ?? c)
+  .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
 
 /** The engine writes one action string; the screen owes the reader who does what. */
 export function steps(action: string): Step[] {
   let a = action.replace(/^ACİL:\s*/, "");
-  if (!needsAction(a)) return [{ text: "Aksiyon gerekmiyor — rutin takip", who: null }];
+  if (!needsAction(a)) return [withKey({ text: "Aksiyon gerekmiyor — rutin takip", who: null })];
   a = a.replace("eğitmen görüşmesi + telafi planı", "@TEACHER");
-  return a.split(" + ").map<Step>(part => {
-    if (part === "@TEACHER") return { text: "Eğitmenle görüşme ve telafi planı", who: "Eğitmen" };
-    if (part.startsWith("hedefli")) {
-      const skill = part.split(" ")[1];
-      return { text: `2 haftalık ${SKILL[skill.toLocaleLowerCase("tr")] ?? skill} destek programı`, who: "Eğitmen" };
-    }
-    if (part.startsWith("eğitmen ile")) return { text: "Öğrenci değerlendirme toplantısı", who: "Akademik koordinatör" };
-    if (part.startsWith("öğrenci ilişkileri")) return { text: "Aileyi/öğrenciyi ara — devamsızlığın nedenini öğren", who: "Öğrenci ilişkileri" };
-    if (part.startsWith("seviye değerlendirmesi")) return { text: "Seviye değerlendirmesi — kur tekrarı gerekebilir", who: "Akademik koordinatör" };
-    return { text: part, who: null };
-  });
+  return a.split(" + ").map<Step>(part => withKey(describe(part)));
+}
+const withKey = (s: Omit<Step, "key">): Step => ({ key: taskKey(s.text), ...s });
+
+function describe(part: string): Omit<Step, "key"> {
+  if (part === "@TEACHER") return { text: "Eğitmenle görüşme ve telafi planı", who: "Eğitmen" };
+  if (part.startsWith("hedefli")) {
+    const skill = part.split(" ")[1];
+    return { text: `2 haftalık ${SKILL[skill.toLocaleLowerCase("tr")] ?? skill} destek programı`, who: "Eğitmen" };
+  }
+  if (part.startsWith("eğitmen ile")) return { text: "Öğrenci değerlendirme toplantısı", who: "Akademik koordinatör" };
+  if (part.startsWith("öğrenci ilişkileri")) return { text: "Aileyi/öğrenciyi ara — devamsızlığın nedenini öğren", who: "Öğrenci ilişkileri" };
+  if (part.startsWith("seviye değerlendirmesi")) return { text: "Seviye değerlendirmesi — kur tekrarı gerekebilir", who: "Akademik koordinatör" };
+  return { text: part, who: null };
 }

@@ -11,7 +11,19 @@ import { fetchAll } from "@/lib/paginate";
  *  exist. Reading first also produces the created/updated split the import history
  *  records, which "how many rows changed?" needs an answer to.
  */
-export type ImportResult = { created: number; updated: number; measurements: number; observations: number };
+export type ImportResult = {
+  created: number; updated: number; measurements: number; observations: number;
+  /** The stage that stopped, when one did, and what it said.
+   *
+   *  A roster write is four writes — students, enrolments, measurements,
+   *  observations — and a failure in the third used to surface as "aktarım
+   *  yazılamadı", with the first two already in the database and nothing on
+   *  screen admitting it. Every stage here is idempotent: existing rows are
+   *  found and corrected rather than re-inserted, so re-running the same file
+   *  resumes from wherever it stopped instead of duplicating what landed. The
+   *  screen can therefore say what got in and ask for the same file again. */
+  stopped?: { stage: string; message: string };
+};
 
 const SKILLS: Record<string, string> = {
   speaking_score: "speaking", writing_score: "writing",
@@ -42,6 +54,12 @@ export async function writeRoster(
   rows: Row[], periodEnd: string, actorId: string
 ): Promise<ImportResult> {
   const fail = (e: { message: string } | null) => { if (e) throw new Error(e.message); };
+  let stopped: ImportResult["stopped"];
+  /** Runs one stage unless an earlier one already stopped the import. */
+  const stage = async (name: string, run: () => Promise<void>) => {
+    if (stopped) return;
+    try { await run(); } catch (e) { stopped = { stage: name, message: (e as Error).message }; }
+  };
 
   const codes = rows.map(r => r.externalId);
   const existing = await fetchAll<{ id: string; external_id: string; name: string;
@@ -81,52 +99,60 @@ export async function writeRoster(
   const studentIds = rows.map(r => idOf(r.externalId));
   const branchOf = new Map(rows.map(r => [idOf(r.externalId), branchIds.get(r.branch)!]));
 
-  const enrolled = await fetchAll<{ id: string; student_id: string; level: string; teacher_name: string | null }>(
-    () => client.from("enrollments").select("id,student_id,level,teacher_name")
-      .in("student_id", studentIds).eq("active", true), "Kur kayıtları okunamadı");
-  const byStudent = new Map(enrolled.map(e => [e.student_id, e]));
-  const newEnrolments = rows.filter(r => !byStudent.has(idOf(r.externalId)));
-  if (newEnrolments.length) fail((await client.from("enrollments").insert(newEnrolments.map(r => ({
-    organization_id: organizationId, branch_id: branchIds.get(r.branch)!,
-    student_id: idOf(r.externalId), level: r.level, teacher_name: r.teacher,
-    starts_on: periodEnd, active: true
-  })))).error);
-  for (const r of rows) {
-    const e = byStudent.get(idOf(r.externalId));
-    if (!e || (e.level === r.level && (e.teacher_name ?? null) === r.teacher)) continue;
-    fail((await client.from("enrollments")
-      .update({ level: r.level, teacher_name: r.teacher }).eq("id", e.id)).error);
-  }
+  await stage("Kur kayıtları", async () => {
+    const enrolled = await fetchAll<{ id: string; student_id: string; level: string; teacher_name: string | null }>(
+      () => client.from("enrollments").select("id,student_id,level,teacher_name")
+        .in("student_id", studentIds).eq("active", true), "Kur kayıtları okunamadı");
+    const byStudent = new Map(enrolled.map(e => [e.student_id, e]));
+    const newEnrolments = rows.filter(r => !byStudent.has(idOf(r.externalId)));
+    if (newEnrolments.length) fail((await client.from("enrollments").insert(newEnrolments.map(r => ({
+      organization_id: organizationId, branch_id: branchIds.get(r.branch)!,
+      student_id: idOf(r.externalId), level: r.level, teacher_name: r.teacher,
+      starts_on: periodEnd, active: true
+    })))).error);
+    for (const r of rows) {
+      const e = byStudent.get(idOf(r.externalId));
+      if (!e || (e.level === r.level && (e.teacher_name ?? null) === r.teacher)) continue;
+      fail((await client.from("enrollments")
+        .update({ level: r.level, teacher_name: r.teacher }).eq("id", e.id)).error);
+    }
+  });
 
-  const priorReadings = await fetchAll<{ id: string; student_id: string; kind: string;
-    source_reference: string; value: number }>(
-    () => client.from("student_measurements").select("id,student_id,kind,source_reference,value")
-      .in("student_id", studentIds), "Mevcut ölçümler okunamadı");
-  const readingKey = (s: string, k: string, r: string) => `${s}|${k}|${r}`;
-  const known = new Map(priorReadings.map(m =>
-    [readingKey(m.student_id, m.kind, m.source_reference), m]));
-
-  const insertReadings: Record<string, unknown>[] = [];
   let touchedReadings = 0;
-  for (const r of rows) {
-    const sid = idOf(r.externalId);
-    for (const reading of readingsOf(r)) {
-      const prior = known.get(readingKey(sid, reading.kind, reading.source));
-      if (!prior) {
-        insertReadings.push({
-          organization_id: organizationId, branch_id: branchOf.get(sid)!, student_id: sid,
-          measured_on: periodEnd, kind: reading.kind, value: reading.value, source_reference: reading.source
-        });
-        touchedReadings++;
-      } else if (Number(prior.value) !== reading.value) {
-        fail((await client.from("student_measurements")
-          .update({ value: reading.value, measured_on: periodEnd }).eq("id", prior.id)).error);
-        touchedReadings++;
+  await stage("Ölçümler", async () => {
+    const priorReadings = await fetchAll<{ id: string; student_id: string; kind: string;
+      source_reference: string; value: number }>(
+      () => client.from("student_measurements").select("id,student_id,kind,source_reference,value")
+        .in("student_id", studentIds), "Mevcut ölçümler okunamadı");
+    const readingKey = (s: string, k: string, r: string) => `${s}|${k}|${r}`;
+    const known = new Map(priorReadings.map(m =>
+      [readingKey(m.student_id, m.kind, m.source_reference), m]));
+
+    const insertReadings: Record<string, unknown>[] = [];
+    for (const r of rows) {
+      const sid = idOf(r.externalId);
+      for (const reading of readingsOf(r)) {
+        const prior = known.get(readingKey(sid, reading.kind, reading.source));
+        if (!prior) {
+          insertReadings.push({
+            organization_id: organizationId, branch_id: branchOf.get(sid)!, student_id: sid,
+            measured_on: periodEnd, kind: reading.kind, value: reading.value, source_reference: reading.source
+          });
+          touchedReadings++;
+        } else if (Number(prior.value) !== reading.value) {
+          // The overwritten reading is not lost: a trigger copies it into
+          // measurement_revisions before this update lands.
+          fail((await client.from("student_measurements")
+            .update({ value: reading.value, measured_on: periodEnd }).eq("id", prior.id)).error);
+          touchedReadings++;
+        }
       }
     }
-  }
-  if (insertReadings.length) fail((await client.from("student_measurements").insert(insertReadings)).error);
+    if (insertReadings.length) fail((await client.from("student_measurements").insert(insertReadings)).error);
+  });
 
+  let touchedObs = 0;
+  await stage("Sınıf içi gözlemler", async () => {
   const priorObs = await fetchAll<{ id: string; student_id: string; participation: number | null;
     homework_completion: number | null; teacher_concern: boolean | null }>(
     () => client.from("classroom_observations")
@@ -135,7 +161,6 @@ export async function writeRoster(
   const obsByStudent = new Map(priorObs.map(o => [o.student_id, o]));
 
   const insertObs: Record<string, unknown>[] = [];
-  let touchedObs = 0;
   for (const r of rows) {
     const participation = r.numbers.get("participation_score") ?? null;
     const homework = r.numbers.get("homework_completion") ?? null;
@@ -162,6 +187,10 @@ export async function writeRoster(
     }
   }
   if (insertObs.length) fail((await client.from("classroom_observations").insert(insertObs)).error);
+  });
 
-  return { created: fresh.length, updated, measurements: touchedReadings, observations: touchedObs };
+  return {
+    created: fresh.length, updated, measurements: touchedReadings,
+    observations: touchedObs, stopped
+  };
 }

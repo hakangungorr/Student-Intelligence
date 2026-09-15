@@ -42,12 +42,15 @@ export default async function Workspace() {
     <h1>{a.urgent
       ? `${a.urgent} öğrenci acil ilgi bekliyor.`
       : "Acil ilgi bekleyen öğrenci yok."}</h1>
-    <p className="intro">{a.actionable} aksiyonun <b>{a.completed}</b> tanesi tamamlandı
+    <p className="intro">{a.studentsWithAction} öğrenci için önerilen <b>{a.tasks} görevin
+      {" "}{a.tasksDone} tanesi</b> tamamlandı
       {a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
-      {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.</p>
-    {a.actionable > 0 && <div className="progress" role="img"
-      aria-label={`${a.actionable} aksiyonun ${a.completed} tanesi tamamlandı`}>
-      <i style={{ width: `${Math.round(a.completed / a.actionable * 100)}%` }} /></div>}
+      {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.
+      {a.awaitingScore > 0 && <> Kayıtlı {a.registered} öğrencinin {a.awaitingScore} tanesi
+        bu kesitte puanlanmadı; veri bekledikleri için listede yoklar.</>}</p>
+    {a.tasks > 0 && <div className="progress" role="img"
+      aria-label={`${a.tasks} görevin ${a.tasksDone} tanesi tamamlandı`}>
+      <i style={{ width: `${Math.round(a.tasksDone / a.tasks * 100)}%` }} /></div>}
 
     <div className="metrics kpis">
       <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent}
@@ -58,6 +61,23 @@ export default async function Workspace() {
       <Kpi value={a.attendanceCritical} label="Devamsızlığı kritik"
         note={`devam oranı %${a.settings.attendanceFloor} sınırının altında`} />
     </div>
+
+    <section className="panel">
+      <div className="panel-heading"><h2>Plan döngüsü</h2>
+        <span className="note">{shortDate(a.weekStart)} haftası</span></div>
+      <div className="cycle">
+        <Cycle n={a.planMissing} label="Plan hazırlanmadı"
+          note="aksiyon önerilen ama bu hafta planı olmayan öğrenci" href="/workspace/plans" />
+        <Cycle n={a.planPending} label="Onay bekliyor"
+          note="taslak hazır, eğitmen incelemedi" href="/workspace/plans" />
+        <Cycle n={a.helpWanted} label="Yardım istendi"
+          note="öğrenci bir görevde takıldı" href="/workspace/plans" />
+        <Cycle n={a.reassessDue} label="Yeniden değerlendirme bekliyor"
+          note="plan onaylı, aynı ölçütle yeni ölçüm yapılmadı" href="/workspace/plans" />
+      </div>
+      <p className="pad-note note">Bu dört sayı gündemdeki risk sıralamasının yerine geçmez;
+        yanına, o öğrenci için başlatılan çalışmanın nerede durduğunu koyar.</p>
+    </section>
 
     <section className="panel">
       <div className="panel-heading">
@@ -80,15 +100,19 @@ export default async function Workspace() {
     </section>}
 
     <section className="panel">
-      <div className="panel-heading"><h2>İyiye giden öğrenciler</h2>
-        <span className="note">Önceki ölçüme göre durumu düzelenler</span></div>
+      <div className="panel-heading"><h2>Risk skoru düşen öğrenciler</h2>
+        <span className="note">Önceki kesitle karşılaştırma · öğrenme kanıtı değil</span></div>
       {!a.comparedTo
         ? <p className="empty">Bu panel önceki ölçümle karşılaştırma yapar. İlk ölçümde
           karşılaştırılacak bir kesit yok — ikincisinden itibaren durumu düzelen öğrenciler
           burada listelenir.</p>
         : a.recovered.length === 0
           ? <p className="empty">Bu kesitte durumu düzelen öğrenci yok.</p>
-          : <div className="recovered">{a.recovered.map(s => <Link key={s.id} className="recovered-card"
+          : <><p className="pad-note note">Skorun düşmesi desteğin işe yaradığını göstermez:
+            devam düzeldiğinde de, eksik bir boyut ilk kez ölçüldüğünde de skor düşer. Neyin
+            öğrenildiği öğrenci kartındaki <b>Gelişim</b> sekmesinde, aynı ölçütle yapılmış
+            ikinci ölçümden okunur.</p>
+          <div className="recovered">{a.recovered.map(s => <Link key={s.id} className="recovered-card"
             href={`/workspace/students/${s.id}`}>
             <b>{s.name}</b><span className="note">{s.branch} · {s.level}</span>
             <span className="shift">
@@ -96,12 +120,19 @@ export default async function Workspace() {
               <span className="arrow">→</span>
               <span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span>
             </span>
-          </Link>)}</div>}
+          </Link>)}</div></>}
     </section>
 
     <Heat title="Şube risk haritası" rows={a.byBranch} unit="öğrenci" />
     <Heat title="Kur risk haritası" rows={a.byLevel} unit="öğrenci" />
   </>;
+}
+
+function Cycle({ n, label, note, href }: {
+  n: number; label: string; note: string; href: string;
+}) {
+  return <Link className="cycle-cell" href={href}>
+    <strong>{n}</strong><span>{label}</span><small className="note">{note}</small></Link>;
 }
 
 function Kpi({ value, label, was, when, note, worseIsUp }: {
@@ -128,7 +159,6 @@ function Note({ finding, index }: { finding: Finding; index: number }) {
 }
 
 function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
-  const whos = [...new Set(s.steps.map(x => x.who).filter(Boolean))];
   return <article className={`srow${s.done ? " is-done" : ""}`}>
     <div className="srow-hd">
       <span className="srank">{String(rank).padStart(2, "0")}</span>
@@ -141,10 +171,19 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
     <ul className="facts">{s.found.slice(0, 2).map(f =>
       <li key={f.dim} className={band(f.score)}>{f.text}</li>)}</ul>
     <div className="todo">
-      <div className="todo-hd">NE YAPMALI</div>
-      <ul>{s.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
-      {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
-      {s.needsAction && <MarkDone studentId={s.id} title={s.steps.map(x => x.text).join(" + ")} done={s.done} />}
+      <div className="todo-hd">NE YAPMALI{s.tasks > 0 && <span> · {s.tasksDone}/{s.tasks}</span>}</div>
+      <p className="plan-line">{s.plan.state === "none"
+        ? <Link href="/workspace/plans">Haftalık plan hazırlanmadı →</Link>
+        : <Link href={`/workspace/plans/${s.plan.id}`}>
+          {s.plan.state === "draft" ? "Taslak planı incele" : "Haftalık planı aç"}
+          {" "}({s.plan.done}/{s.plan.tasks} görev
+          {s.plan.blocked > 0 && <>, {s.plan.blocked} yardım isteği</>}
+          {s.plan.reassessPending && <>, yeniden değerlendirme bekliyor</>}) →</Link>}</p>
+      <ul className="tasks">{s.steps.map(x => <li key={x.key} className={x.done ? "task is-closed" : "task"}>
+        <span className="ck">{x.done ? "✓" : "→"}</span>
+        <span className="tk">{x.text}{x.who && <small>{x.who}</small>}</span>
+        {s.needsAction && <MarkDone studentId={s.id} taskKey={x.key} title={x.text} done={x.done} />}
+      </li>)}</ul>
     </div>
   </article>;
 }

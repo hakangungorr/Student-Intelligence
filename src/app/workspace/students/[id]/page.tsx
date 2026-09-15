@@ -7,16 +7,39 @@ import { loadStudentEntry } from "@/lib/entry-read";
 import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
 import { MarkDone } from "../../mark-button";
 import { EntryPanel } from "./entry-panel";
+import { Progress, SkillProfile, StudyHistory, WeeklyPlan } from "./tabs";
+
+/** Kart beş soruyu ayrı ayrı yanıtlar.
+ *
+ *  They were one page, and the page could only answer the first: where the
+ *  problem is. What the student should do about it, what was done, and whether
+ *  anything measurably changed are different questions with different evidence,
+ *  and stacking them under one heading was what let "risk skoru düştü" pass for
+ *  "öğrenci ilerledi". Plain links rather than client-side state: each tab is
+ *  its own server render and its own set of queries. */
+const TABS = [
+  { key: "ozet", label: "Özet" },
+  { key: "beceri", label: "Beceri profili" },
+  { key: "plan", label: "Haftalık plan" },
+  { key: "gecmis", label: "Çalışma geçmişi" },
+  { key: "gelisim", label: "Gelişim" }
+] as const;
+type TabKey = (typeof TABS)[number]["key"];
 
 const areaWord = (v: number | undefined) =>
   v === undefined ? "Veri yok" : v >= 60 ? "Ciddi sorun" : v >= 30 ? "Dikkat" : "İyi";
 
-export default async function Student({ params }: { params: Promise<{ id: string }> }) {
+export default async function Student({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ g?: string }>;
+}) {
   const { id } = await params;
+  const { g } = await searchParams;
+  const tab: TabKey = TABS.find(t => t.key === g)?.key ?? "ozet";
   const { client } = await requireUser();
   const s = await loadStudent(client, id);
   if (!s) notFound();
-  const entered = await loadStudentEntry(client, id);
+  const entered = tab === "ozet" ? await loadStudentEntry(client, id) : null;
   const today = new Date().toISOString().slice(0, 10);
 
   const missed = s.attendanceRate === null ? null : Math.max(1, Math.round((100 - s.attendanceRate) / 10));
@@ -40,15 +63,34 @@ export default async function Student({ params }: { params: Promise<{ id: string
         </div>}
       </div>
 
-      {s.risk ? <Assessment risk={s.risk} studentId={s.id} done={s.done} /> : <>
+      {s.risk ? <Assessment risk={s.risk} studentId={s.id} /> : <>
         <p className="srow-head lead">Bu öğrenci henüz puanlanmadı.</p>
         <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav,
           beceri, devam ve sınıf içi bilgilerini aşağıdaki formdan girin — kaydettiğinizde
           skor hesaplanır.</p>
       </>}
+      {/* A card showing an older checkpoint's verdict has to say so, or it reads
+          as today's reading of a student nobody has measured this time round. */}
+      {s.risk && s.snapshotPeriod && s.currentPeriod && s.snapshotPeriod !== s.currentPeriod &&
+        <p className="note">Bu değerlendirme {s.snapshotPeriod} kesitine ait. Kurumun güncel
+          kesiti {s.currentPeriod}; bu öğrenci o kesitte puanlanmadı.</p>}
     </section>
 
-    <EntryPanel studentId={s.id} name={s.name} values={entered} today={today}
+    <nav className="tabs" aria-label="Öğrenci kartı bölümleri">{TABS.map(t =>
+      <Link key={t.key} className={`tab${tab === t.key ? " on" : ""}`}
+        href={`/workspace/students/${s.id}?g=${t.key}`}
+        aria-current={tab === t.key ? "page" : undefined}>{t.label}</Link>)}
+      <Link className="tab" href={`/workspace/week/${s.id}`}>Öğrencinin haftası ↗</Link>
+      <Link className="tab" href={`/workspace/students/${s.id}/report`}>Gelişim raporu ↗</Link>
+    </nav>
+
+    {tab === "beceri" && <SkillProfile client={client} studentId={s.id} today={today} />}
+    {tab === "plan" && <WeeklyPlan client={client} studentId={s.id} />}
+    {tab === "gecmis" && <StudyHistory client={client} studentId={s.id} />}
+    {tab === "gelisim" && <Progress client={client} studentId={s.id} />}
+
+    {tab === "ozet" && <>
+    <EntryPanel studentId={s.id} name={s.name} values={entered!} today={today}
       groups={FIELD_GROUPS} open={!s.risk} />
 
     {s.risk && <section className="panel pad">
@@ -132,13 +174,11 @@ export default async function Student({ params }: { params: Promise<{ id: string
         </>}
       </section>
     </div>
+    </>}
   </>;
 }
 
-function Assessment({ risk, studentId, done }: {
-  risk: StudentRisk; studentId: string; done: boolean;
-}) {
-  const whos = [...new Set(risk.steps.map(x => x.who).filter(Boolean))];
+function Assessment({ risk, studentId }: { risk: StudentRisk; studentId: string }) {
   return <>
     <p className="srow-head lead">{risk.headline}</p>
     <ul className="facts">
@@ -147,11 +187,12 @@ function Assessment({ risk, studentId, done }: {
         : <li>Bu öğrencide belirgin bir risk sinyali yok.</li>}
     </ul>
     <div className="todo">
-      <div className="todo-hd">NE YAPMALI</div>
-      <ul>{risk.steps.map((x, i) => <li key={i}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
-      {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
-      {risk.needsAction &&
-        <MarkDone studentId={studentId} title={risk.steps.map(x => x.text).join(" + ")} done={done} />}
+      <div className="todo-hd">NE YAPMALI{risk.tasks > 0 && <span> · {risk.tasksDone}/{risk.tasks}</span>}</div>
+      <ul className="tasks">{risk.steps.map(x => <li key={x.key} className={x.done ? "task is-closed" : "task"}>
+        <span className="ck">{x.done ? "✓" : "→"}</span>
+        <span className="tk">{x.text}{x.who && <small>{x.who}</small>}</span>
+        {risk.needsAction && <MarkDone studentId={studentId} taskKey={x.key} title={x.text} done={x.done} />}
+      </li>)}</ul>
     </div>
     {risk.reasons.length > 0 && <details className="raw">
       <summary>Sistemin tespit ettiği ham sinyaller ({risk.reasons.length})</summary>

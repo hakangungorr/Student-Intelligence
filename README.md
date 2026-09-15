@@ -180,6 +180,30 @@ Ağırlıklar, risk eşikleri ve kohort yüzdesi kasten ayarlanabilir değildir:
 üzerinde kalibre edildiler ve ekrandan değiştirilmeleri aynı öğrencinin kimin
 baktığına göre farklı skor almasına yol açar.
 
+## Kişisel dil gelişim planı
+
+Risk motoru "önce kiminle ilgilenilmeli" sorusunu yanıtlar. Onun altına, "bu öğrenci bu hafta
+ne yapmalı ve sonrasında ne değişti" sorusunu yanıtlayan bir katman eklendi.
+
+- **Tarihli kanıt.** `skill_assessments` + `skill_assessment_scores`: hangi ölçütte, hangi
+  görevde, hangi tarihte, hangi ölçüt sürümüyle. Hiçbir kayıt bir diğerini ezmez.
+  `student_measurements` özet ölçüm olarak yerinde kalır; ondan alt beceri geçmişi
+  türetilmez.
+- **Plan.** `study_plans` sürümlenir, `study_tasks` tek tek durum taşır. Onaylı plan yerinde
+  değiştirilmez: eski sürüm arşivlenir, yenisi yazılır.
+- **Kaynak ve oturum.** `learning_resources` ve `support_sessions`. Uygulamanın ürettiği her
+  kayıt `is_sample` ile işaretlidir ve ekranlarda öyle görünür. Öneri, rezervasyon ve gerçek
+  katılım ayrı durumlardır; kapasite veritabanında zorlanır.
+- **Ne söylenmez.** Ölçülmeyen ölçüt sıfır sayılmaz. Tek ölçümden kesin eksiklik çıkarılmaz.
+  Farklı ölçüt sürümündeki puanlar karşılaştırılmaz. Tamamlanan görev öğrenme kanıtı değildir;
+  risk skorunun düşmesi de değildir.
+
+Ekranlar: `/workspace/plans` (onay kuyruğu), `/workspace/catalog` (kaynaklar ve oturumlar),
+`/workspace/week/[id]` (öğrencinin haftası), öğrenci kartındaki beş sekme ve
+`/workspace/students/[id]/report` (gelişim raporu).
+
+Ayrıntı ve kuruma sorulacaklar: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`, `TODO.md` Bölüm 6.
+
 ## Açık kalanlar
 
 1. **İlk hafta karşılaştırma yapılamaz.** "Geçen haftaya göre" metrikleri ve

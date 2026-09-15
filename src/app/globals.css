@@ -175,6 +175,15 @@ table.sheet tbody tr:nth-child(even){background:color-mix(in srgb, var(--soft) 4
 .mark{margin-top:14px}
 .markbtn,.undo{font-size:13px;padding:8px 14px}
 .undo{background:var(--soft);color:var(--muted)}
+/* Her görev kendi satırı, kendi düğmesi: bir görevi kapatmak diğerini kapatmaz. */
+.todo li.task{align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px 10px}
+.tk{flex:1 1 16ch;display:flex;flex-direction:column}
+.tk small{color:var(--muted);font-size:12px}
+.task .mark{margin:0}
+.task.is-closed .tk{color:var(--muted);text-decoration:line-through}
+.task.is-closed .tk small{text-decoration:none}
+.task.is-closed .ck{color:rgb(var(--good-rgb))}
+.todo-hd span{color:var(--ink)}
 .srow.is-done{opacity:.62}
 .srow.is-done .todo{background:transparent;border:1px dashed var(--line)}
 .findings{display:flex;flex-direction:column}
@@ -241,3 +250,68 @@ td.heat.none{background:transparent;color:var(--muted)}
 .note.gap{margin:0 0 8px}
 td .quad{margin:0 0 6px}
 td .note.gap{margin:0;white-space:normal;max-width:34ch}
+
+
+/* Beceri profili, plan ve rapor --------------------------------------------- */
+/* Sekmeler bağlantıdır: her biri kendi sunucu sorgusu, geri tuşu çalışır. */
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{display:inline-block;padding:9px 14px;border:1px solid var(--line);border-radius:999px;
+  background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
+.tab.on{background:var(--navy);border-color:var(--navy);color:var(--surface);font-weight:600}
+@media(prefers-color-scheme:dark){.tab.on{color:#0f131a}}
+
+.skill-block{margin-top:22px}
+.skill-block h3{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;margin:0 0 8px}
+.skill-block table th small,.crit-list small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.crit-group h3{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;margin:0 0 8px}
+.crit-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.crit-inputs{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;
+  flex-direction:column;gap:12px}
+.crit-inputs legend{font-size:13px;color:var(--muted);padding:0 6px}
+.crit-input{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600}
+.crit-input small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.crit-input input{width:88px;padding:8px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--ink)}
+.good-ink{color:rgb(var(--good-rgb))}
+
+.cycle{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.cycle-cell{padding:20px;border-right:1px solid var(--line);text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:2px}
+.cycle-cell:last-child{border-right:0}
+.cycle-cell strong{font:600 30px "Familjen Grotesk",Arial,sans-serif;color:var(--navy)}
+.plan-line{margin:0 0 10px;font-size:13px}
+@media(max-width:700px){.cycle{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cycle-cell{border-bottom:1px solid var(--line)}}
+.plan-queue,.plan-tasks{display:flex;flex-direction:column}
+.plan-row,.plan-task{padding:18px 20px;border-bottom:1px solid var(--line)}
+.plan-row:last-child,.plan-task:last-child{border:0}
+.plan-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.plan-hd a{font-weight:600}
+.plan-task.is-closed{opacity:.55}
+.task-meta{display:grid;grid-template-columns:minmax(0,14ch) 1fr;gap:4px 14px;margin:10px 0 0;
+  font-size:14px}
+.task-meta dt{color:var(--muted);font-size:13px}
+.task-meta dd{margin:0}
+.task-meta dd small{display:block;color:var(--muted);font-size:12px}
+.task-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.task-actions button{font-size:13px;padding:7px 12px}
+.needs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.needs li{display:flex;gap:12px;align-items:flex-start}
+.needs small{display:block;color:var(--muted);font-size:13px}
+.inline-form{gap:10px}
+.inline-form input{max-width:200px}
+
+.week{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.week-card{border:1px solid var(--line);border-radius:13px;background:var(--surface);padding:20px}
+.week-card.is-today{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy) inset}
+.week-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.week-card h2{font-size:17px}
+.week-why{font-size:14px;color:var(--muted);margin:10px 0}
+.report h2{font-size:17px;margin:26px 0 8px}
+.report-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.report-list small{display:block;color:var(--muted);font-size:13px}
+@media print{
+  .sidebar,.topbar,.no-print,.backlink{display:none!important}
+  .workspace{margin:0}.content{padding:0}
+  .panel{border:0;box-shadow:none}
+}

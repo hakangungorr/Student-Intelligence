@@ -1,28 +1,31 @@
 # Student Intelligence — Yapılacaklar
 
 Depo: `hakangungorr/Student-Intelligence`
-Hazırlayan: kod incelemesi, 14 Eylül 2026
-Durum: `npm run check` temiz (60 test, lint, tsc, build)
+Hazırlayan: kod incelemesi, 14 Eylül 2026 · son güncelleme 15 Eylül 2026
+Durum: `npm run check` temiz (123 test, lint, tsc, build)
 
 Bu dosya Claude Code'a verilmek üzere yazıldı. Her görevde dosya, satır, kabul kriteri ve
 dikkat edilecek tuzak var. Görevler sıralı: **Bölüm 1 bitmeden Bölüm 3'e geçme.**
 
 ---
 
-## Durum — 14 Eylül 2026
+## Durum — 15 Eylül 2026
 
-**Bitti: T1–T8** (Bölüm 1 ve Bölüm 2 tamamı). `npm run check` temiz, 70 test.
+**Bitti: T1–T8** (Bölüm 1 ve Bölüm 2 tamamı) ve **Bölüm 6'nın tamamı** — kişisel dil gelişim
+planı katmanı, `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md` doğrultusunda. `npm run check` temiz,
+123 test.
 
-- T1/T2 motor tarafı: dört boyut da opsiyonel, ağırlıklar mevcut boyutlara normalize
-  ediliyor, sınav sayısı serbest. 100 referans öğrencinin skoru değişmedi.
-- T3 yeni migration `202609140009_action_period.sql` **içerir — deploy'dan önce
-  `npx supabase db push` gerekiyor**, yoksa gündem sorgusu hata verir.
-- Bir sapma: T1'deki "ESCALATION mevcut boyut sayısına göre indekslensin" maddesi
-  gözlenen boyut sayısıyla indekslenerek uygulandı, orantılı ölçeklemeyle değil.
-  Gerekçe `engine.ts` içinde `ESCALATION` kullanımının yanında yazılı.
+**İki yeni migration deploy'dan önce `npx supabase db push` gerektiriyor:**
+`202609150010_task_identity.sql` ve `202609150011_learning_plan.sql`. Yoksa gündem, plan ve
+aktarım ekranları hata verir. Canlı migration geçmişi elle uygulanmış kayıtlar yüzünden
+senkron değil — push öncesi kontrol edin.
 
-**Başlanmadı: T9–T12** — Bölüm 5 soruları kuruma sorulmadan kodlanmayacağı dosyada
-yazılı. **T13–T15** ölçek işleri; gerçek öğrenci sayısı belli olunca.
+- T3 migration'ı (`202609140009_action_period.sql`) hâlâ gerekli.
+- Bir sapma (T1): "ESCALATION mevcut boyut sayısına göre indekslensin" maddesi gözlenen boyut
+  sayısıyla indekslenerek uygulandı, orantılı ölçeklemeyle değil. Gerekçe `engine.ts` içinde.
+
+**Başlanmadı: T9–T12** — Bölüm 5 soruları kuruma sorulmadan kodlanmayacağı dosyada yazılı.
+**T13–T15** ölçek işleri; gerçek öğrenci sayısı belli olunca.
 
 ---
 
@@ -386,3 +389,65 @@ Bunlar cevaplanmadan Bölüm 3 kodlanmamalı. Her biri bir varsayımı kapatıyo
 
 T1 ve T2 birlikte şunu söylemeni sağlıyor: **"Elinizdeki dosyayı yükleyin, çalışsın."**
 Satış konuşmasının tamamı bu cümle.
+
+
+---
+
+## Bölüm 6 — Kişisel dil gelişim planı · **bitti, 15 Eylül 2026**
+
+Kaynak: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`. Aşağıdakiler uygulandı.
+
+### Güven düzeltmeleri (plan §5)
+
+| Bulgu | Ne yapıldı |
+|---|---|
+| P1 · Soru ekranı farklı soruya cevap veriyordu | `questions.ts` artık çapa sözcük eşleşmesi kullanıyor. "Bu hafta kaç deneme yapıldı?" hiçbir soruya eşleşmiyor. `tests/questions.test.ts` |
+| P1 · İki öneri tek düğmeyle kapanıyordu | `actions.task_key` + `(student_id, period_end, task_key)` tekil indeksi. Her görevin kendi düğmesi, kendi satırı. |
+| P1 · "Aksiyon" sayacı görev değil öğrenci sayıyordu | `studentsWithAction`, `tasks`, `tasksDone` ayrı metrikler. İlerleme çubuğu görev sayıyor. |
+| P1 · Yeniden hesaplama eski tamamlanmayı taşıyordu | `task_key` görev metninden türetiliyor; öneri değişince anahtar değişiyor, görev yeniden açılıyor. |
+| P1 · Aktarımda hata sayısı atlanan satır gibi kaydediliyordu | `import_batches.rejected_count` ve `issue_count` ayrıldı. Eski satırlar "—" gösteriyor; geçmişe dönük tahmin yapılmıyor. |
+| P1 · Yeni ölçüm eski kanıtı eziyordu | `measurement_revisions` tablosu + `student_measurements` üzerinde trigger. Güncel değer yerinde kalıyor, önceki değer saklanıyor. |
+| P1 · Risk düşüşü "iyileşme" sayılıyordu | Gündem paneli "Risk skoru düşen öğrenciler" oldu; öğrenci kartındaki **Gelişim** sekmesi risk / görev / beceri değişimini üç ayrı blokta gösteriyor. |
+| P1 · "Konuşma pratiği yetersiz" kesin nedeni | Hem `agenda.ts` bulgusu hem soru cevabı, farkın ölçüldüğünü ama nedenin ölçülmediğini söylüyor. |
+| P2 · Skoru olmayan öğrenci toplamdan düşüyordu | `registered` / `awaitingScore` ayrı; gündem girişinde yazıyor. |
+| P2 · Tek şubede `-Infinity` | Karşılaştırma grubu yoksa cümle gösterilmiyor. |
+| P2 · Eşzamanlı aksiyon mükerrer kayıt | Tekil indeks + `23505` çakışmasında güncellemeye düşme. |
+| P2 · Aktarım yarıda kalınca sessiz kısmi kayıt | `writeRoster` dört aşamaya bölündü; duran aşama ve yazılanlar ekranda. Aşamalar idempotent, aynı dosya tekrar yüklenince kaldığı yerden tamamlanıyor. |
+
+### Yeni katman
+
+- **Şema** (`202609150011_learning_plan.sql`): `learning_objectives`, `skill_assessments`,
+  `skill_assessment_scores`, `learning_resources`, `support_sessions`,
+  `session_participations`, `study_plans`, `study_tasks`, `task_events`,
+  `student_availability`, `students.report_audience`. Hepsinde RLS ve sütun bazlı `grant`.
+- **Kod**: `lib/rubric.ts` (istemciye açık sözlük), `lib/learning.ts`, `lib/plan.ts`,
+  `lib/catalog-seed.ts`, `lib/membership.ts`.
+- **Ekranlar**: `/workspace/plans` (onay kuyruğu), `/workspace/plans/[id]`,
+  `/workspace/catalog`, `/workspace/week/[id]`, öğrenci kartında beş sekme,
+  `/workspace/students/[id]/report`.
+- **Kurallar kodda**: ölçülmeyen ölçüt boş kalır (sıfır sayılmaz); tek ölçümden kesin
+  eksiklik çıkarılmaz, ikinci ölçüm planlanır; farklı ölçüt sürümündeki puanlar
+  karşılaştırılmaz; plan bütçeye sığar; rezervasyon yalnızca onayda ve kapasite varsa
+  yapılır; onaylı plan yerinde değiştirilmez, sürümlenir.
+
+### Bilerek yapılmayanlar
+
+- **Öğrenci ve veli girişi.** `member_role` genişletilmedi, `student_guardians` yazılmadı.
+  Kurumun erişim modeli belli değil; tanımlanmamış bir erişim yolunu şemaya yazmak, ürünün
+  sahip olmadığı bir yeteneği iddia etmek olurdu. `students.report_audience` raporun kime
+  yazıldığını ayırıyor; yetişkin raporu kendiliğinden veli raporuna dönüşmüyor.
+  `/workspace/week/[id]` personel tarafından açılıyor ve bunu ekranda söylüyor.
+- **ART entegrasyonu.** Doğrulanmış API yok. Katalog kayıtları `is_sample` ile işaretli ve
+  her ekranda öyle görünüyor; hiçbir yerde "ART'a atandı" veya "rezervasyon tamamlandı"
+  yazmıyor.
+- **Ses analizi / otomatik konuşma notlandırma.** MVP için gerekli değil (plan §10).
+
+### Kuruma sorulacak — Bölüm 5'e eklenenler
+
+6. **Konuşma ve yazma için kurumun kendi değerlendirme ölçütleri neler?** `lib/rubric.ts`
+   içindeki `pilot-taslak-v1` bizim taslağımız. Kurumunki geldiğinde `RUBRIC_VERSION`
+   artırılır; eski kayıtlar kendi sürümlerini taşıdığı için karşılaştırma bozulmaz.
+7. **Alt beceri kataloğu kurumun öğretim planından hangi kodlarla çıkarılabilir?**
+8. **Guided Practice ve +More takvimi ile kapasiteler nereden alınacak, dışa aktarılabiliyor mu?**
+9. **Çocuk/genç programında veli–öğrenci ilişkisi hangi sistemde tutuluyor?** Erişim modeli
+   bu cevaba bağlı.

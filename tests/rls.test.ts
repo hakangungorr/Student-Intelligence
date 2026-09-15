@@ -237,3 +237,149 @@ describe("institution settings boundaries", () => {
        values ('${id(10)}','${id(21)}','${id(32)}','Starter','2026-09-01')`)).resolves.toBeDefined();
   });
 });
+
+describe("learning plan boundaries", () => {
+  const assess = (student: number, on: string) =>
+    `insert into public.skill_assessments(organization_id,branch_id,student_id,assessed_on,
+       skill,task_label,rubric_version)
+     values ('${id(10)}','${id(20)}','${id(student)}','${on}','speaking','Kısa anlatım','pilot-taslak-v1')`;
+
+  it("teacher assesses a student assigned to them", async () => {
+    await expect(asUser(3, assess(30, "2026-09-10"))).resolves.toBeDefined();
+  });
+  it("teacher cannot assess a student they do not teach", async () => {
+    await expect(asUser(3, assess(31, "2026-09-10"))).rejects.toThrow(/row-level security/);
+  });
+  // An assessment is what somebody observed on a day. A mistake is answered with
+  // a new observation, never by rewriting the evidence a plan was approved on.
+  it("nobody edits an assessment after the fact", async () => {
+    await expect(asUser(1,
+      "update public.skill_assessments set task_label = 'başka görev'")).rejects.toThrow(/permission denied/);
+  });
+  it("another institution sees no assessments", async () => {
+    expect((await asUser(5, "select * from public.skill_assessments")).rows).toHaveLength(0);
+  });
+
+  const plan = (student: number, week: string) =>
+    `insert into public.study_plans(organization_id,branch_id,student_id,week_start,minutes_budget)
+     values ('${id(10)}','${id(20)}','${id(student)}','${week}',120) returning id`;
+
+  it("branch manager plans for any student in their branch", async () => {
+    await expect(asUser(2, plan(31, "2026-09-14"))).resolves.toBeDefined();
+  });
+  it("teacher cannot plan for a student they do not teach", async () => {
+    await expect(asUser(3, plan(31, "2026-09-21"))).rejects.toThrow(/row-level security/);
+  });
+  // Revising an approved plan has to archive it first; two live versions of one
+  // week is the silent rewrite the versioning exists to prevent.
+  it("one live plan per student per week", async () => {
+    await expect(asUser(2,
+      `insert into public.study_plans(organization_id,branch_id,student_id,week_start,minutes_budget,version)
+       values ('${id(10)}','${id(20)}','${id(31)}','2026-09-14',120,2)`))
+      .rejects.toThrow(/study_plans_one_live/);
+  });
+  it("archiving the live one makes room for the next version", async () => {
+    await asUser(2, `update public.study_plans set status = 'archived'
+      where student_id = '${id(31)}' and week_start = '2026-09-14'`);
+    await expect(asUser(2,
+      `insert into public.study_plans(organization_id,branch_id,student_id,week_start,minutes_budget,version)
+       values ('${id(10)}','${id(20)}','${id(31)}','2026-09-14',120,2)`)).resolves.toBeDefined();
+  });
+  it("a plan cannot claim approval with nobody attached to it", async () => {
+    await expect(asUser(2,
+      `update public.study_plans set status = 'approved'
+       where student_id = '${id(31)}' and version = 2`)).rejects.toThrow(/study_plans_check/);
+  });
+});
+
+describe("support session capacity", () => {
+  const sessionId = id(40);
+  const seat = (student: number, status: string) =>
+    `insert into public.session_participations(session_id,organization_id,branch_id,student_id,status)
+     values ('${sessionId}','${id(10)}','${id(20)}','${id(student)}','${status}')`;
+
+  it("a branch manager schedules a session in its own branch", async () => {
+    await expect(asUser(2,
+      `insert into public.support_sessions(id,organization_id,branch_id,title,kind,starts_at,minutes,capacity)
+       values ('${sessionId}','${id(10)}','${id(20)}','Guided Practice','guided_practice',
+         '2026-09-15 18:00+03',30,1)`)).resolves.toBeDefined();
+  });
+  it("the one seat can be reserved", async () => {
+    await expect(asUser(2, seat(30, "reserved"))).resolves.toBeDefined();
+  });
+  // Proposing costs nobody a seat; a full session must still be proposable, and
+  // must never turn a proposal into an attendance the student never had.
+  it("a full session still accepts a proposal", async () => {
+    await expect(asUser(2, seat(31, "proposed"))).resolves.toBeDefined();
+  });
+  it("but the proposal cannot become a reservation once it is full", async () => {
+    await expect(asUser(2,
+      `update public.session_participations set status = 'reserved'
+       where session_id = '${sessionId}' and student_id = '${id(31)}'`)).rejects.toThrow(/yer kalmadı/);
+  });
+});
+
+describe("measurement history", () => {
+  it("an overwritten reading is kept, not lost", async () => {
+    await asUser(2,
+      `insert into public.student_measurements(organization_id,branch_id,student_id,measured_on,kind,value,source_reference)
+       values ('${id(10)}','${id(20)}','${id(31)}','2026-09-01','exam',55,'history-exam')`);
+    await asUser(2,
+      `update public.student_measurements set value = 71, measured_on = '2026-10-01'
+       where student_id = '${id(31)}' and source_reference = 'history-exam'`);
+    expect((await asUser(2,
+      `select previous_value::int as v, previous_measured_on::text as d
+       from public.measurement_revisions where source_reference = 'history-exam'`)).rows)
+      .toEqual([{ v: 55, d: "2026-09-01" }]);
+  });
+  it("the history is read-only to the application", async () => {
+    await expect(asUser(1,
+      `insert into public.measurement_revisions(measurement_id,organization_id,branch_id,student_id,
+         kind,source_reference,previous_value,previous_measured_on)
+       values ('${id(30)}','${id(10)}','${id(20)}','${id(31)}','exam','fake',1,'2026-09-01')`))
+      .rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("one row per recommended task", () => {
+  const close = (task: string) =>
+    `insert into public.actions(organization_id,branch_id,student_id,title,period_end,task_key,status)
+     values ('${id(10)}','${id(20)}','${id(30)}','Görev','2026-09-08','${task}','completed')`;
+
+  it("two different tasks in one recommendation are two rows", async () => {
+    await expect(asUser(2, close("egitmenle-gorusme"))).resolves.toBeDefined();
+    await expect(asUser(2, close("ogrenci-iliskileri-aramasi"))).resolves.toBeDefined();
+  });
+  // Two clicks, or the same task closed from the agenda and the card at once.
+  it("the same task cannot be closed twice", async () => {
+    await expect(asUser(2, close("egitmenle-gorusme"))).rejects.toThrow(/actions_one_per_task/);
+  });
+  it("which task a closed row answers cannot be moved afterwards", async () => {
+    await expect(asUser(2,
+      "update public.actions set task_key = 'baska-gorev'")).rejects.toThrow(/permission denied/);
+  });
+});
+
+describe("catalogue boundaries", () => {
+  const objective = (actor: string) =>
+    `insert into public.learning_objectives(organization_id,level,skill,code,label)
+     values ('${id(10)}','B1','speaking','${actor}','Geçmişi anlatmak')`;
+
+  it("only an institution admin defines sub-skills", async () => {
+    await expect(asUser(1, objective("admin-code"))).resolves.toBeDefined();
+    await expect(asUser(3, objective("teacher-code"))).rejects.toThrow(/row-level security/);
+  });
+  it("everybody in the institution reads the catalogue: plans are built from it", async () => {
+    expect((await asUser(3, "select code from public.learning_objectives")).rows)
+      .toEqual([{ code: "admin-code" }]);
+  });
+  it("another institution reads none of it", async () => {
+    expect((await asUser(5, "select * from public.learning_objectives")).rows).toHaveLength(0);
+  });
+  // Everything this application generates starts as an example and says so.
+  it("a sub-skill starts unconfirmed", async () => {
+    expect((await asUser(1,
+      "select confirmed from public.learning_objectives where code = 'admin-code'")).rows)
+      .toEqual([{ confirmed: false }]);
+  });
+});

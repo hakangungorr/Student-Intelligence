@@ -13,7 +13,7 @@ export default async function Import() {
   // else offers a button whose only possible answer is "you may not".
   const canScore = me.data?.role === "org_admin";
   const history = await client.from("import_batches")
-    .select("id,filename,row_count,created_count,updated_count,skipped_count,created_at")
+    .select("id,filename,row_count,created_count,updated_count,skipped_count,rejected_count,issue_count,created_at")
     .order("created_at", { ascending: false }).limit(10);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -63,14 +63,21 @@ export default async function Import() {
 
     {!history.error && history.data.length > 0 && <section className="panel">
       <div className="panel-heading"><h2>Aktarım geçmişi</h2>
-        <span className="note">Son {history.data.length} aktarım</span></div>
+        <span className="note">Son {history.data.length} aktarım · bir satırda birden fazla hata
+          olabilir</span></div>
       <div className="table-scroll"><table>
-        <thead><tr><th>Tarih</th><th>Dosya</th><th>Satır</th><th>Yeni</th><th>Güncellenen</th><th>Atlanan</th></tr></thead>
+        <thead><tr><th>Tarih</th><th>Dosya</th><th>Kabul edilen</th><th>Yeni</th>
+          <th>Güncellenen</th><th>Reddedilen satır</th><th>Bulunan hata</th></tr></thead>
         <tbody>{history.data.map(b => <tr key={b.id}>
           <td>{fmt.format(new Date(b.created_at))}</td>
           <th scope="row">{b.filename}</th>
           <td>{b.row_count}</td><td>{b.created_count}</td>
-          <td>{b.updated_count}</td><td>{b.skipped_count}</td>
+          <td>{b.updated_count}</td>
+          {/* Rows written before the two were separated carry only one number,
+              and it was the issue count. Showing it under "reddedilen" would
+              restate the mistake, so those cells say we do not know. */}
+          <td>{b.rejected_count ?? "—"}</td>
+          <td>{b.issue_count ?? b.skipped_count}</td>
         </tr>)}</tbody>
       </table></div>
     </section>}

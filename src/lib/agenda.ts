@@ -7,18 +7,34 @@ import {
 import { fetchAll } from "@/lib/paginate";
 import { loadSettings, type Settings } from "@/lib/settings";
 import { latestPeriod } from "@/lib/scoring";
+import { weekStartOf } from "@/lib/rubric";
 
 export type AgendaStudent = {
   id: string; externalId: string; name: string;
   branch: string; level: string; teacher: string | null;
   score: number; raw: number; level_: RiskLevel;
   dimensions: DimensionScores; detail: DimensionDetail | null; attendanceRate: number | null;
-  found: Evidence[]; headline: string; steps: Step[]; needsAction: boolean;
+  found: Evidence[]; headline: string; steps: PlannedStep[]; needsAction: boolean;
   previous: RiskLevel | null; previousScore: number | null;
   skills: Record<string, number>;
-  /** Set once the recommendation has been carried out; see lib/actions.ts. */
+  /** Every recommended task closed. Not the same as "this student is fine" and
+   *  not the same as "this student learned something" — see `tasksDone`. */
   done: boolean;
+  tasks: number; tasksDone: number;
+  /** This week's study plan, if there is one. Carried on the agenda so the row
+   *  can offer the next move — prepare a plan, review a draft, chase a student
+   *  who asked for help — instead of stopping at "what to do" forever. */
+  plan: PlanSummary;
 };
+export type PlanSummary = {
+  id: string | null; state: "none" | "draft" | "approved";
+  tasks: number; done: number; blocked: number;
+  /** An approved plan whose re-assessment task nobody has checked off. Without
+   *  it the week produces work and no evidence. */
+  reassessPending: boolean;
+};
+/** One recommended task and whether it has been closed for this checkpoint. */
+export type PlannedStep = Step & { done: boolean };
 export type RiskLevel = "HIGH" | "MEDIUM" | "LOW";
 
 /** A dimension nobody in the group has data for is absent from `scores`, not
@@ -33,7 +49,24 @@ export type Agenda = {
   previousUrgent: number | null; previousWatched: number | null;
   byBranch: HeatRow[]; byLevel: HeatRow[];
   findings: Finding[]; recovered: AgendaStudent[];
-  actionable: number; completed: number;
+  /** Three different questions, kept as three numbers.
+   *
+   *  `studentsWithAction` counts people the engine recommended something for.
+   *  `tasks` counts the things to do, which is a larger number because a
+   *  recommendation is routinely two jobs. `tasksDone` counts what was closed.
+   *  These used to be one pair — students needing action against students with
+   *  any completed row — so the progress bar reported a recommendation as
+   *  finished when half of it was, and the only number the product offers for
+   *  "did this list change anything" was measuring something else. */
+  studentsWithAction: number; tasks: number; tasksDone: number;
+  /** Everybody on the roster, against everybody a score could be produced for.
+   *  A student with no current snapshot is missing from the agenda, and the
+   *  difference has to be visible as students waiting for data rather than
+   *  silently shrinking the institution. */
+  registered: number; awaitingScore: number;
+  /** The plan cycle, as four questions somebody can act on this morning. */
+  planPending: number; planMissing: number; helpWanted: number; reassessDue: number;
+  weekStart: string;
   periodEnd: string | null; comparedTo: string | null;
   /** Carried on the agenda so every screen reading it says "below 75%" or
    *  whatever the institution actually set, without asking again. */
@@ -58,7 +91,9 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
   // "tamamlandı" is a fact about one checkpoint, so reading every period's
   // closed rows would carry September's decisions into October's list.
   const currentPeriod = await latestPeriod(client);
-  const [settings, students, branches, enrollments, snapshots, measurements, completedActions] = await Promise.all([
+  const weekStart = weekStartOf(new Date().toISOString().slice(0, 10));
+  const [settings, students, branches, enrollments, snapshots, measurements,
+    completedActions, plans] = await Promise.all([
     loadSettings(client),
     fetchAll<{ id: string; external_id: string; name: string; branch_id: string }>(
       () => client.from("students").select("id,external_id,name,branch_id").eq("active", true), oops),
@@ -71,11 +106,47 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
     fetchAll<{ student_id: string; kind: string; source_reference: string; value: number }>(
       () => client.from("student_measurements").select("student_id,kind,source_reference,value")
         .in("source_reference", ["exam_1", "exam_4", "term_rate", "skill_profile"]), oops),
-    currentPeriod === null ? Promise.resolve([]) : fetchAll<{ student_id: string; status: string }>(
-      () => client.from("actions").select("student_id,status")
-        .eq("status", "completed").eq("period_end", currentPeriod), oops)
+    currentPeriod === null ? Promise.resolve([]) : fetchAll<{ student_id: string; task_key: string | null }>(
+      () => client.from("actions").select("student_id,task_key")
+        .eq("status", "completed").eq("period_end", currentPeriod), oops),
+    fetchAll<{ id: string; student_id: string; status: string }>(
+      () => client.from("study_plans").select("id,student_id,status")
+        .eq("week_start", weekStart).neq("status", "archived"), oops)
   ]);
-  const doneFor = new Set(completedActions.map(a => a.student_id));
+  // Keyed by task, not by student: a row with no task_key predates the split and
+  // cannot be attributed to one of today's tasks without guessing, so it closes
+  // nothing. An old tick quietly reappearing against a new task would be the
+  // same defect this key was added to remove.
+  const doneTasks = new Set(completedActions
+    .filter(a => a.task_key).map(a => `${a.student_id}:${a.task_key}`));
+
+  // This week's tasks. Two small queries rather than a nested select:
+  // study_plans and study_tasks are linked by a plain key, and paging them
+  // separately keeps the row cap off the join. Only this half has to wait —
+  // the plans it needs the ids of are fetched with everything else above.
+  const planTasks = plans.length
+    ? await fetchAll<{ plan_id: string; status: string; check_method: string }>(
+      () => client.from("study_tasks").select("plan_id,status,check_method")
+        .in("plan_id", plans.map(p => p.id)), oops)
+    : [];
+  const tasksByPlan = new Map<string, typeof planTasks>();
+  for (const t of planTasks)
+    (tasksByPlan.get(t.plan_id) ?? tasksByPlan.set(t.plan_id, []).get(t.plan_id)!).push(t);
+  const planOf = new Map<string, PlanSummary>();
+  for (const p of plans) {
+    const list = (tasksByPlan.get(p.id) ?? []).filter(t => t.status !== "cancelled");
+    planOf.set(p.student_id, {
+      id: p.id, state: p.status === "approved" ? "approved" : "draft",
+      tasks: list.length,
+      done: list.filter(t => t.status === "student_done" || t.status === "teacher_checked").length,
+      blocked: list.filter(t => t.status === "blocked").length,
+      reassessPending: p.status === "approved"
+        && list.some(t => t.check_method.includes("ölçüt") && t.status !== "teacher_checked")
+    });
+  }
+  const noPlan: PlanSummary = {
+    id: null, state: "none", tasks: 0, done: 0, blocked: 0, reassessPending: false
+  };
 
   const branchName = new Map(branches.map(b => [b.id, b.name]));
   const enrolment = new Map(enrollments.map(e => [e.student_id, e]));
@@ -111,6 +182,9 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
       passMark: settings.passMark
     };
     const found = evidence(source);
+    const plan: PlannedStep[] = steps(snap.recommended_action)
+      .map(x => ({ ...x, done: doneTasks.has(`${s.id}:${x.key}`) }));
+    const open = needsAction(snap.recommended_action) ? plan : [];
     rows.push({
       id: s.id, externalId: s.external_id, name: s.name,
       branch: branchName.get(s.branch_id) ?? "—", level: source.level,
@@ -118,11 +192,13 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
       score: Number(snap.risk_score), raw: Number(snap.risk_score_raw), level_: snap.risk_level,
       dimensions: snap.dimensions, detail: snap.dimension_detail,
       attendanceRate: reading.get(`${s.id}:term_rate`) ?? null,
-      found, headline: headline(source, found), steps: steps(snap.recommended_action),
+      found, headline: headline(source, found), steps: plan,
       needsAction: needsAction(snap.recommended_action),
+      tasks: open.length, tasksDone: open.filter(x => x.done).length,
+      done: open.length > 0 && open.every(x => x.done),
       previous: previous.get(s.id)?.risk_level ?? null,
       previousScore: previous.has(s.id) ? Number(previous.get(s.id)!.risk_score) : null,
-      skills: skillsOf.get(s.id) ?? {}, done: doneFor.has(s.id)
+      skills: skillsOf.get(s.id) ?? {}, plan: planOf.get(s.id) ?? noPlan
     });
   }
   rows.sort((a, b) => b.raw - a.raw);
@@ -146,11 +222,22 @@ export async function loadAgenda(client: SupabaseClient): Promise<Agenda> {
     previousWatched: hasHistory ? [...previous.values()].filter(s => s.risk_level === "MEDIUM").length : null,
     byBranch: branchHeat, byLevel: levelHeat,
     findings: buildFindings(rows, branchHeat, levelHeat, settings.attendanceFloor),
-    // Improvement is the only evidence that acting on this list changes anything.
+    // A falling risk score, and nothing more than that. It is not proof the
+    // support worked and not proof anything was learned: the score moves when a
+    // mark is entered, when attendance recovers, when a dimension that had no
+    // data gets some. The screen says so, and skill change is reported
+    // separately from it on the student's own card.
     recovered: rows.filter(s => s.previousScore !== null && s.score < s.previousScore)
       .sort((a, b) => (a.score - a.previousScore!) - (b.score - b.previousScore!)),
-    actionable: rows.filter(s => s.needsAction).length,
-    completed: rows.filter(s => s.needsAction && s.done).length,
+    studentsWithAction: rows.filter(s => s.needsAction).length,
+    tasks: rows.reduce((t, s) => t + s.tasks, 0),
+    tasksDone: rows.reduce((t, s) => t + s.tasksDone, 0),
+    registered: students.length, awaitingScore: students.length - rows.length,
+    planPending: rows.filter(s => s.plan.state === "draft").length,
+    planMissing: rows.filter(s => s.needsAction && s.plan.state === "none").length,
+    helpWanted: rows.filter(s => s.plan.blocked > 0).length,
+    reassessDue: rows.filter(s => s.plan.reassessPending).length,
+    weekStart,
     periodEnd, comparedTo, settings
   };
 }
@@ -193,9 +280,14 @@ function buildFindings(
         const speaking = mean(group.map(s => s.skills.speaking));
         const others = mean(group.map(s => mean(["writing", "listening", "reading"]
           .map(k => s.skills[k]).filter(v => v !== undefined))));
+        // The gap is measured; the reason for it is not. Saying "pratiği
+        // yetersiz" names a cause from a single average, and the product has
+        // never looked at how much speaking practice this branch runs or under
+        // what conditions it assessed. Naming what to examine keeps the sentence
+        // useful without inventing the finding underneath it.
         text = `${row.label}'de konuşma ortalaması ${speaking.toFixed(0)}, diğer üç beceri `
-          + `${others.toFixed(0)}. Yani sorun tek tek öğrencilerde değil — bu şubede konuşma `
-          + `pratiği yetersiz.`;
+          + `${others.toFixed(0)}. Fark tek tek öğrencilerde değil, ölçümün kendisinde `
+          + `toplanıyor — şubedeki konuşma görevleri ve değerlendirme ölçütleri incelenmeli.`;
       }
     }
     out.push({ tone: "crit", title: `${row.label} şubesinde ${AREA[dimension].toLocaleLowerCase("tr")} sorunu var`, text });

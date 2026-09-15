@@ -32,7 +32,7 @@ export default async function Ask({ searchParams }: { searchParams: Promise<{ s?
 
     {asked && !known && <section className="panel empty">
       <h2>Bunu henüz cevaplayamıyorum.</h2>
-      <p>Şu an dört soruyu cevaplayabiliyorum; yukarıdaki başlıklardan birini seçin.
+      <p>Şu an aşağıdaki soruları cevaplayabiliyorum; yukarıdaki başlıklardan birini seçin.
         Uydurulmuş bir cevap vermektense cevaplayamadığımı söylemeyi tercih ediyorum.</p>
     </section>}
 

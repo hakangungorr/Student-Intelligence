@@ -40,12 +40,18 @@ function Confirm({ state }: { state: PreviewState }) {
     <p className="lead">{done.result!.created} yeni öğrenci, {done.result!.updated} güncelleme.
       {" "}{done.result!.measurements} ölçüm ve {done.result!.observations} sınıf içi gözlem yazıldı.</p>
     {done.message && <p className="note">{done.message}</p>}
+    {done.stopped && <p className="field-warn">Aktarım <b>{done.stopped.stage}</b> aşamasında
+      durdu: {done.stopped.message}. Yukarıdaki sayılar veritabanına gerçekten yazılanlardır.
+      Aynı dosyayı tekrar yükleyin — yazılmış satırlar çoğaltılmaz, kalanı tamamlanır.</p>}
     {done.issues && done.issues.length > 0 && <>
-      <p className="note">{done.issues.length} satır atlandı:</p>
+      <p className="note">{done.rejected} satır okunamadı, bu satırlarda {done.issues.length} sorun
+        bulundu:</p>
       <IssueList issues={done.issues} /></>}
-    <p className="note">{done.scored === null
-      ? "Risk skorları kurum yöneticisi hesaplamayı çalıştırınca güncellenecek."
-      : `Risk skorları yeniden hesaplandı — ${done.scored} öğrenci.`}</p>
+    <p className="note">{done.stopped
+      ? "Aktarım yarıda kaldığı için risk skorları hesaplanmadı."
+      : done.scored === null
+        ? "Risk skorları kurum yöneticisi hesaplamayı çalıştırınca güncellenecek."
+        : `Risk skorları yeniden hesaplandı — ${done.scored} öğrenci.`}</p>
   </section>;
 
   if (done.status === "error") return <section className="panel pad">
@@ -78,7 +84,8 @@ function Confirm({ state }: { state: PreviewState }) {
       <p className="note">İlk {state.sample!.length} satır gösteriliyor.</p>}
 
     {state.issues && state.issues.length > 0 && <>
-      <p className="note">{state.issues.length} satır atlanacak:</p>
+      <p className="note">{state.rejected} satır aktarılmayacak; bu satırlarda {state.issues.length}
+        {" "}sorun bulundu:</p>
       <IssueList issues={state.issues} /></>}
 
     <form action={send} className="confirm">

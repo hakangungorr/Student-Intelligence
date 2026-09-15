@@ -15,28 +15,57 @@ export const QUESTIONS = [
   { key: "oncelik", q: "Bu hafta kimlerle ilgilenmeliyiz?" },
   { key: "kur", q: "En sorunlu kur hangisi?" },
   { key: "birlikte", q: "Hem devamsızlığı artan hem notu düşen kimler var?" },
-  { key: "konusma", q: "Hangi şubede konuşma zayıf?" }
+  { key: "konusma", q: "Hangi şubede konuşma zayıf?" },
+  { key: "plan", q: "Kimin haftalık planı onay bekliyor?" },
+  { key: "yeniden", q: "Kimler yeniden değerlendirilmeli?" }
 ] as const;
 export type QuestionKey = (typeof QUESTIONS)[number]["key"];
 
-const MATCH: Record<QuestionKey, string[]> = {
-  oncelik: ["kim", "hafta", "öncelik", "ilgilen"],
-  kur: ["kur", "b1", "problem", "sorunlu", "seviye"],
-  birlikte: ["devamsız", "not", "düşen", "artan", "hem"],
-  konusma: ["konuşma", "speaking", "şube", "beceri", "zayıf"]
+/** Which words mean the question, and which merely go with it.
+ *
+ *  Matching on any known word answered questions nobody asked. "Bu hafta kaç
+ *  deneme yapıldı?" hit `hafta`, scored one point for the priority list, and
+ *  came back with ten students ranked by risk — a confident answer to a
+ *  different question, which is the worst thing this screen can do, because the
+ *  whole claim of the assistant is that its numbers are the dashboard's numbers.
+ *
+ *  So a question is only recognised by a word that could not belong to another
+ *  one. `hafta`, `not` and `şube` are context: they sharpen a match that an
+ *  anchor already made, and on their own they mean nothing.
+ */
+const ANCHORS: Record<QuestionKey, string[]> = {
+  oncelik: ["kimlerle", "kiminle", "öncelik", "ilgilen", "acil", "kimler riskte"],
+  // Suffixed forms rather than the bare stem: "kur" alone also sits inside
+  // "kurum", and matching the institution's own name to a question about levels
+  // is the kind of near-miss this list exists to stop.
+  kur: ["hangi kur", "kurda", "kurun", "kur hangisi", "sorunlu kur", "seviye"],
+  birlikte: ["devamsız", "devamı düşen", "hem devam"],
+  konusma: ["konuşma", "speaking"],
+  plan: ["plan", "taslak", "onay bekle"],
+  yeniden: ["yeniden değerlendir", "yeniden ölç", "tekrar ölç", "yeniden ölçüm"]
+};
+const SUPPORT: Record<QuestionKey, string[]> = {
+  oncelik: ["hafta", "kim", "öğrenci", "liste"],
+  kur: ["sorunlu", "problem", "kötü", "zayıf", "b1", "b2", "a2"],
+  birlikte: ["not", "düşen", "artan", "hem", "birlikte"],
+  konusma: ["şube", "beceri", "zayıf", "pratik"],
+  plan: ["onay", "kim", "bekliyor", "haftalık"],
+  yeniden: ["ölçüt", "beceri", "kim", "gerek"]
 };
 
-/** Free text is matched by counting known words, never by guessing. An unmatched
- *  question returns nothing rather than the closest answer, because a confident
- *  answer to a question nobody asked is worse than "bunu henüz cevaplayamıyorum". */
+/** Free text is matched by counting known words, never by guessing. A question
+ *  with no anchor returns nothing rather than the closest answer: "bunu henüz
+ *  cevaplayamıyorum" is a true sentence, and the alternative is not. */
 export function match(text: string): QuestionKey | null {
   const t = text.toLocaleLowerCase("tr");
   let best: QuestionKey | null = null, score = 0;
-  for (const [key, words] of Object.entries(MATCH) as [QuestionKey, string[]][]) {
-    const hits = words.filter(w => t.includes(w)).length;
-    if (hits > score) { score = hits; best = key; }
+  for (const key of Object.keys(ANCHORS) as QuestionKey[]) {
+    const anchors = ANCHORS[key].filter(w => t.includes(w)).length;
+    if (!anchors) continue;
+    const total = anchors * 2 + SUPPORT[key].filter(w => t.includes(w)).length;
+    if (total > score) { score = total; best = key; }
   }
-  return score > 0 ? best : null;
+  return best;
 }
 
 export type AnswerRow = { label: string; sub?: string; right: string; href?: string; tone?: string };
@@ -50,7 +79,53 @@ export async function answer(client: SupabaseClient, key: QuestionKey): Promise<
   if (key === "oncelik") return priority(agenda);
   if (key === "kur") return worstLevel(agenda);
   if (key === "birlikte") return bothSignals(agenda);
+  if (key === "plan") return planQueue(agenda);
+  if (key === "yeniden") return reassessmentDue(agenda);
   return weakestSpeaking(client, agenda);
+}
+
+/** Onay bekleyen taslaklar — risk sırasına göre değil, karar sırasına göre. */
+function planQueue(a: Agenda): Answer {
+  const waiting = a.students.filter(s => s.plan.state === "draft");
+  if (!waiting.length) return {
+    lead: a.planMissing
+      ? `Onay bekleyen taslak yok. Aksiyon önerilen **${a.planMissing} öğrenci** için ise henüz `
+        + "plan hazırlanmamış."
+      : "Onay bekleyen taslak yok.",
+    rows: [], source: `Kaynak: ${a.weekStart} haftasının çalışma planları`
+  };
+  return {
+    lead: `**${waiting.length} taslak** onay bekliyor. Taslak, öğretmen onaylayana kadar `
+      + "öğrenciye gösterilmez ve hiçbir oturumda yer ayırmaz.",
+    rows: waiting.map(s => ({
+      label: s.name, sub: `${s.branch} · ${s.level} — ${s.plan.tasks} görev`,
+      right: "Taslak", tone: "warn", href: `/workspace/plans/${s.plan.id}`
+    })),
+    source: `Kaynak: ${a.weekStart} haftasının onaylanmamış planları`
+  };
+}
+
+/** Planı onaylanmış ama aynı ölçütle yeniden ölçülmemiş öğrenciler.
+ *
+ *  The question the pilot is measured on: work without a second measurement
+ *  produces activity and no evidence, and this is the list of students where
+ *  that is currently true. */
+function reassessmentDue(a: Agenda): Answer {
+  const due = a.students.filter(s => s.plan.reassessPending);
+  if (!due.length) return {
+    lead: "Yeniden değerlendirme bekleyen öğrenci yok.", rows: [],
+    source: `Kaynak: ${a.weekStart} haftasının onaylı planları`
+  };
+  return {
+    lead: `**${due.length} öğrencinin** planı onaylı ama aynı ölçütle yeni bir ölçüm yapılmamış. `
+      + "Görevlerin tamamlanmış olması gelişme kanıtı değildir; ölçüm yapılmadan bu öğrenciler "
+      + "için gelişim raporunda bir iddia yer almaz.",
+    rows: due.map(s => ({
+      label: s.name, sub: `${s.branch} · ${s.level} — ${s.plan.done}/${s.plan.tasks} görev tamamlandı`,
+      right: "Ölçüm bekliyor", tone: "warn", href: `/workspace/students/${s.id}?g=beceri`
+    })),
+    source: "Kaynak: onaylı planlardaki yeniden değerlendirme görevleri"
+  };
 }
 
 function priority(a: Agenda): Answer {
@@ -143,16 +218,36 @@ async function weakestSpeaking(client: SupabaseClient, a: Agenda): Promise<Answe
     .sort((x, y) => (x.sp - x.ot) - (y.sp - y.ot));
   if (!rows.length) return { lead: "Beceri verisi yok.", rows: [], source: "" };
   const w = rows[0];
-  const others = rows.slice(1).map(r => Math.abs(r.ot - r.sp));
+  const gap = w.ot - w.sp;
+  if (gap <= 0) return {
+    lead: `Konuşmanın diğer becerilerin gerisinde kaldığı bir şube yok.`,
+    rows: rows.map(branchRow), source: "Kaynak: şube bazında beceri puanı ortalamaları"
+  };
+  // With one branch there is nothing to compare against, and Math.max of an
+  // empty list is -Infinity — which used to be printed as "en fazla -Infinity
+  // puan". A comparison sentence needs a second group or it does not belong.
+  const others = rows.slice(1).map(r => r.ot - r.sp);
+  const comparison = others.length
+    ? ` Diğer şubelerde bu fark en fazla ${Math.max(...others).toFixed(0)} puan.`
+    : " Karşılaştırılacak ikinci bir şube yok, bu yüzden farkın şubeye özgü olup olmadığı söylenemez.";
+  // What the numbers support, and not a word more. A low speaking average is a
+  // measurement; "pratik yetersiz" is a cause, and the product has never looked
+  // at how much practice this branch does or under what conditions it assessed.
+  // Naming the checks instead of the cause is what makes the sentence actionable
+  // rather than merely confident.
+  const small = w.n < 5 ? ` ${w.n} öğrenciyle ölçülmüş; bir eğilim değil, bakılacak bir işaret.` : "";
   return {
     lead: `**${w.branch}.** ${w.branch}'de konuşma ortalaması **${w.sp.toFixed(0)}**, diğer üç beceri `
-      + `ise **${w.ot.toFixed(0)}** — arada ${(w.ot - w.sp).toFixed(0)} puan var. Diğer şubelerde bu fark `
-      + `en fazla ${Math.max(...others).toFixed(0)} puan. Öğrenciler zayıf değil; ${w.branch}'de konuşma `
-      + `pratiği yetersiz.`,
-    rows: rows.map(r => ({
-      label: r.branch, sub: `${r.n} öğrenci`,
-      right: `konuşma ${r.sp.toFixed(0)} · diğerleri ${r.ot.toFixed(0)}`
-    })),
-    source: "Kaynak: şube bazında beceri puanı ortalamaları"
+      + `ise **${w.ot.toFixed(0)}** — arada ${gap.toFixed(0)} puan var.` + comparison + small
+      + ` Fark konuşma ölçümünde toplanıyor; nedeni pratik olanağı da olabilir, değerlendirme `
+      + `koşulları veya grubun bileşimi de. Şubedeki konuşma görevlerinin ve ölçütlerinin `
+      + `incelenmesi gerekiyor.`,
+    rows: rows.map(branchRow),
+    source: "Kaynak: şube bazında beceri puanı ortalamaları · neden değil, fark ölçülüyor"
   };
 }
+
+const branchRow = (r: { branch: string; n: number; sp: number; ot: number }): AnswerRow => ({
+  label: r.branch, sub: `${r.n} öğrenci`,
+  right: `konuşma ${r.sp.toFixed(0)} · diğerleri ${r.ot.toFixed(0)}`
+});
