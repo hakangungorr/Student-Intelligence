@@ -5,24 +5,23 @@ import { loadStudent, type StudentCard, type StudentRisk } from "@/lib/student";
 import { FIELD_GROUPS } from "@/lib/entry";
 import { loadStudentEntry } from "@/lib/entry-read";
 import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
-import { MarkDone } from "../../mark-button";
+import { canPlan, currentMembership } from "@/lib/membership";
+import { loadPlanSummaries, type PlanSummary } from "@/lib/plan";
+import { dayText } from "@/lib/rubric";
 import { EntryPanel } from "./entry-panel";
-import { Progress, SkillProfile, StudyHistory, WeeklyPlan } from "./tabs";
+import { PlanTab } from "./plan-tab";
+import { MeasureTab } from "./measure-tab";
 
-/** Kart beş soruyu ayrı ayrı yanıtlar.
+/** Üç soru, üç sekme: durum ne, ne yapılıyor, ne değişti.
  *
- *  They were one page, and the page could only answer the first: where the
- *  problem is. What the student should do about it, what was done, and whether
- *  anything measurably changed are different questions with different evidence,
- *  and stacking them under one heading was what let "risk skoru düştü" pass for
- *  "öğrenci ilerledi". Plain links rather than client-side state: each tab is
- *  its own server render and its own set of queries. */
+ *  Stacking them under one heading was what let "risk skoru düştü" pass for
+ *  "öğrenci ilerledi". Three is also as many as a person holds without a map;
+ *  the first version had five and nobody could say what the fourth was for.
+ *  Plain links rather than client-side state: each tab is its own server render. */
 const TABS = [
-  { key: "ozet", label: "Özet" },
-  { key: "beceri", label: "Beceri profili" },
-  { key: "plan", label: "Haftalık plan" },
-  { key: "gecmis", label: "Çalışma geçmişi" },
-  { key: "gelisim", label: "Gelişim" }
+  { key: "ozet", label: "Durum" },
+  { key: "plan", label: "Plan" },
+  { key: "olcum", label: "Ölçümler" }
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -37,9 +36,11 @@ export default async function Student({ params, searchParams }: {
   const { g } = await searchParams;
   const tab: TabKey = TABS.find(t => t.key === g)?.key ?? "ozet";
   const { client } = await requireUser();
-  const s = await loadStudent(client, id);
+  const [s, me] = await Promise.all([loadStudent(client, id), currentMembership(client)]);
   if (!s) notFound();
+  const planning = canPlan(me);
   const entered = tab === "ozet" ? await loadStudentEntry(client, id) : null;
+  const plan = tab === "ozet" ? (await loadPlanSummaries(client)).get(id) ?? null : null;
   const today = new Date().toISOString().slice(0, 10);
 
   const missed = s.attendanceRate === null ? null : Math.max(1, Math.round((100 - s.attendanceRate) / 10));
@@ -63,7 +64,7 @@ export default async function Student({ params, searchParams }: {
         </div>}
       </div>
 
-      {s.risk ? <Assessment risk={s.risk} studentId={s.id} /> : <>
+      {s.risk ? <Assessment risk={s.risk} studentId={s.id} plan={plan} showPlan={tab === "ozet"} /> : <>
         <p className="srow-head lead">Bu öğrenci henüz puanlanmadı.</p>
         <p className="note">Kayıt oluşturuldu, ancak risk skoru için ölçüm gerekiyor. Sınav,
           beceri, devam ve sınıf içi bilgilerini aşağıdaki formdan girin — kaydettiğinizde
@@ -80,14 +81,11 @@ export default async function Student({ params, searchParams }: {
       <Link key={t.key} className={`tab${tab === t.key ? " on" : ""}`}
         href={`/workspace/students/${s.id}?g=${t.key}`}
         aria-current={tab === t.key ? "page" : undefined}>{t.label}</Link>)}
-      <Link className="tab" href={`/workspace/week/${s.id}`}>Öğrencinin haftası ↗</Link>
-      <Link className="tab" href={`/workspace/students/${s.id}/report`}>Gelişim raporu ↗</Link>
+      <Link className="tab" href={`/workspace/students/${s.id}/report`}>Rapor ↗</Link>
     </nav>
 
-    {tab === "beceri" && <SkillProfile client={client} studentId={s.id} today={today} />}
-    {tab === "plan" && <WeeklyPlan client={client} studentId={s.id} />}
-    {tab === "gecmis" && <StudyHistory client={client} studentId={s.id} />}
-    {tab === "gelisim" && <Progress client={client} studentId={s.id} />}
+    {tab === "plan" && <PlanTab client={client} studentId={s.id} canPlan={planning} />}
+    {tab === "olcum" && <MeasureTab client={client} studentId={s.id} today={today} canMeasure={planning} />}
 
     {tab === "ozet" && <>
     <EntryPanel studentId={s.id} name={s.name} values={entered!} today={today}
@@ -178,7 +176,11 @@ export default async function Student({ params, searchParams }: {
   </>;
 }
 
-function Assessment({ risk, studentId }: { risk: StudentRisk; studentId: string }) {
+/** The risk review's verdict and what it recommends. The recommendation is a
+ *  suggestion; what somebody decided to do about it lives in the plan. */
+function Assessment({ risk, studentId, plan, showPlan }: {
+  risk: StudentRisk; studentId: string; showPlan: boolean; plan: PlanSummary | null;
+}) {
   return <>
     <p className="srow-head lead">{risk.headline}</p>
     <ul className="facts">
@@ -186,14 +188,15 @@ function Assessment({ risk, studentId }: { risk: StudentRisk; studentId: string 
         ? risk.found.map(f => <li key={f.dim} className={band(f.score)}>{f.text}</li>)
         : <li>Bu öğrencide belirgin bir risk sinyali yok.</li>}
     </ul>
-    <div className="todo">
-      <div className="todo-hd">NE YAPMALI{risk.tasks > 0 && <span> · {risk.tasksDone}/{risk.tasks}</span>}</div>
-      <ul className="tasks">{risk.steps.map(x => <li key={x.key} className={x.done ? "task is-closed" : "task"}>
-        <span className="ck">{x.done ? "✓" : "→"}</span>
-        <span className="tk">{x.text}{x.who && <small>{x.who}</small>}</span>
-        {risk.needsAction && <MarkDone studentId={studentId} taskKey={x.key} title={x.text} done={x.done} />}
-      </li>)}</ul>
-    </div>
+    {risk.needsAction && <div className="todo">
+      <div className="todo-hd">RİSK DEĞERLENDİRMESİNİN ÖNERİSİ</div>
+      <ul>{risk.steps.map(x => <li key={x.key}><span className="ck">→</span>
+        <span className="tk">{x.text}{x.who && <small>{x.who}</small>}</span></li>)}</ul>
+      {showPlan && <p className="plan-line">{plan
+        ? <Link href={`/workspace/students/${studentId}?g=plan`}>
+          Açık plan: {plan.done}/{plan.tasks} görev yapıldı · kontrol {dayText(plan.checkOn)} →</Link>
+        : <Link href={`/workspace/students/${studentId}?g=plan`}>Plan aç →</Link>}</p>}
+    </div>}
     {risk.reasons.length > 0 && <details className="raw">
       <summary>Sistemin tespit ettiği ham sinyaller ({risk.reasons.length})</summary>
       <ul>{risk.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>

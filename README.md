@@ -180,29 +180,50 @@ Ağırlıklar, risk eşikleri ve kohort yüzdesi kasten ayarlanabilir değildir:
 üzerinde kalibre edildiler ve ekrandan değiştirilmeleri aynı öğrencinin kimin
 baktığına göre farklı skor almasına yol açar.
 
-## Kişisel dil gelişim planı
+## Plan: ölç → planla → yap → kontrol et
 
-Risk motoru "önce kiminle ilgilenilmeli" sorusunu yanıtlar. Onun altına, "bu öğrenci bu hafta
-ne yapmalı ve sonrasında ne değişti" sorusunu yanıtlayan bir katman eklendi.
+Risk motoru "önce kiminle ilgilenilmeli" sorusunu yanıtlar. Plan, "bu öğrenci için ne
+yapılıyor ve sonrasında ne değişti" sorusunu. Tek yol var:
 
-- **Tarihli kanıt.** `skill_assessments` + `skill_assessment_scores`: hangi ölçütte, hangi
-  görevde, hangi tarihte, hangi ölçüt sürümüyle. Hiçbir kayıt bir diğerini ezmez.
-  `student_measurements` özet ölçüm olarak yerinde kalır; ondan alt beceri geçmişi
-  türetilmez.
-- **Plan.** `study_plans` sürümlenir, `study_tasks` tek tek durum taşır. Onaylı plan yerinde
-  değiştirilmez: eski sürüm arşivlenir, yenisi yazılır.
-- **Kaynak ve oturum.** `learning_resources` ve `support_sessions`. Uygulamanın ürettiği her
-  kayıt `is_sample` ile işaretlidir ve ekranlarda öyle görünür. Öneri, rezervasyon ve gerçek
-  katılım ayrı durumlardır; kapasite veritabanında zorlanır.
-- **Ne söylenmez.** Ölçülmeyen ölçüt sıfır sayılmaz. Tek ölçümden kesin eksiklik çıkarılmaz.
-  Farklı ölçüt sürümündeki puanlar karşılaştırılmaz. Tamamlanan görev öğrenme kanıtı değildir;
-  risk skorunun düşmesi de değildir.
+```
+Gündem → Öğrenci → Ölç → Plan → Yap → Kontrol ölçümü → Ne değişti
+```
 
-Ekranlar: `/workspace/plans` (onay kuyruğu), `/workspace/catalog` (kaynaklar ve oturumlar),
-`/workspace/week/[id]` (öğrencinin haftası), öğrenci kartındaki beş sekme ve
-`/workspace/students/[id]/report` (gelişim raporu).
+Altı kavram:
 
-Ayrıntı ve kuruma sorulacaklar: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`, `TODO.md` Bölüm 6.
+| Kavram | Anlamı | Tablo |
+|---|---|---|
+| **Öncelik** | Kiminle önce ilgilenilmeli (Acil / Takipte / Düşük risk) | `risk_snapshots` |
+| **Ölçüm** | Bir görevde, bir tarihte, ölçütlere göre gözlenen | `skill_assessments`, `skill_assessment_scores` |
+| **Plan** | Öğrencinin yapılacaklar listesi. **Her öğrencinin en fazla bir açık planı olur.** | `plans` |
+| **Görev** | Listedeki tek iş: *Yapılacak / Yapıldı / Takıldı*, kimin yapacağı yazılı | `plan_tasks` |
+| **Kütüphane** | Önerilebilecek çalışmalar ve tarihli etkinlikler, tek liste | `library_items` |
+| **Kontrol ölçümü** | Planın sonunda aynı ölçütle yeni ölçüm; "ne değişti"yi yalnızca bu söyler | — |
+
+Nasıl işler:
+
+- **Öneri kaydedilmez, eklemek onaydır.** Plan sekmesi güncel ölçüme ve risk değerlendirmesine
+  göre öneri gösterir; öğretmen **Ekle** der. Taslak, onay kuyruğu, sürüm yoktur.
+- **Personel işi ve öğrencinin çalışması aynı listede.** Risk değerlendirmesinin "eğitmenle
+  görüş", "aileyi ara" önerileri de plana görev olarak girer.
+- **Ölçüm yoksa plan dört tanılama görevi üretmez**; tek bir "önce ölç" adımı önerir.
+- **Etkinlik eklemek yer ayırmaktır.** Dolu etkinlik eklenemez; kontenjan veritabanında
+  kilitle tutulur (`library_bookings`). Öneri, yer ve katılım üç ayrı şeydir: kaydedilmeyen
+  öneri, `library_bookings` satırı, görevin "yapıldı" olması.
+- **Değişiklik kayda geçer.** Yapılmış ya da takılmış görev plandan çıkarılamaz; her ekleme,
+  çıkarma ve durum değişikliği `plan_events`'e tetikleyiciyle yazılır.
+- **Plan ve görevler tek işlemde yazılır** (`open_plan`, `add_plan_task` — security invoker,
+  RLS geçerli). Yarım plan kalmaz.
+
+Ne söylenmez: ölçülmeyen ölçüt sıfır sayılmaz · tek ölçümden kesin eksiklik çıkarılmaz ·
+farklı ölçüt sürümündeki puanlar karşılaştırılmaz · yapılan görev ve düşen risk skoru öğrenme
+kanıtı değildir.
+
+Ekranlar: öğrenci kartında **Durum · Plan · Ölçümler** sekmeleri, `/workspace/library`
+(kütüphane), `/workspace/students/[id]/report` (gelişim raporu). Gündemdeki **Planlar**
+paneli üç soruyu sorar: planı olmayan, takılan, kontrol tarihi geçen.
+
+Kapsam ve kuruma sorulacaklar: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`, `TODO.md` Bölüm 6.
 
 ## Açık kalanlar
 

@@ -1,678 +1,390 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchAll } from "@/lib/paginate";
+import { criterionTrends, type Assessment } from "@/lib/assessments";
+import { hasRoom, seatsLeft, type LibraryItem } from "@/lib/library";
+import type { Step } from "@/lib/narrative";
 import {
-  NEEDS_WORK_AT, SKILL_LABEL, SKILLS, addDays, dayOffsets, weekStartOf,
-  type Skill, type TaskOwner, type TaskState
+  NEEDS_WORK_AT, SKILLS, SKILL_LABEL, addDays, dayText, todayIso,
+  type Owner, type Skill, type TaskKind, type TaskStatus
 } from "@/lib/rubric";
-import {
-  availabilityOf, criterionTrends, loadAssessments, loadAvailability,
-  loadResources, loadSessions, type Assessment, type Availability,
-  type Resource, type Session
-} from "@/lib/learning";
-import type { DimensionScores } from "@/lib/narrative";
 
-/** Kanıttan haftalık plana.
+/** Plan: bir öğrencinin yapılacaklar listesi.
  *
- *  The rule this module is built around is that a need has to be able to name
- *  its evidence. Three kinds come out of it and they are deliberately not the
- *  same kind:
+ *  One path — measure, plan, do, measure again — and one rule to remember: a
+ *  student has at most one open plan. The system suggests; a person adds. Adding
+ *  a suggestion is the approval, so there is no draft to review and no queue to
+ *  empty.
  *
- *   - `measured`   — a criterion assessed below the line more than once. The one
- *                    case where the product is willing to say a student needs
- *                    work on something.
- *   - `thin`       — assessed below the line exactly once. A single observation
- *                    is a day, not a pattern, so the week gets a light task and
- *                    a second measurement rather than a fortnight of drilling.
- *   - `unmeasured` — never assessed. This is not a weakness and is never written
- *                    as one; what it earns is a short diagnostic, because the
- *                    honest answer to "what should they practise" is "measure
- *                    first".
- *
- *  Everything the draft proposes is a proposal. A plan is not a plan until a
- *  teacher has approved it, and the approval queue leads with the drafts whose
- *  evidence is thin, whose resource could not be found, or whose minutes do not
- *  fit — the ones where a human has something to decide.
+ *  Suggestions are computed, never stored. They are whatever the evidence says
+ *  today, which means a new measurement changes them immediately and a stale
+ *  suggestion cannot sit in a table waiting to be approved.
  */
-export type NeedKind = "measured" | "thin" | "unmeasured" | "attendance" | "classroom";
+
+// ── Öneriler ────────────────────────────────────────────────────────────────
+
 export type Need = {
-  kind: NeedKind;
-  skill: Skill | null;
-  criterion: string | null;
-  label: string;
-  /** The sentence a teacher reads to judge whether the need is real. Always the
-   *  reading and its date, never a conclusion drawn from them. */
+  skill: Skill; code: string; label: string;
+  latest: number; scaleMax: number;
+  /** A single reading. Worth a look, not a verdict. */
+  thin: boolean;
   evidence: string;
-  objectiveId: string | null;
-  priority: number;
 };
 
-export type DraftTask = {
-  position: number; scheduledOn: string; title: string; why: string;
-  objectiveId: string | null; resourceId: string | null; sessionId: string | null;
-  minutes: number; owner: TaskOwner; expectedOutput: string; checkMethod: string;
-};
-export type Draft = {
-  studentId: string; studentName: string; branchId: string; level: string;
-  weekStart: string; minutesBudget: number; budgetRecorded: boolean;
-  sourcePeriodEnd: string | null;
-  needs: Need[]; tasks: DraftTask[];
-  /** Why this draft needs a teacher's eye before anything else does. */
-  problems: string[];
-};
-
-const PREP_MINUTES = 15, PRACTICE_MINUTES = 15, REASSESS_MINUTES = 15, REVIEW_MINUTES = 15;
-
-/** Beceri başına, görevin ne olduğu ve neyle kontrol edileceği. */
-const WORDING: Record<Skill, {
-  prep: string; prepOutput: string;
-  practice: string; practiceOutput: string;
-  reassess: string; reassessOutput: string;
-}> = {
-  speaking: {
-    prep: "Hedef yapı ve kelimelerle konuşma hazırlığı",
-    prepOutput: "5 örnek cümle ve kısa bir anlatım taslağı",
-    practice: "Kısa anlatma ve yeniden anlatma çalışması",
-    practiceOutput: "İki kısa sözlü anlatım",
-    reassess: "Farklı konuda kısa konuşma değerlendirmesi",
-    reassessOutput: "Aynı ölçütlerle puanlanmış yeni konuşma görevi"
-  },
-  writing: {
-    prep: "Örnek metin incelemesi ve plan çıkarma",
-    prepOutput: "Paragraf planı ve bağlaç listesi",
-    practice: "Kısa yazı ve düzeltme turu",
-    practiceOutput: "Bir kısa yazı ve düzeltilmiş ikinci hâli",
-    reassess: "Farklı konuda ikinci yazı değerlendirmesi",
-    reassessOutput: "Aynı ölçütlerle puanlanmış yeni yazı"
-  },
-  listening: {
-    prep: "Kayıt öncesi kelime ve bağlam hazırlığı",
-    prepOutput: "Beklenen kelimeler ve tahmin notları",
-    practice: "Seviyeye uygun dinleme ve yeniden anlatma",
-    practiceOutput: "5 anlama sorusu ve sözlü özet",
-    reassess: "Farklı kayıtta ayrıntı soruları",
-    reassessOutput: "Aynı ölçütlerle puanlanmış yeni dinleme görevi"
-  },
-  reading: {
-    prep: "Metin öncesi kelime çalışması",
-    prepOutput: "Anahtar kelimeler ve tahmin notları",
-    practice: "Seviyeye uygun okuma ve özetleme",
-    practiceOutput: "Kısa yazılı özet ve 5 soru",
-    reassess: "Farklı metinde ikinci okuma değerlendirmesi",
-    reassessOutput: "Aynı ölçütlerle puanlanmış yeni okuma görevi"
-  }
+export type Suggestion = {
+  /** Stored on the task as source_key, so the same suggestion cannot be added
+   *  twice and disappears from the list once it is in. */
+  key: string;
+  kind: TaskKind;
+  title: string;
+  why: string;
+  owner: Owner;
+  minutes: number | null;
+  libraryItemId: string | null;
+  dueOn: string | null;
+  expectedOutput: string | null;
+  /** What to know before adding: a sample item, seats left, no library match. */
+  note: string | null;
+  /** An event with no seats. Shown so the teacher knows it exists; cannot be added. */
+  full: boolean;
 };
 
-/** Bir öğrencinin bu hafta neye ihtiyacı olduğu, kanıtıyla birlikte. */
-export function needsOf(
-  assessments: Assessment[], dimensions: DimensionScores, attendanceRate: number | null,
-  attendanceFloor: number
-): Need[] {
-  const out: Need[] = [];
+export type Suggestions = {
+  items: Suggestion[];
+  needs: Need[];
+  unmeasured: Skill[];
+};
+
+const OWNER_OF: Record<string, Owner> = {
+  "Eğitmen": "teacher", "Akademik koordinatör": "coordinator", "Öğrenci ilişkileri": "student_relations"
+};
+
+/** When the library has nothing for a need, the suggestion still says what to
+ *  do — and says the library is missing it, rather than inventing an item. */
+const GENERIC: Record<Skill, { title: string; output: string }> = {
+  speaking: { title: "Kısa anlatma ve yeniden anlatma çalışması", output: "İki kısa sözlü anlatım" },
+  writing: { title: "Kısa yazı ve düzeltme turu", output: "Bir kısa yazı ve düzeltilmiş hâli" },
+  listening: { title: "Seviyeye uygun dinleme ve yeniden anlatma", output: "Beş anlama sorusu ve sözlü özet" },
+  reading: { title: "Seviyeye uygun okuma ve özetleme", output: "Kısa yazılı özet" }
+};
+
+const MAX_NEEDS = 2;
+const PER_NEED_STUDIES = 2;
+
+export function needsFrom(assessments: Assessment[]): { needs: Need[]; unmeasured: Skill[] } {
+  const needs: Need[] = [];
+  const unmeasured: Skill[] = [];
   for (const skill of SKILLS) {
-    for (const t of criterionTrends(assessments, skill)) {
-      if (t.latest === null) continue;              // unmeasured is handled below, per skill
-      if (t.latest > NEEDS_WORK_AT) continue;
-      const reading = `${t.latestOn} · ${t.latestTask} · ${t.latest}/${t.scaleMax}`;
+    const trends = criterionTrends(assessments, skill);
+    if (trends.every(t => t.latest === null)) { unmeasured.push(skill); continue; }
+    for (const t of trends) {
+      if (t.latest === null || t.latest > NEEDS_WORK_AT) continue;
       const thin = t.readings < 2;
-      out.push({
-        kind: thin ? "thin" : "measured", skill, criterion: t.code,
-        label: `${SKILL_LABEL[skill]} — ${t.label}`,
+      const reading = `${t.latest}/${t.scaleMax} (${dayText(t.latestOn!)}, "${t.latestTask}")`;
+      needs.push({
+        skill, code: t.code, label: `${SKILL_LABEL[skill]} · ${t.label}`,
+        latest: t.latest, scaleMax: t.scaleMax, thin,
         evidence: thin
-          ? `Tek ölçüm: ${reading}. Bir ölçümden kesin eksiklik çıkarılmıyor; ikinci ölçüm planlandı.`
-          : `${t.readings} ölçüm, en yenisi ${reading}`
-          + (t.previous !== null ? ` (önceki ${t.previous}/${t.scaleMax}, ${t.previousOn})` : ""),
-        objectiveId: null,
-        // Weakest first, and a single reading always yields to a repeated one:
-        // the product acts hardest where it knows most.
-        priority: (thin ? 100 : 0) + t.latest * 10
+          ? `${SKILL_LABEL[skill]} · ${t.label}: ${reading}. Tek ölçüm — kesin eksiklik sayılmaz, `
+            + "kontrol ölçümü bunu netleştirir."
+          : `${SKILL_LABEL[skill]} · ${t.label}: ${reading}`
+            + (t.comparable ? `; önceki ${t.previous}/${t.scaleMax}.` : ".")
       });
     }
   }
-  for (const skill of SKILLS) {
-    if (assessments.some(a => a.skill === skill)) continue;
-    out.push({
-      kind: "unmeasured", skill, criterion: null,
-      label: `${SKILL_LABEL[skill]} — ölçülmedi`,
-      evidence: `${SKILL_LABEL[skill]} için tarihli değerlendirme yok. Bu bir zayıflık kaydı değil; `
-        + "ihtiyaç üretilmeden önce kısa bir tanılama gerekiyor.",
-      objectiveId: null, priority: 300
-    });
-  }
-  if (attendanceRate !== null && attendanceRate < attendanceFloor) out.push({
-    kind: "attendance", skill: null, criterion: null, label: "Devam",
-    evidence: `Devam oranı %${attendanceRate}, kurumun sınırı %${attendanceFloor}.`,
-    objectiveId: null, priority: -100
-  });
-  if ((dimensions.classroom ?? 0) >= 50) out.push({
-    kind: "classroom", skill: null, criterion: null, label: "Derse hazırlık",
-    evidence: `Sınıf içi göstergeler ${dimensions.classroom} (0–100, yüksek = sorunlu).`,
-    objectiveId: null, priority: -50
-  });
-  return out.sort((a, b) => a.priority - b.priority);
+  // The product acts hardest where it knows most: repeated readings before single
+  // ones, the weakest first within each.
+  needs.sort((a, b) => Number(a.thin) - Number(b.thin) || a.latest / a.scaleMax - b.latest / b.scaleMax);
+  return { needs, unmeasured };
 }
 
-const pickResource = (resources: Resource[], skill: Skill, level: string) => {
-  const fit = resources.filter(r => r.skill === skill && (r.level === null || r.level === level));
-  // A confirmed resource beats a sample of the same shape; nothing here invents
-  // one when the catalogue is empty.
-  return fit.find(r => !r.isSample) ?? fit[0] ?? null;
-};
-const pickSession = (sessions: Session[], skill: Skill, level: string, branchId: string,
-  weekStart: string, used: Set<string>) =>
-  sessions.find(s => s.branchId === branchId && !used.has(s.id)
-    && (s.skill === null || s.skill === skill)
-    && (s.level === null || s.level === level)
-    && s.startsAt.slice(0, 10) >= weekStart && s.startsAt.slice(0, 10) < addDays(weekStart, 7)
-    && s.taken < s.capacity) ?? null;
-
-/** Bir öğrenci için haftalık taslak. */
-export function draftFor(input: {
-  studentId: string; studentName: string; branchId: string; level: string;
-  weekStart: string; availability: Availability; sourcePeriodEnd: string | null;
-  assessments: Assessment[]; dimensions: DimensionScores;
-  attendanceRate: number | null; attendanceFloor: number;
-  resources: Resource[]; sessions: Session[];
-}): Draft {
-  const needs = needsOf(input.assessments, input.dimensions,
-    input.attendanceRate, input.attendanceFloor);
-  const budget = input.availability.weeklyMinutes;
-  const problems: string[] = [];
-  const tasks: DraftTask[] = [];
-  const usedSessions = new Set<string>();
-  let day = 0, spent = 0;
-
-  // The closing review is reserved out of the budget before anything competes
-  // for it: a week of work nobody looks at afterwards produces no evidence, and
-  // evidence is the only thing that makes the next plan better than this one.
-  const reserved = REVIEW_MINUTES;
-  const room = (minutes: number) => spent + minutes <= budget - reserved;
-  // Tasks land on the days the institution recorded the student as available.
-  // A plan that schedules work for a day somebody cannot study is a plan that
-  // gets ignored, and then the week's evidence is missing for a reason nobody
-  // wrote down.
-  const days = dayOffsets(input.availability.days);
-  const add = (t: Omit<DraftTask, "position" | "scheduledOn">) => {
-    tasks.push({
-      ...t, position: tasks.length + 1,
-      scheduledOn: addDays(input.weekStart, days[day % days.length])
-    });
-    spent += t.minutes; day++;
+export function suggest(input: {
+  steps: Step[]; because: string;
+  assessments: Assessment[];
+  level: string; branchId: string;
+  library: LibraryItem[];
+  checkOn: string;
+  already: Set<string>;
+}): Suggestions {
+  const items: Suggestion[] = [];
+  const push = (s: Omit<Suggestion, "full" | "note" | "dueOn" | "expectedOutput"> &
+    Partial<Pick<Suggestion, "full" | "note" | "dueOn" | "expectedOutput">>) => {
+    if (input.already.has(s.key) || items.some(x => x.key === s.key)) return;
+    items.push({ full: false, note: null, dueOn: null, expectedOutput: null, ...s });
   };
 
-  if (!needs.length) problems.push("Bu öğrenci için kanıta dayalı bir ihtiyaç bulunamadı.");
+  // What the risk review asked the institution to do. Staff work, in the same
+  // list as the student's — that was the point of merging the two.
+  for (const step of input.steps) push({
+    key: `staff:${step.key}`, kind: "staff", title: step.text,
+    why: `Risk değerlendirmesinin önerisi — ${input.because}`,
+    owner: OWNER_OF[step.who ?? ""] ?? "teacher", minutes: null, libraryItemId: null
+  });
 
-  for (const need of needs) {
-    if (need.kind === "attendance") {
-      if (!room(PREP_MINUTES)) continue;
-      add({
-        title: "Öğrenci ilişkileri görüşmesi", why: need.evidence,
-        objectiveId: null, resourceId: null, sessionId: null,
-        minutes: PREP_MINUTES, owner: "student_relations",
-        expectedOutput: "Devamsızlığın nedeni ve öğrenciye uyan saat aralığı",
-        checkMethod: "Sonraki dört haftanın katılım kaydı — beceri gelişimi ayrıca ölçülür"
-      });
-      continue;
-    }
-    if (need.kind === "classroom") {
-      if (!room(PREP_MINUTES)) continue;
-      add({
-        title: "Sonraki derse kısa hazırlık", why: need.evidence,
-        objectiveId: null, resourceId: null, sessionId: null,
-        minutes: PREP_MINUTES, owner: "student",
-        expectedOutput: "Dersin konusuna ait hazırlık notu",
-        checkMethod: "Ders içi gözlem"
-      });
-      continue;
-    }
-    const skill = need.skill!;
-    if (need.kind === "unmeasured") {
-      if (!room(PREP_MINUTES)) continue;
-      add({
-        title: `Kısa tanılama görevi — ${SKILL_LABEL[skill].toLocaleLowerCase("tr")}`,
-        why: need.evidence, objectiveId: need.objectiveId, resourceId: null, sessionId: null,
-        minutes: PREP_MINUTES, owner: "teacher",
-        expectedOutput: "Ölçütlere göre puanlanmış ilk değerlendirme",
-        checkMethod: "Beceri profilinde tarihli kayıt olarak görünmesi"
-      });
-      continue;
-    }
+  const { needs, unmeasured } = needsFrom(input.assessments);
 
-    const words = WORDING[skill];
-    const resource = pickResource(input.resources, skill, input.level);
-    if (!resource) problems.push(
-      `${SKILL_LABEL[skill]} için ${input.level} kuruna uygun içerik katalogda yok.`);
-    else if (resource.isSample) problems.push(
-      `${SKILL_LABEL[skill]} için önerilen içerik örnek kayıt: "${resource.title}".`);
+  // One measurement task, however many skills are missing. The first version
+  // wrote four identical diagnostics per student and nobody could act on them.
+  if (unmeasured.length) push({
+    key: "measure", kind: "measure", owner: "teacher", minutes: 15, libraryItemId: null,
+    title: unmeasured.length === SKILLS.length
+      ? "İlk ölçümü yap"
+      : `Eksik becerileri ölç: ${unmeasured.map(s => SKILL_LABEL[s].toLocaleLowerCase("tr")).join(", ")}`,
+    why: unmeasured.length === SKILLS.length
+      ? "Bu öğrencinin tarihli bir beceri ölçümü yok. Ölçüm olmadan neyin çalışılacağı söylenemez."
+      : "Bu becerilerde ölçüm yok. Bu bir zayıflık kaydı değil; ölçülmemiş olan hakkında bir şey söylenmez.",
+    expectedOutput: "Öğrenci kartında ölçütlere göre puanlanmış bir ölçüm"
+  });
 
-    if (room(PREP_MINUTES)) add({
-      title: words.prep, why: need.evidence, objectiveId: need.objectiveId,
-      resourceId: resource?.id ?? null, sessionId: null,
-      minutes: PREP_MINUTES, owner: "student",
-      expectedOutput: words.prepOutput, checkMethod: "Eğitmen ders öncesi hazırlığı görür"
+  const used = new Set<string>();
+  const fits = (i: LibraryItem, skill: Skill) =>
+    !used.has(i.id) && i.skill === skill && (i.level === null || i.level === input.level);
+
+  for (const need of needs.slice(0, MAX_NEEDS)) {
+    const studies = input.library.filter(i => i.kind === "study" && fits(i, need.skill))
+      .sort((a, b) => Number(a.isSample) - Number(b.isSample))
+      .slice(0, PER_NEED_STUDIES);
+    for (const i of studies) {
+      used.add(i.id);
+      push({
+        key: `lib:${i.id}`, kind: "work", title: i.title, why: need.evidence,
+        owner: "student", minutes: i.minutes, libraryItemId: i.id,
+        note: i.isSample ? "Örnek kayıt — kurumun doğrulanmış içeriği değil" : null
+      });
+    }
+    if (!studies.length) push({
+      key: `work:${need.skill}:${need.code}`, kind: "work", title: GENERIC[need.skill].title,
+      why: need.evidence, owner: "student", minutes: 15, libraryItemId: null,
+      expectedOutput: GENERIC[need.skill].output,
+      note: "Kütüphanede bu beceri için içerik yok"
     });
 
-    const session = pickSession(input.sessions, skill, input.level, input.branchId,
-      input.weekStart, usedSessions);
-    if (session && room(session.minutes)) {
-      usedSessions.add(session.id);
-      add({
-        title: session.title, why: `${need.evidence} Bu oturum ${SKILL_LABEL[skill].toLocaleLowerCase("tr")} `
-          + "için uygun görünüyor.", objectiveId: need.objectiveId,
-        resourceId: null, sessionId: session.id,
-        minutes: session.minutes, owner: "student",
-        expectedOutput: "Oturumda eğitmen eşliğinde uygulama",
-        checkMethod: "Katılım kaydı ve eğitmenin kısa gözlemi"
+    const event = input.library.find(i => i.kind === "event" && fits(i, need.skill)
+      && i.branchId === input.branchId);
+    if (event) {
+      used.add(event.id);
+      const left = seatsLeft(event);
+      push({
+        key: `lib:${event.id}`, kind: "work", title: event.title, why: need.evidence,
+        owner: "student", minutes: event.minutes, libraryItemId: event.id,
+        dueOn: event.startsAt!.slice(0, 10), full: !hasRoom(event),
+        note: [
+          hasRoom(event) ? `${left} yer kaldı` : "Dolu",
+          event.isSample ? "örnek kayıt" : null
+        ].filter(Boolean).join(" · ")
       });
-    } else if (!session) problems.push(
-      `${SKILL_LABEL[skill]} için bu hafta uygun ve yeri olan destek oturumu bulunamadı.`);
+    }
+  }
 
-    if (need.kind === "measured" && room(PRACTICE_MINUTES)) add({
-      title: resource ? resource.title : words.practice, why: need.evidence,
-      objectiveId: need.objectiveId, resourceId: resource?.id ?? null, sessionId: null,
-      minutes: resource?.minutes ?? PRACTICE_MINUTES, owner: "student",
-      expectedOutput: words.practiceOutput, checkMethod: "Eğitmen çıktıyı görür"
-    });
-
-    if (room(REASSESS_MINUTES)) add({
-      title: words.reassess,
-      why: "Aynı alt beceri, benzer zorluk ve aynı ölçütlerle yeniden ölçülmeden gelişme "
-        + "iddia edilemez.", objectiveId: need.objectiveId, resourceId: null, sessionId: null,
-      minutes: REASSESS_MINUTES, owner: "teacher",
-      expectedOutput: words.reassessOutput,
-      checkMethod: `Aynı ölçüt (${need.label}) ile tarihli yeni değerlendirme`
+  // Without this the plan produces activity and no evidence.
+  if (needs.length) {
+    const skills = [...new Set(needs.slice(0, MAX_NEEDS).map(n => n.skill))];
+    push({
+      key: "check", kind: "check", owner: "teacher", minutes: 15, libraryItemId: null,
+      dueOn: input.checkOn,
+      title: `Kontrol ölçümü: ${skills.map(s => SKILL_LABEL[s].toLocaleLowerCase("tr")).join(", ")}`,
+      why: "Aynı ölçütlerle yeni bir ölçüm yapılmadan bir şeyin değiştiği söylenemez.",
+      expectedOutput: "Aynı ölçütlerle, farklı bir görevde yapılmış ölçüm"
     });
   }
 
-  if (tasks.length) add({
-    title: "Geri bildirim ve sonraki haftanın planı",
-    why: "Yapılan çalışma ile ölçülen değişimin ayrı ayrı gözden geçirilmesi.",
-    objectiveId: null, resourceId: null, sessionId: null,
-    minutes: REVIEW_MINUTES, owner: "teacher",
-    expectedOutput: "Sürecek ve değişecek görevlerin kararı",
-    checkMethod: "Sonraki haftanın planına yazılması"
-  });
-
-  if (spent > budget) problems.push(
-    `Plan ${spent} dakika, öğrencinin haftalık bütçesi ${budget} dakika.`);
-  if (!input.availability.recorded) problems.push(
-    "Öğrencinin haftalık çalışma kapasitesi girilmemiş; varsayılan 120 dakikaya göre hesaplandı.");
-  if (!tasks.some(t => t.checkMethod.includes("ölçüt")) && needs.some(n => n.skill))
-    problems.push("Planda yeniden değerlendirme görevi yok.");
-
-  return {
-    studentId: input.studentId, studentName: input.studentName, branchId: input.branchId,
-    level: input.level, weekStart: input.weekStart, minutesBudget: budget,
-    budgetRecorded: input.availability.recorded, sourcePeriodEnd: input.sourcePeriodEnd,
-    needs, tasks, problems
-  };
+  return { items, needs, unmeasured };
 }
 
-export type StoredTask = DraftTask & {
-  id: string; status: TaskState;
-  resourceTitle: string | null; resourceIsSample: boolean;
-  sessionTitle: string | null; sessionStartsAt: string | null; sessionIsSample: boolean;
-  participation: string | null;
+// ── Okuma ───────────────────────────────────────────────────────────────────
+
+export type PlanTask = {
+  id: string; kind: TaskKind; title: string; why: string; owner: Owner;
+  minutes: number | null; dueOn: string | null; status: TaskStatus; note: string | null;
+  expectedOutput: string | null; sourceKey: string | null;
+  item: { title: string; kind: string; program: string; startsAt: string | null; isSample: boolean } | null;
 };
-export type StoredPlan = {
-  id: string; studentId: string; studentName: string; branch: string; level: string;
-  weekStart: string; version: number; status: "draft" | "approved" | "archived";
-  minutesBudget: number; sourcePeriodEnd: string | null; needs: Need[]; note: string | null;
-  approvedAt: string | null; tasks: StoredTask[];
+export type Plan = {
+  id: string; studentId: string; status: "open" | "closed";
+  checkOn: string; weeklyMinutes: number; sourcePeriodEnd: string | null;
+  openedAt: string; closedAt: string | null; closeNote: string | null;
+  tasks: PlanTask[];
 };
 
-const planColumns = "id,student_id,week_start,version,status,minutes_budget,source_period_end,basis,note,approved_at";
+const KIND_ORDER: Record<TaskKind, number> = { staff: 0, measure: 1, work: 2, check: 3 };
 
+/** Plans for a set of students, newest first. */
 export async function loadPlans(
-  client: SupabaseClient, filter: { id?: string; status?: string; studentId?: string } = {}
-): Promise<StoredPlan[]> {
-  const oops = "Çalışma planları okunamadı";
-  const plans = await fetchAll<{ id: string; student_id: string; week_start: string;
-    version: number; status: string; minutes_budget: number; source_period_end: string | null;
-    basis: Need[]; note: string | null; approved_at: string | null }>(
+  client: SupabaseClient, studentIds: string[], opts: { openOnly?: boolean } = {}
+): Promise<Map<string, Plan[]>> {
+  const out = new Map<string, Plan[]>();
+  if (!studentIds.length) return out;
+  const oops = "Planlar okunamadı";
+  const plans = await fetchAll<{ id: string; student_id: string; status: string; check_on: string;
+    weekly_minutes: number; source_period_end: string | null; created_at: string;
+    closed_at: string | null; close_note: string | null }>(
     () => {
-      let q = client.from("study_plans").select(planColumns);
-      if (filter.id) q = q.eq("id", filter.id);
-      if (filter.status) q = q.eq("status", filter.status);
-      if (filter.studentId) q = q.eq("student_id", filter.studentId);
-      return q.order("week_start", { ascending: false }).order("version", { ascending: false });
+      const q = client.from("plans")
+        .select("id,student_id,status,check_on,weekly_minutes,source_period_end,created_at,closed_at,close_note")
+        .in("student_id", studentIds);
+      return (opts.openOnly ? q.eq("status", "open") : q).order("created_at", { ascending: false });
     }, oops);
-  if (!plans.length) return [];
+  if (!plans.length) return out;
 
-  const planIds = plans.map(p => p.id);
-  const studentIds = [...new Set(plans.map(p => p.student_id))];
-  const [tasks, students, enrollments, branches] = await Promise.all([
-    fetchAll<{ id: string; plan_id: string; position: number; scheduled_on: string; title: string;
-      why: string; objective_id: string | null; resource_id: string | null; session_id: string | null;
-      minutes: number; owner: string; expected_output: string; check_method: string; status: string }>(
-      () => client.from("study_tasks")
-        .select("id,plan_id,position,scheduled_on,title,why,objective_id,resource_id,session_id,minutes,owner,expected_output,check_method,status")
-        .in("plan_id", planIds).order("position"), oops),
-    fetchAll<{ id: string; name: string; branch_id: string }>(
-      () => client.from("students").select("id,name,branch_id").in("id", studentIds), oops),
-    fetchAll<{ student_id: string; level: string }>(
-      () => client.from("enrollments").select("student_id,level")
-        .in("student_id", studentIds).eq("active", true), oops),
-    fetchAll<{ id: string; name: string }>(() => client.from("branches").select("id,name"), oops)
-  ]);
+  const tasks = await fetchAll<{ id: string; plan_id: string; kind: string; title: string; why: string;
+    owner: string; minutes: number | null; due_on: string | null; status: string; note: string | null;
+    expected_output: string | null; source_key: string | null; library_item_id: string | null }>(
+    () => client.from("plan_tasks")
+      .select("id,plan_id,kind,title,why,owner,minutes,due_on,status,note,expected_output,source_key,library_item_id")
+      .in("plan_id", plans.map(p => p.id)).order("created_at"), oops);
+  const itemIds = [...new Set(tasks.map(t => t.library_item_id).filter((v): v is string => !!v))];
+  const items = itemIds.length
+    ? await fetchAll<{ id: string; title: string; kind: string; program: string;
+      starts_at: string | null; is_sample: boolean }>(
+      () => client.from("library_items").select("id,title,kind,program,starts_at,is_sample")
+        .in("id", itemIds), oops)
+    : [];
+  const itemOf = new Map(items.map(i => [i.id, i]));
 
-  const resourceIds = [...new Set(tasks.map(t => t.resource_id).filter((v): v is string => !!v))];
-  const sessionIds = [...new Set(tasks.map(t => t.session_id).filter((v): v is string => !!v))];
-  const [resources, sessions, participations] = await Promise.all([
-    resourceIds.length ? fetchAll<{ id: string; title: string; is_sample: boolean }>(
-      () => client.from("learning_resources").select("id,title,is_sample").in("id", resourceIds), oops)
-      : Promise.resolve([]),
-    sessionIds.length ? fetchAll<{ id: string; title: string; starts_at: string; is_sample: boolean }>(
-      () => client.from("support_sessions").select("id,title,starts_at,is_sample").in("id", sessionIds), oops)
-      : Promise.resolve([]),
-    sessionIds.length ? fetchAll<{ session_id: string; student_id: string; status: string }>(
-      () => client.from("session_participations").select("session_id,student_id,status")
-        .in("session_id", sessionIds).in("student_id", studentIds), oops)
-      : Promise.resolve([])
-  ]);
-  const resourceOf = new Map(resources.map(r => [r.id, r]));
-  const sessionOf = new Map(sessions.map(s => [s.id, s]));
-  const partOf = new Map(participations.map(p => [`${p.session_id}:${p.student_id}`, p.status]));
-  const studentOf = new Map(students.map(s => [s.id, s]));
-  const levelOf = new Map(enrollments.map(e => [e.student_id, e.level]));
-  const branchOf = new Map(branches.map(b => [b.id, b.name]));
-
-  const tasksOf = new Map<string, StoredTask[]>();
+  const tasksOf = new Map<string, PlanTask[]>();
   for (const t of tasks) {
-    const plan = plans.find(p => p.id === t.plan_id)!;
-    const resource = t.resource_id ? resourceOf.get(t.resource_id) : undefined;
-    const session = t.session_id ? sessionOf.get(t.session_id) : undefined;
-    const row: StoredTask = {
-      id: t.id, position: Number(t.position), scheduledOn: t.scheduled_on, title: t.title,
-      why: t.why, objectiveId: t.objective_id, resourceId: t.resource_id,
-      sessionId: t.session_id, minutes: Number(t.minutes), owner: t.owner as TaskOwner,
-      expectedOutput: t.expected_output, checkMethod: t.check_method, status: t.status as TaskState,
-      resourceTitle: resource?.title ?? null, resourceIsSample: resource?.is_sample ?? false,
-      sessionTitle: session?.title ?? null, sessionStartsAt: session?.starts_at ?? null,
-      sessionIsSample: session?.is_sample ?? false,
-      participation: t.session_id ? partOf.get(`${t.session_id}:${plan.student_id}`) ?? null : null
-    };
-    (tasksOf.get(t.plan_id) ?? tasksOf.set(t.plan_id, []).get(t.plan_id)!).push(row);
-  }
-
-  return plans.map(p => ({
-    id: p.id, studentId: p.student_id,
-    studentName: studentOf.get(p.student_id)?.name ?? "—",
-    branch: branchOf.get(studentOf.get(p.student_id)?.branch_id ?? "") ?? "—",
-    level: levelOf.get(p.student_id) ?? "—",
-    weekStart: p.week_start, version: Number(p.version),
-    status: p.status as StoredPlan["status"], minutesBudget: Number(p.minutes_budget),
-    sourcePeriodEnd: p.source_period_end, needs: Array.isArray(p.basis) ? p.basis : [],
-    note: p.note, approvedAt: p.approved_at, tasks: tasksOf.get(p.id) ?? []
-  }));
-}
-
-/** Writes a draft as a new version of that student's week.
- *
- *  An approved plan is never edited in place: the live version is archived and
- *  this one takes its place with the next version number, so "what was approved
- *  on Monday" survives Thursday's rewrite. The partial unique index in the
- *  migration is what makes that a rule rather than a habit.
- */
-export async function saveDraft(
-  client: SupabaseClient, organizationId: string, draft: Draft
-): Promise<{ id: string }> {
-  const live = await client.from("study_plans")
-    .select("id,version").eq("student_id", draft.studentId).eq("week_start", draft.weekStart)
-    .neq("status", "archived").order("version", { ascending: false }).limit(1).maybeSingle();
-  if (live.error) throw new Error(`Mevcut plan okunamadı: ${live.error.message}`);
-  if (live.data) {
-    const archived = await client.from("study_plans")
-      .update({ status: "archived" }).eq("id", live.data.id);
-    if (archived.error) throw new Error(`Önceki sürüm arşivlenemedi: ${archived.error.message}`);
-  }
-
-  const plan = await client.from("study_plans").insert({
-    organization_id: organizationId, branch_id: draft.branchId, student_id: draft.studentId,
-    week_start: draft.weekStart, version: (Number(live.data?.version) || 0) + 1,
-    status: "draft", minutes_budget: draft.minutesBudget,
-    source_period_end: draft.sourcePeriodEnd, basis: draft.needs
-  }).select("id").single();
-  if (plan.error) throw new Error(`Plan yazılamadı: ${plan.error.message}`);
-
-  if (draft.tasks.length) {
-    const written = await client.from("study_tasks").insert(draft.tasks.map(t => ({
-      plan_id: plan.data.id, organization_id: organizationId, branch_id: draft.branchId,
-      student_id: draft.studentId, position: t.position, scheduled_on: t.scheduledOn,
-      title: t.title, why: t.why, objective_id: t.objectiveId, resource_id: t.resourceId,
-      session_id: t.sessionId, minutes: t.minutes, owner: t.owner,
-      expected_output: t.expectedOutput, check_method: t.checkMethod
-    })));
-    if (written.error) throw new Error(`Görevler yazılamadı: ${written.error.message}`);
-  }
-
-  // Proposed, not reserved. Proposing costs nobody a seat; the seat is taken at
-  // approval, which is also where a full session has to be able to say no.
-  const sessionTasks = draft.tasks.filter(t => t.sessionId);
-  for (const t of sessionTasks) {
-    const existing = await client.from("session_participations").select("id")
-      .eq("session_id", t.sessionId!).eq("student_id", draft.studentId).maybeSingle();
-    if (existing.data) continue;
-    await client.from("session_participations").insert({
-      session_id: t.sessionId, organization_id: organizationId, branch_id: draft.branchId,
-      student_id: draft.studentId, status: "proposed"
+    const i = t.library_item_id ? itemOf.get(t.library_item_id) : undefined;
+    (tasksOf.get(t.plan_id) ?? tasksOf.set(t.plan_id, []).get(t.plan_id)!).push({
+      id: t.id, kind: t.kind as TaskKind, title: t.title, why: t.why, owner: t.owner as Owner,
+      minutes: t.minutes === null ? null : Number(t.minutes), dueOn: t.due_on,
+      status: t.status as TaskStatus, note: t.note, expectedOutput: t.expected_output,
+      sourceKey: t.source_key,
+      item: i ? { title: i.title, kind: i.kind, program: i.program,
+        startsAt: i.starts_at, isSample: i.is_sample } : null
     });
   }
-  return { id: plan.data.id as string };
-}
 
-export type ApprovalResult = { ok: true } | { ok: false; message: string; alternatives: string[] };
-
-/** Onay: planı sabitler ve önerilen oturumlarda gerçekten yer ayırır.
- *
- *  The reservation is what can fail, and it has to be allowed to. A session that
- *  filled up between drafting and approval must not quietly turn into a student
- *  who appears to be attending it — so the plan stays a draft, the teacher is
- *  told which session and what else is free, and nothing on any screen claims a
- *  booking that does not exist.
- */
-export async function approvePlan(
-  client: SupabaseClient, planId: string, actorId: string
-): Promise<ApprovalResult> {
-  const plan = await client.from("study_plans")
-    .select("id,organization_id,student_id,branch_id,week_start,status").eq("id", planId).maybeSingle();
-  if (plan.error || !plan.data) return { ok: false, message: "Plan bulunamadı.", alternatives: [] };
-  const { organization_id: org, branch_id: branch, student_id: student, week_start: week } = plan.data;
-  if (plan.data.status === "approved") return { ok: true };
-
-  const tasks = await client.from("study_tasks").select("session_id")
-    .eq("plan_id", planId).not("session_id", "is", null);
-  if (tasks.error) return { ok: false, message: "Görevler okunamadı.", alternatives: [] };
-
-  /** The capacity trigger raises its own sentence; anything else is a different
-   *  failure and must not be reported as a full session. Telling a teacher to go
-   *  and find another slot when the real problem was a permission would send
-   *  them looking for a problem that is not there. */
-  const refused = async (sessionId: string, error: { message: string }): Promise<ApprovalResult> => {
-    if (!error.message.includes("yer kalmadı")) return {
-      ok: false, message: `Oturumda yer ayrılamadı: ${error.message}`, alternatives: []
-    };
-    const full = await client.from("support_sessions")
-      .select("title").eq("id", sessionId).maybeSingle();
-    return {
-      ok: false,
-      message: `"${full.data?.title ?? "Destek oturumu"}" oturumunda yer kalmadı, plan onaylanmadı. `
-        + "Görevdeki oturumu değiştirip yeniden onaylayın.",
-      alternatives: await freeSessions(client, branch, week)
-    };
-  };
-
-  for (const t of tasks.data ?? []) {
-    const held = await client.from("session_participations")
-      .update({ status: "reserved", updated_at: new Date().toISOString() })
-      .eq("session_id", t.session_id).eq("student_id", student).select("id");
-    if (held.error) return refused(t.session_id as string, held.error);
-    if (held.data?.length) continue;
-    const inserted = await client.from("session_participations").insert({
-      session_id: t.session_id, organization_id: org, branch_id: branch,
-      student_id: student, status: "reserved"
+  for (const p of plans) {
+    const list = (tasksOf.get(p.id) ?? [])
+      .sort((a, b) => KIND_ORDER[a.kind] - KIND_ORDER[b.kind]);
+    (out.get(p.student_id) ?? out.set(p.student_id, []).get(p.student_id)!).push({
+      id: p.id, studentId: p.student_id, status: p.status as Plan["status"],
+      checkOn: p.check_on, weeklyMinutes: Number(p.weekly_minutes),
+      sourcePeriodEnd: p.source_period_end, openedAt: p.created_at,
+      closedAt: p.closed_at, closeNote: p.close_note, tasks: list
     });
-    if (inserted.error) return refused(t.session_id as string, inserted.error);
   }
-
-  const done = await client.from("study_plans").update({
-    status: "approved", approved_by: actorId, approved_at: new Date().toISOString()
-  }).eq("id", planId).select("id");
-  if (done.error) return { ok: false, message: `Onaylanamadı: ${done.error.message}`, alternatives: [] };
-  if (!done.data?.length) return {
-    ok: false, message: "Bu planı onaylama yetkiniz yok.", alternatives: []
-  };
-  return { ok: true };
-}
-
-async function freeSessions(client: SupabaseClient, branchId: string, weekStart: string) {
-  const sessions = await loadSessions(client, weekStart);
-  return sessions
-    .filter(s => s.branchId === branchId && s.taken < s.capacity
-      && s.startsAt.slice(0, 10) < addDays(weekStart, 14))
-    .slice(0, 5)
-    .map(s => `${s.title} · ${s.startsAt.slice(0, 10)} · ${s.capacity - s.taken} yer`);
-}
-
-/** Görev durumu ve olayı birlikte yazılır: durum bugünü, olay geçmişi taşır. */
-export async function setTaskStatus(
-  client: SupabaseClient, taskId: string, status: TaskState, note: string | null
-): Promise<void> {
-  const task = await client.from("study_tasks")
-    .select("id,organization_id,branch_id,student_id,status").eq("id", taskId).maybeSingle();
-  if (task.error || !task.data) throw new Error("Görev bulunamadı.");
-
-  const written = await client.from("study_tasks")
-    .update({ status, updated_at: new Date().toISOString() }).eq("id", taskId).select("id");
-  if (written.error) throw new Error(written.error.message);
-  if (!written.data?.length) throw new Error("Bu görevi güncelleme yetkiniz yok.");
-
-  // The event is what happened, not a tidy synonym for it: recording a
-  // cancellation as a reopening would put a sentence in the audit trail that is
-  // simply not true of the task.
-  const kind = status === "open" ? "reopened" : status;
-  await client.from("task_events").insert({
-    task_id: taskId, organization_id: task.data.organization_id,
-    branch_id: task.data.branch_id, student_id: task.data.student_id,
-    kind, note
-  });
-}
-
-export type TaskEvent = {
-  taskId: string; kind: string; note: string | null; createdAt: string;
-};
-export async function loadTaskEvents(
-  client: SupabaseClient, studentId: string
-): Promise<TaskEvent[]> {
-  const rows = await fetchAll<{ task_id: string; kind: string; note: string | null; created_at: string }>(
-    () => client.from("task_events").select("task_id,kind,note,created_at")
-      .eq("student_id", studentId).order("created_at", { ascending: false }),
-    "Çalışma geçmişi okunamadı");
-  return rows.map(r => ({ taskId: r.task_id, kind: r.kind, note: r.note, createdAt: r.created_at }));
-}
-
-/** Bir öğrenci için taslak üretmek üzere gereken her şeyi toplar. */
-export async function draftInputs(
-  client: SupabaseClient, studentIds: string[], weekStart: string
-) {
-  const [assessments, availability, resources, sessions] = await Promise.all([
-    loadAssessments(client, studentIds),
-    loadAvailability(client, studentIds),
-    loadResources(client),
-    loadSessions(client, weekStart)
-  ]);
-  return {
-    assessmentsOf: (id: string) => assessments.get(id) ?? [],
-    availabilityFor: (id: string) => availabilityOf(availability, id),
-    resources, sessions
-  };
-}
-
-export const thisWeek = () => weekStartOf(new Date().toISOString().slice(0, 10));
-
-/** Bir sınıf için taslakları toplu üretir.
- *
- *  Scoped to a level, and usually a branch, because that is how the work
- *  arrives: a teacher plans a class, not an institution. Students who already
- *  have a live plan for the week are left alone — regenerating over an approved
- *  plan would be exactly the silent rewrite the versioning exists to prevent.
- */
-export async function buildDrafts(
-  client: SupabaseClient,
-  opts: { level: string; branchId: string | null; weekStart: string; attendanceFloor: number; limit: number }
-): Promise<Draft[]> {
-  const oops = "Plan için öğrenci verisi okunamadı";
-  const enrollments = await fetchAll<{ student_id: string; level: string }>(
-    () => client.from("enrollments").select("student_id,level")
-      .eq("active", true).eq("level", opts.level), oops);
-  if (!enrollments.length) return [];
-  const ids = enrollments.map(e => e.student_id);
-
-  const students = await fetchAll<{ id: string; name: string; branch_id: string }>(
-    () => client.from("students").select("id,name,branch_id").eq("active", true).in("id", ids), oops);
-  const wanted = students.filter(s => !opts.branchId || s.branch_id === opts.branchId);
-  if (!wanted.length) return [];
-  const wantedIds = wanted.map(s => s.id);
-
-  const [snapshots, attendance, live, inputs] = await Promise.all([
-    fetchAll<{ student_id: string; period_end: string; dimensions: DimensionScores }>(
-      () => client.from("risk_snapshots").select("student_id,period_end,dimensions")
-        .in("student_id", wantedIds).order("period_end", { ascending: false }), oops),
-    fetchAll<{ student_id: string; value: number }>(
-      () => client.from("student_measurements").select("student_id,value")
-        .in("student_id", wantedIds).eq("source_reference", "term_rate"), oops),
-    fetchAll<{ student_id: string }>(
-      () => client.from("study_plans").select("student_id")
-        .in("student_id", wantedIds).eq("week_start", opts.weekStart).neq("status", "archived"), oops),
-    draftInputs(client, wantedIds, opts.weekStart)
-  ]);
-
-  const newest = new Map<string, { period_end: string; dimensions: DimensionScores }>();
-  for (const s of snapshots) if (!newest.has(s.student_id)) newest.set(s.student_id, s);
-  const rate = new Map(attendance.map(a => [a.student_id, Number(a.value)]));
-  const planned = new Set(live.map(p => p.student_id));
-
-  const drafts: Draft[] = [];
-  for (const s of wanted) {
-    if (planned.has(s.id)) continue;
-    if (drafts.length >= opts.limit) break;
-    const snap = newest.get(s.id);
-    const draft = draftFor({
-      studentId: s.id, studentName: s.name, branchId: s.branch_id, level: opts.level,
-      weekStart: opts.weekStart, availability: inputs.availabilityFor(s.id),
-      sourcePeriodEnd: snap?.period_end ?? null,
-      assessments: inputs.assessmentsOf(s.id), dimensions: snap?.dimensions ?? {},
-      attendanceRate: rate.get(s.id) ?? null, attendanceFloor: opts.attendanceFloor,
-      resources: inputs.resources, sessions: inputs.sessions
-    });
-    // A student with nothing to act on does not get an empty plan on somebody's
-    // approval queue; an empty queue row is work with no decision in it.
-    if (draft.tasks.length) drafts.push(draft);
-  }
-  return drafts;
-}
-
-/** Kaydedilmiş bir planın hâlâ açık olan sorunları.
- *
- *  Recomputed from the stored plan rather than carried from the draft: a session
- *  can fill up, a sample resource can be confirmed, and the queue has to reflect
- *  what is true now. */
-export function planProblems(plan: StoredPlan): string[] {
-  const out: string[] = [];
-  const live = plan.tasks.filter(t => t.status !== "cancelled");
-  const minutes = live.reduce((t, x) => t + x.minutes, 0);
-  if (minutes > plan.minutesBudget) out.push(
-    `Plan ${minutes} dakika, öğrencinin haftalık bütçesi ${plan.minutesBudget} dakika.`);
-  if (plan.needs.some(n => n.kind === "thin")) out.push(
-    "Bazı ihtiyaçlar tek ölçüme dayanıyor; plan ikinci bir ölçüm içeriyor.");
-  if (plan.needs.some(n => n.kind === "unmeasured")) out.push(
-    "Ölçülmemiş beceri var; önce kısa tanılama öneriliyor.");
-  if (live.some(t => t.resourceIsSample || t.sessionIsSample)) out.push(
-    "Planda örnek içerik veya örnek oturum var — kurumun doğrulanmış kaydı değil.");
-  if (live.some(t => t.title && !t.resourceId && !t.sessionId && t.owner === "student"
-    && t.checkMethod.includes("çıktıyı"))) out.push(
-    "Bazı öğrenci görevleri bir kaynağa bağlı değil.");
-  if (!live.some(t => t.checkMethod.includes("ölçüt")) && plan.needs.some(n => n.skill))
-    out.push("Planda yeniden değerlendirme görevi yok.");
   return out;
+}
+
+export type PlanSummary = {
+  id: string; tasks: number; done: number; stuck: number;
+  checkOn: string; overdue: boolean;
+  /** An open plan whose control measurement is not done. */
+  checkPending: boolean;
+};
+
+/** What the agenda needs to know about each open plan, and nothing more. */
+export async function loadPlanSummaries(client: SupabaseClient): Promise<Map<string, PlanSummary>> {
+  const oops = "Planlar okunamadı";
+  const plans = await fetchAll<{ id: string; student_id: string; check_on: string }>(
+    () => client.from("plans").select("id,student_id,check_on").eq("status", "open"), oops);
+  const out = new Map<string, PlanSummary>();
+  if (!plans.length) return out;
+  const tasks = await fetchAll<{ plan_id: string; kind: string; status: string }>(
+    () => client.from("plan_tasks").select("plan_id,kind,status")
+      .in("plan_id", plans.map(p => p.id)), oops);
+  const today = todayIso();
+  for (const p of plans) {
+    const mine = tasks.filter(t => t.plan_id === p.id);
+    out.set(p.student_id, {
+      id: p.id, tasks: mine.length,
+      done: mine.filter(t => t.status === "done").length,
+      stuck: mine.filter(t => t.status === "stuck").length,
+      checkOn: p.check_on, overdue: p.check_on < today,
+      checkPending: !mine.some(t => t.kind === "check" && t.status === "done")
+    });
+  }
+  return out;
+}
+
+export type PlanEvent = {
+  planId: string; kind: string; note: string | null; createdAt: string;
+};
+export async function loadPlanEvents(client: SupabaseClient, studentId: string): Promise<PlanEvent[]> {
+  const rows = await fetchAll<{ plan_id: string; kind: string; note: string | null; created_at: string }>(
+    () => client.from("plan_events").select("plan_id,kind,note,created_at")
+      .eq("student_id", studentId).order("created_at", { ascending: false }),
+    "Plan geçmişi okunamadı");
+  return rows.map(r => ({ planId: r.plan_id, kind: r.kind, note: r.note, createdAt: r.created_at }));
+}
+
+// ── Yazma ───────────────────────────────────────────────────────────────────
+
+export type NewTask = Pick<Suggestion, "key" | "kind" | "title" | "why" | "owner" | "minutes"
+  | "libraryItemId" | "dueOn" | "expectedOutput">;
+
+const asJson = (t: NewTask) => ({
+  kind: t.kind, title: t.title, why: t.why, owner: t.owner,
+  minutes: t.minutes ?? "", due_on: t.dueOn ?? "",
+  library_item_id: t.libraryItemId ?? "", expected_output: t.expectedOutput ?? "",
+  source_key: t.key
+});
+
+/** Database refusals, in the words of the screen that caused them. */
+export function friendly(message: string): string {
+  if (message.includes("plans_one_open")) return "Bu öğrencinin zaten açık bir planı var.";
+  if (message.includes("plan_tasks_once")) return "Bu görev planda zaten var.";
+  if (message.includes("library_bookings_item_id_student_id_key"))
+    return "Öğrenci bu etkinliğe zaten kayıtlı.";
+  if (message.includes("row-level security") || message.includes("permission denied"))
+    return "Bu öğrenci için yetkiniz yok.";
+  return message;
+}
+
+export const defaultCheckOn = () => addDays(todayIso(), 7);
+
+/** Plan ve ilk görevleri tek işlemde. Biri başarısız olursa hiçbiri yazılmaz. */
+export async function openPlan(client: SupabaseClient, input: {
+  studentId: string; checkOn: string; weeklyMinutes: number;
+  periodEnd: string | null; tasks: NewTask[];
+}): Promise<string> {
+  const { data, error } = await client.rpc("open_plan", {
+    p_student: input.studentId, p_check_on: input.checkOn,
+    p_weekly_minutes: input.weeklyMinutes, p_period: input.periodEnd,
+    p_tasks: input.tasks.map(asJson)
+  });
+  if (error) throw new Error(friendly(error.message));
+  return data as string;
+}
+
+/** Görev ve — etkinlikse — yeri tek işlemde. Dolu etkinlik görevi de geri alır. */
+export async function addTask(client: SupabaseClient, planId: string, task: NewTask): Promise<void> {
+  const { error } = await client.rpc("add_plan_task", { p_plan: planId, p_task: asJson(task) });
+  if (error) throw new Error(friendly(error.message));
+}
+
+export async function setTaskStatus(
+  client: SupabaseClient, taskId: string, status: TaskStatus, note: string | null
+): Promise<void> {
+  const written = await client.from("plan_tasks")
+    .update({ status, note }).eq("id", taskId).select("id");
+  if (written.error) throw new Error(friendly(written.error.message));
+  if (!written.data?.length) throw new Error("Bu görevi güncelleme yetkiniz yok.");
+}
+
+/** Only untouched work can be taken back; the database enforces it too. */
+export async function removeTask(client: SupabaseClient, taskId: string): Promise<void> {
+  const removed = await client.from("plan_tasks").delete().eq("id", taskId).select("id");
+  if (removed.error) throw new Error(friendly(removed.error.message));
+  if (!removed.data?.length) throw new Error("Yapılmış ya da takılmış bir görev plandan çıkarılamaz.");
+}
+
+export async function updatePlan(client: SupabaseClient, planId: string,
+  patch: { checkOn?: string; weeklyMinutes?: number }): Promise<void> {
+  const written = await client.from("plans").update({
+    ...(patch.checkOn ? { check_on: patch.checkOn } : {}),
+    ...(patch.weeklyMinutes ? { weekly_minutes: patch.weeklyMinutes } : {})
+  }).eq("id", planId).eq("status", "open").select("id");
+  if (written.error) throw new Error(friendly(written.error.message));
+  if (!written.data?.length) throw new Error("Plan güncellenemedi.");
+}
+
+export async function closePlan(client: SupabaseClient, planId: string,
+  actorId: string, note: string | null): Promise<void> {
+  const written = await client.from("plans").update({
+    status: "closed", closed_at: new Date().toISOString(), closed_by: actorId, close_note: note
+  }).eq("id", planId).eq("status", "open").select("id");
+  if (written.error) throw new Error(friendly(written.error.message));
+  if (!written.data?.length) throw new Error("Plan kapatılamadı.");
 }

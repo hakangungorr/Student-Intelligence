@@ -1,24 +1,22 @@
 # Student Intelligence — Yapılacaklar
 
 Depo: `hakangungorr/Student-Intelligence`
-Hazırlayan: kod incelemesi, 14 Eylül 2026 · son güncelleme 15 Eylül 2026
-Durum: `npm run check` temiz (123 test, lint, tsc, build)
+Hazırlayan: kod incelemesi, 14 Eylül 2026 · son güncelleme 16 Eylül 2026
+Durum: `npm run check` temiz (131 test, lint, tsc, build)
 
 Bu dosya Claude Code'a verilmek üzere yazıldı. Her görevde dosya, satır, kabul kriteri ve
 dikkat edilecek tuzak var. Görevler sıralı: **Bölüm 1 bitmeden Bölüm 3'e geçme.**
 
 ---
 
-## Durum — 15 Eylül 2026
+## Durum — 16 Eylül 2026
 
-**Bitti: T1–T8** (Bölüm 1 ve Bölüm 2 tamamı) ve **Bölüm 6'nın tamamı** — kişisel dil gelişim
-planı katmanı, `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md` doğrultusunda. `npm run check` temiz,
-123 test.
+**Bitti: T1–T8** (Bölüm 1 ve Bölüm 2 tamamı) ve **Bölüm 6** — kişisel dil gelişim planı.
+16 Eylül'de plan katmanı sadeleştirildi (Bölüm 6, "Sadeleştirme"). `npm run check` temiz,
+131 test.
 
-**İki yeni migration deploy'dan önce `npx supabase db push` gerektiriyor:**
-`202609150010_task_identity.sql` ve `202609150011_learning_plan.sql`. Yoksa gündem, plan ve
-aktarım ekranları hata verir. Canlı migration geçmişi elle uygulanmış kayıtlar yüzünden
-senkron değil — push öncesi kontrol edin.
+Migration geçmişi canlıyla senkron; `202609160012_one_plan.sql` dahil hepsi `db push` ile
+uygulanır.
 
 - T3 migration'ı (`202609140009_action_period.sql`) hâlâ gerekli.
 - Bir sapma (T1): "ESCALATION mevcut boyut sayısına göre indekslensin" maddesi gözlenen boyut
@@ -393,7 +391,7 @@ Satış konuşmasının tamamı bu cümle.
 
 ---
 
-## Bölüm 6 — Kişisel dil gelişim planı · **bitti, 15 Eylül 2026**
+## Bölüm 6 — Kişisel dil gelişim planı · **bitti, 15 Eylül · sadeleştirildi 16 Eylül 2026**
 
 Kaynak: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`. Aşağıdakiler uygulandı.
 
@@ -402,33 +400,43 @@ Kaynak: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`. Aşağıdakiler uygulandı.
 | Bulgu | Ne yapıldı |
 |---|---|
 | P1 · Soru ekranı farklı soruya cevap veriyordu | `questions.ts` artık çapa sözcük eşleşmesi kullanıyor. "Bu hafta kaç deneme yapıldı?" hiçbir soruya eşleşmiyor. `tests/questions.test.ts` |
-| P1 · İki öneri tek düğmeyle kapanıyordu | `actions.task_key` + `(student_id, period_end, task_key)` tekil indeksi. Her görevin kendi düğmesi, kendi satırı. |
-| P1 · "Aksiyon" sayacı görev değil öğrenci sayıyordu | `studentsWithAction`, `tasks`, `tasksDone` ayrı metrikler. İlerleme çubuğu görev sayıyor. |
-| P1 · Yeniden hesaplama eski tamamlanmayı taşıyordu | `task_key` görev metninden türetiliyor; öneri değişince anahtar değişiyor, görev yeniden açılıyor. |
+| P1 · İki öneri tek düğmeyle kapanıyordu | Öneriler artık plana tek tek görev olarak giriyor; her görevin kendi durumu var. (İlk çözüm `actions.task_key` idi; sadeleştirmede plan görevlerine taşındı, `actions` geçmiş kayıt olarak duruyor.) |
+| P1 · "Aksiyon" sayacı görev değil öğrenci sayıyordu | `studentsWithAction`, `withPlan`, `tasks`, `tasksDone` ayrı metrikler. İlerleme çubuğu açık planlardaki görevleri sayıyor. |
+| P1 · Yeniden hesaplama eski tamamlanmayı taşıyordu | Öneri anahtarı görev metninden türetiliyor; öneri değişince yeni öneri olarak görünüyor. Tamamlanma plandaki görevde duruyor, öneriye taşınmıyor. |
 | P1 · Aktarımda hata sayısı atlanan satır gibi kaydediliyordu | `import_batches.rejected_count` ve `issue_count` ayrıldı. Eski satırlar "—" gösteriyor; geçmişe dönük tahmin yapılmıyor. |
 | P1 · Yeni ölçüm eski kanıtı eziyordu | `measurement_revisions` tablosu + `student_measurements` üzerinde trigger. Güncel değer yerinde kalıyor, önceki değer saklanıyor. |
-| P1 · Risk düşüşü "iyileşme" sayılıyordu | Gündem paneli "Risk skoru düşen öğrenciler" oldu; öğrenci kartındaki **Gelişim** sekmesi risk / görev / beceri değişimini üç ayrı blokta gösteriyor. |
+| P1 · Risk düşüşü "iyileşme" sayılıyordu | Gündem paneli "Risk skoru düşen öğrenciler" oldu. Risk **Durum** sekmesinde, yapılan iş **Plan** sekmesinde, beceri değişimi **Ölçümler → Ne değişti**'de — üç ayrı yerde. |
 | P1 · "Konuşma pratiği yetersiz" kesin nedeni | Hem `agenda.ts` bulgusu hem soru cevabı, farkın ölçüldüğünü ama nedenin ölçülmediğini söylüyor. |
 | P2 · Skoru olmayan öğrenci toplamdan düşüyordu | `registered` / `awaitingScore` ayrı; gündem girişinde yazıyor. |
 | P2 · Tek şubede `-Infinity` | Karşılaştırma grubu yoksa cümle gösterilmiyor. |
-| P2 · Eşzamanlı aksiyon mükerrer kayıt | Tekil indeks + `23505` çakışmasında güncellemeye düşme. |
+| P2 · Eşzamanlı aksiyon mükerrer kayıt | `plans_one_open` ve `plan_tasks_once` tekil indeksleri; kontenjan satır kilidiyle. |
 | P2 · Aktarım yarıda kalınca sessiz kısmi kayıt | `writeRoster` dört aşamaya bölündü; duran aşama ve yazılanlar ekranda. Aşamalar idempotent, aynı dosya tekrar yüklenince kaldığı yerden tamamlanıyor. |
 
-### Yeni katman
+### Sadeleştirme — 16 Eylül 2026
 
-- **Şema** (`202609150011_learning_plan.sql`): `learning_objectives`, `skill_assessments`,
-  `skill_assessment_scores`, `learning_resources`, `support_sessions`,
-  `session_participations`, `study_plans`, `study_tasks`, `task_events`,
-  `student_availability`, `students.report_audience`. Hepsinde RLS ve sütun bazlı `grant`.
-- **Kod**: `lib/rubric.ts` (istemciye açık sözlük), `lib/learning.ts`, `lib/plan.ts`,
-  `lib/catalog-seed.ts`, `lib/membership.ts`.
-- **Ekranlar**: `/workspace/plans` (onay kuyruğu), `/workspace/plans/[id]`,
-  `/workspace/catalog`, `/workspace/week/[id]`, öğrenci kartında beş sekme,
-  `/workspace/students/[id]/report`.
-- **Kurallar kodda**: ölçülmeyen ölçüt boş kalır (sıfır sayılmaz); tek ölçümden kesin
-  eksiklik çıkarılmaz, ikinci ölçüm planlanır; farklı ölçüt sürümündeki puanlar
-  karşılaştırılmaz; plan bütçeye sığar; rezervasyon yalnızca onayda ve kapasite varsa
-  yapılır; onaylı plan yerinde değiştirilmez, sürümlenir.
+İlk sürüm (15 Eylül) iki ayrı "ne yapmalı" yolu kurmuştu: gündemdeki aksiyonlar ve haftalık
+plan; etrafında taslak, onay kuyruğu, sürüm, beş görev durumu, dört katılım durumu, ayrı
+alt beceri kataloğu vardı. Canlıda 28 taslak üretildi ve 28'i de aynıydı — "dört beceriyi
+ölç" — çünkü kimse ölçülmemişti. Akış ters kurulmuştu.
+
+Şimdi tek yol: **ölç → plan → yap → kontrol ölçümü.** Kavramlar README'de tablo olarak.
+
+- **Şema** (`202609160012_one_plan.sql`): `plans` (her öğrenciye en fazla bir açık plan),
+  `plan_tasks` (yapılacak / yapıldı / takıldı), `plan_events` (tetikleyiciyle, salt okunur),
+  `library_items` (çalışma + etkinlik), `library_bookings` (satır = ayrılmış yer, kilitli
+  kontenjan). `open_plan` ve `add_plan_task` tek işlemde yazar. Kaldırılanlar:
+  `study_plans`, `study_tasks`, `task_events`, `learning_resources`, `support_sessions`,
+  `session_participations`, `learning_objectives`, `student_availability`. Örnek katalog
+  kütüphaneye taşındı; 28 test taslağı karar gereği taşınmadı.
+- **Kod**: `lib/plan.ts` (öneri + okuma + yazma), `lib/plan-context.ts`,
+  `lib/assessments.ts`, `lib/library.ts`, `lib/library-seed.ts`, `lib/rubric.ts`.
+- **Ekranlar**: öğrenci kartı **Durum · Plan · Ölçümler**; `/workspace/library`; rapor.
+  Kaldırılanlar: onay kuyruğu, plan detayı, katalog, öğrencinin haftası (Plan sekmesinin
+  yazdırma görünümü oldu), gündemdeki görev başına "Yapıldı" düğmeleri.
+- **Kurallar kodda ve veritabanında**: öneri kaydedilmez, eklemek onaydır · ölçüm yoksa tek
+  "önce ölç" görevi · ölçülmeyen ölçüt sıfır sayılmaz · tek ölçüm kesin eksiklik değildir ·
+  farklı ölçüt sürümü karşılaştırılmaz · dolu etkinlik eklenemez · yapılmış görev
+  çıkarılamaz · her değişiklik `plan_events`'te.
 
 ### Bilerek yapılmayanlar
 
@@ -436,10 +444,9 @@ Kaynak: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`. Aşağıdakiler uygulandı.
   Kurumun erişim modeli belli değil; tanımlanmamış bir erişim yolunu şemaya yazmak, ürünün
   sahip olmadığı bir yeteneği iddia etmek olurdu. `students.report_audience` raporun kime
   yazıldığını ayırıyor; yetişkin raporu kendiliğinden veli raporuna dönüşmüyor.
-  `/workspace/week/[id]` personel tarafından açılıyor ve bunu ekranda söylüyor.
-- **ART entegrasyonu.** Doğrulanmış API yok. Katalog kayıtları `is_sample` ile işaretli ve
-  her ekranda öyle görünüyor; hiçbir yerde "ART'a atandı" veya "rezervasyon tamamlandı"
-  yazmıyor.
+  Öğrenciye verilecek liste, Plan sekmesinin yazdırma görünümü.
+- **ART entegrasyonu.** Doğrulanmış API yok. Kütüphane kayıtları `is_sample` ile işaretli ve
+  her ekranda öyle görünüyor; hiçbir yerde "ART'a atandı" yazmıyor.
 - **Ses analizi / otomatik konuşma notlandırma.** MVP için gerekli değil (plan §10).
 
 ### Kuruma sorulacak — Bölüm 5'e eklenenler
@@ -447,7 +454,8 @@ Kaynak: `AMERICAN_LIFE_KISISEL_GELISIM_PLANI.md`. Aşağıdakiler uygulandı.
 6. **Konuşma ve yazma için kurumun kendi değerlendirme ölçütleri neler?** `lib/rubric.ts`
    içindeki `pilot-taslak-v1` bizim taslağımız. Kurumunki geldiğinde `RUBRIC_VERSION`
    artırılır; eski kayıtlar kendi sürümlerini taşıdığı için karşılaştırma bozulmaz.
-7. **Alt beceri kataloğu kurumun öğretim planından hangi kodlarla çıkarılabilir?**
-8. **Guided Practice ve +More takvimi ile kapasiteler nereden alınacak, dışa aktarılabiliyor mu?**
+7. **Kurumun öğretim planındaki alt beceriler bizim ölçütlerimizle örtüşüyor mu?** Ayrı bir alt
+   beceri kataloğu tutulmuyor; ölçütler o işi görüyor.
+8. **Guided Practice ve +More takvimi ile kontenjanlar nereden alınacak, dışa aktarılabiliyor mu?**
 9. **Çocuk/genç programında veli–öğrenci ilişkisi hangi sistemde tutuluyor?** Erişim modeli
    bu cevaba bağlı.

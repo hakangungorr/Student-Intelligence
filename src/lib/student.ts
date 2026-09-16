@@ -2,9 +2,9 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   evidence, headline, steps, needsAction,
-  type DimensionScores, type DimensionDetail, type Evidence
+  type DimensionScores, type DimensionDetail, type Evidence, type Step
 } from "@/lib/narrative";
-import type { PlannedStep, RiskLevel } from "@/lib/agenda";
+import type { RiskLevel } from "@/lib/agenda";
 import { fetchAll } from "@/lib/paginate";
 import { latestPeriod } from "@/lib/scoring";
 import { loadSettings } from "@/lib/settings";
@@ -19,11 +19,10 @@ export type StudentRisk = {
   riskLevel: RiskLevel; score: number; change: number | null;
   dimensions: DimensionScores; detail: DimensionDetail | null;
   reasons: string[]; found: Evidence[]; headline: string;
-  steps: PlannedStep[]; needsAction: boolean;
-  tasks: number; tasksDone: number;
+  steps: Step[]; needsAction: boolean;
 };
 export type StudentCard = {
-  id: string; name: string; branch: string; level: string; teacher: string | null;
+  id: string; name: string; branch: string; branchId: string; level: string; teacher: string | null;
   risk: StudentRisk | null;
   /** The checkpoint this card's verdict comes from, and the institution's
    *  current one. When they differ the student was not scored this time round
@@ -92,14 +91,6 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
     if (r.error) throw new Error("Öğrenci kartı yüklenemedi.");
   if (!student.data) return null;
 
-  // Completion is a fact about one task in one checkpoint, read the same way the
-  // agenda reads it. A row with no task_key predates the split and closes
-  // nothing; see supabase/migrations/202609150010_task_identity.sql.
-  const closed = currentPeriod === null ? { data: [] as { task_key: string | null }[] }
-    : await client.from("actions").select("task_key")
-      .eq("student_id", id).eq("status", "completed").eq("period_end", currentPeriod);
-  const doneKeys = new Set((closed.data ?? []).map(a => a.task_key).filter(Boolean));
-
   const mine = enrollments.data!.find(e => e.student_id === id);
   const level = (mine?.level as string) ?? "—";
   const cohortIds = enrollments.data!.filter(e => e.level === level).map(e => e.student_id as string);
@@ -136,23 +127,20 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
       passMark: settings.passMark
     };
     const found = evidence(source);
-    const plan: PlannedStep[] = steps(now.recommended_action)
-      .map(x => ({ ...x, done: doneKeys.has(x.key) }));
-    const acts = needsAction(now.recommended_action);
     risk = {
       riskLevel: now.risk_level as RiskLevel, score: Number(now.risk_score),
       change: before ? Number(now.risk_score) - Number(before.risk_score) : null,
       dimensions: source.dimensions, detail: source.detail,
       reasons: (now.reasons as string[]) ?? [],
       found, headline: headline(source, found),
-      steps: plan, needsAction: acts,
-      tasks: acts ? plan.length : 0, tasksDone: acts ? plan.filter(x => x.done).length : 0
+      steps: steps(now.recommended_action), needsAction: needsAction(now.recommended_action)
     };
   }
 
   return {
     id, name: student.data.name, level,
     branch: branches.data!.find(b => b.id === student.data!.branch_id)?.name ?? "—",
+    branchId: student.data.branch_id as string,
     teacher: (mine?.teacher_name as string) ?? null,
     risk, snapshotPeriod: (now?.period_end as string) ?? null, currentPeriod,
     exams: ["exam_1", "exam_2", "exam_3", "exam_4"]

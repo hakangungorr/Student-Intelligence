@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent, type HeatRow, type Finding } from "@/lib/agenda";
-import { MarkDone } from "./mark-button";
 import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
 import { Quad } from "./quad";
 
@@ -42,14 +41,14 @@ export default async function Workspace() {
     <h1>{a.urgent
       ? `${a.urgent} öğrenci acil ilgi bekliyor.`
       : "Acil ilgi bekleyen öğrenci yok."}</h1>
-    <p className="intro">{a.studentsWithAction} öğrenci için önerilen <b>{a.tasks} görevin
-      {" "}{a.tasksDone} tanesi</b> tamamlandı
+    <p className="intro">Aksiyon önerilen {a.studentsWithAction} öğrencinin <b>{a.withPlan} tanesinin
+      açık planı var</b>{a.tasks > 0 && <>; planlardaki {a.tasks} görevin {a.tasksDone} tanesi yapıldı</>}
       {a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
       {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.
       {a.awaitingScore > 0 && <> Kayıtlı {a.registered} öğrencinin {a.awaitingScore} tanesi
         bu kesitte puanlanmadı; veri bekledikleri için listede yoklar.</>}</p>
     {a.tasks > 0 && <div className="progress" role="img"
-      aria-label={`${a.tasks} görevin ${a.tasksDone} tanesi tamamlandı`}>
+      aria-label={`${a.tasks} görevin ${a.tasksDone} tanesi yapıldı`}>
       <i style={{ width: `${Math.round(a.tasksDone / a.tasks * 100)}%` }} /></div>}
 
     <div className="metrics kpis">
@@ -63,20 +62,16 @@ export default async function Workspace() {
     </div>
 
     <section className="panel">
-      <div className="panel-heading"><h2>Plan döngüsü</h2>
-        <span className="note">{shortDate(a.weekStart)} haftası</span></div>
+      <div className="panel-heading"><h2>Planlar</h2>
+        <span className="note">Bugün bakılması gerekenler</span></div>
       <div className="cycle">
-        <Cycle n={a.planMissing} label="Plan hazırlanmadı"
-          note="aksiyon önerilen ama bu hafta planı olmayan öğrenci" href="/workspace/plans" />
-        <Cycle n={a.planPending} label="Onay bekliyor"
-          note="taslak hazır, eğitmen incelemedi" href="/workspace/plans" />
-        <Cycle n={a.helpWanted} label="Yardım istendi"
-          note="öğrenci bir görevde takıldı" href="/workspace/plans" />
-        <Cycle n={a.reassessDue} label="Yeniden değerlendirme bekliyor"
-          note="plan onaylı, aynı ölçütle yeni ölçüm yapılmadı" href="/workspace/plans" />
+        <Cycle n={a.planMissing} label="Planı yok" href="/workspace/ask?s=plan"
+          note="aksiyon önerildi, kimse plan açmadı" />
+        <Cycle n={a.stuck} label="Takılan var" href="/workspace/students"
+          note="bir görevde takılan öğrenci" />
+        <Cycle n={a.checkOverdue} label="Kontrol tarihi geçti" href="/workspace/ask?s=yeniden"
+          note="plan açık, kontrol ölçümü bekleniyor" />
       </div>
-      <p className="pad-note note">Bu dört sayı gündemdeki risk sıralamasının yerine geçmez;
-        yanına, o öğrenci için başlatılan çalışmanın nerede durduğunu koyar.</p>
     </section>
 
     <section className="panel">
@@ -159,7 +154,8 @@ function Note({ finding, index }: { finding: Finding; index: number }) {
 }
 
 function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
-  return <article className={`srow${s.done ? " is-done" : ""}`}>
+  const whos = [...new Set(s.steps.map(x => x.who).filter(Boolean))];
+  return <article className="srow">
     <div className="srow-hd">
       <span className="srank">{String(rank).padStart(2, "0")}</span>
       <Link href={`/workspace/students/${s.id}`}>{s.name}</Link>
@@ -171,19 +167,17 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
     <ul className="facts">{s.found.slice(0, 2).map(f =>
       <li key={f.dim} className={band(f.score)}>{f.text}</li>)}</ul>
     <div className="todo">
-      <div className="todo-hd">NE YAPMALI{s.tasks > 0 && <span> · {s.tasksDone}/{s.tasks}</span>}</div>
-      <p className="plan-line">{s.plan.state === "none"
-        ? <Link href="/workspace/plans">Haftalık plan hazırlanmadı →</Link>
-        : <Link href={`/workspace/plans/${s.plan.id}`}>
-          {s.plan.state === "draft" ? "Taslak planı incele" : "Haftalık planı aç"}
-          {" "}({s.plan.done}/{s.plan.tasks} görev
-          {s.plan.blocked > 0 && <>, {s.plan.blocked} yardım isteği</>}
-          {s.plan.reassessPending && <>, yeniden değerlendirme bekliyor</>}) →</Link>}</p>
-      <ul className="tasks">{s.steps.map(x => <li key={x.key} className={x.done ? "task is-closed" : "task"}>
-        <span className="ck">{x.done ? "✓" : "→"}</span>
-        <span className="tk">{x.text}{x.who && <small>{x.who}</small>}</span>
-        {s.needsAction && <MarkDone studentId={s.id} taskKey={x.key} title={x.text} done={x.done} />}
-      </li>)}</ul>
+      <div className="todo-hd">NE YAPMALI</div>
+      <ul>{s.steps.map(x => <li key={x.key}><span className="ck">→</span><span>{x.text}</span></li>)}</ul>
+      {whos.length > 0 && <p className="who">Kim: <b>{whos.join(" · ")}</b></p>}
+      {/* The recommendation is a suggestion. Whether anybody acted on it is the
+          plan's answer, and there is exactly one place to act: the Plan tab. */}
+      {s.needsAction && <p className="plan-line">{s.plan
+        ? <Link href={`/workspace/students/${s.id}?g=plan`}>
+          Açık plan · {s.plan.done}/{s.plan.tasks} görev yapıldı
+          {s.plan.stuck > 0 && <> · <span className="crit-ink">{s.plan.stuck} takıldı</span></>}
+          {s.plan.overdue && <> · <span className="crit-ink">kontrol tarihi geçti</span></>} →</Link>
+        : <Link className="markbtn" href={`/workspace/students/${s.id}?g=plan`}>Plan aç →</Link>}</p>}
     </div>
   </article>;
 }

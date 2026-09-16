@@ -175,17 +175,6 @@ table.sheet tbody tr:nth-child(even){background:color-mix(in srgb, var(--soft) 4
 .mark{margin-top:14px}
 .markbtn,.undo{font-size:13px;padding:8px 14px}
 .undo{background:var(--soft);color:var(--muted)}
-/* Her görev kendi satırı, kendi düğmesi: bir görevi kapatmak diğerini kapatmaz. */
-.todo li.task{align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px 10px}
-.tk{flex:1 1 16ch;display:flex;flex-direction:column}
-.tk small{color:var(--muted);font-size:12px}
-.task .mark{margin:0}
-.task.is-closed .tk{color:var(--muted);text-decoration:line-through}
-.task.is-closed .tk small{text-decoration:none}
-.task.is-closed .ck{color:rgb(var(--good-rgb))}
-.todo-hd span{color:var(--ink)}
-.srow.is-done{opacity:.62}
-.srow.is-done .todo{background:transparent;border:1px dashed var(--line)}
 .findings{display:flex;flex-direction:column}
 .finding{display:flex;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line)}
 .finding:last-child{border:0}
@@ -252,19 +241,25 @@ td .quad{margin:0 0 6px}
 td .note.gap{margin:0;white-space:normal;max-width:34ch}
 
 
-/* Beceri profili, plan ve rapor --------------------------------------------- */
+/* Öğrenci kartı: Durum · Plan · Ölçümler ------------------------------------ */
 /* Sekmeler bağlantıdır: her biri kendi sunucu sorgusu, geri tuşu çalışır. */
 .tabs{display:flex;flex-wrap:wrap;gap:8px}
 .tab{display:inline-block;padding:9px 14px;border:1px solid var(--line);border-radius:999px;
   background:var(--surface);color:var(--ink);text-decoration:none;font-size:14px}
 .tab.on{background:var(--navy);border-color:var(--navy);color:var(--surface);font-weight:600}
 @media(prefers-color-scheme:dark){.tab.on{color:#0f131a}}
-
+.sub-hd{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;margin:0 0 8px}
+.plain-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.plain-list small,.skill-block table th small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .skill-block{margin-top:22px}
-.skill-block h3{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;margin:0 0 8px}
-.skill-block table th small,.crit-list small{display:block;font-weight:400;color:var(--muted);font-size:12px}
-.crit-group h3{font-family:"Familjen Grotesk",Arial,sans-serif;font-size:16px;margin:0 0 8px}
-.crit-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.good-ink{color:rgb(var(--good-rgb))}
+.callout{padding:14px 16px;border-radius:10px;background:var(--soft);border-left:3px solid var(--navy);
+  font-size:14px;margin:6px 0 16px}
+.inline-fields{display:flex;flex-wrap:wrap;gap:14px}
+.inline-fields label{flex:1 1 180px}
+.quiet{background:transparent;color:var(--muted);border-color:transparent}
+
+/* Ölçüm formu */
 .crit-inputs{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;
   flex-direction:column;gap:12px}
 .crit-inputs legend{font-size:13px;color:var(--muted);padding:0 6px}
@@ -272,46 +267,58 @@ td .note.gap{margin:0;white-space:normal;max-width:34ch}
 .crit-input small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .crit-input input{width:88px;padding:8px;border:1px solid var(--line);border-radius:8px;
   background:var(--surface);color:var(--ink)}
-.good-ink{color:rgb(var(--good-rgb))}
 
-.cycle{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+/* Plan: tek liste, üç durum */
+.plan-stats{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;margin:4px 0 14px}
+.plan-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.ptask{padding:14px 0;border-top:1px solid var(--line)}
+.ptask-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.ptask .note,.ptask .why{margin:4px 0 0}
+.why{font-size:13px;color:var(--muted)}
+.ptask.is-done .ptask-hd b{color:var(--muted);text-decoration:line-through}
+.task-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.task-actions button{font-size:13px;padding:7px 12px}
+.stuck-form{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 100%}
+.stuck-form input{flex:1 1 220px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--ink)}
+.sugg-list{display:flex;flex-direction:column;margin-bottom:12px}
+.sugg{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;
+  border-top:1px solid var(--line)}
+.sugg-body,.pick span{display:flex;flex-direction:column;min-width:0}
+.sugg-body small,.pick small{color:var(--muted);font-size:12px}
+.pick-list{border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;
+  flex-direction:column;gap:12px}
+.pick-list legend{font-weight:600;padding:0 6px}
+.pick{display:flex;gap:10px;align-items:flex-start;font-weight:400}
+.pick input{margin-top:4px}
+.pick.is-off{opacity:.55}
+.history{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.history .note{margin-right:8px}
+.plan-line{margin:10px 0 0;font-size:13px}
+.plan-line .markbtn{display:inline-block;text-decoration:none;border:1px solid var(--line);
+  border-radius:8px;background:var(--surface)}
+
+/* Gündem: planlar */
+.cycle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .cycle-cell{padding:20px;border-right:1px solid var(--line);text-decoration:none;color:var(--ink);
   display:flex;flex-direction:column;gap:2px}
 .cycle-cell:last-child{border-right:0}
 .cycle-cell strong{font:600 30px "Familjen Grotesk",Arial,sans-serif;color:var(--navy)}
-.plan-line{margin:0 0 10px;font-size:13px}
-@media(max-width:700px){.cycle{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .cycle-cell{border-bottom:1px solid var(--line)}}
-.plan-queue,.plan-tasks{display:flex;flex-direction:column}
-.plan-row,.plan-task{padding:18px 20px;border-bottom:1px solid var(--line)}
-.plan-row:last-child,.plan-task:last-child{border:0}
-.plan-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
-.plan-hd a{font-weight:600}
-.plan-task.is-closed{opacity:.55}
-.task-meta{display:grid;grid-template-columns:minmax(0,14ch) 1fr;gap:4px 14px;margin:10px 0 0;
-  font-size:14px}
-.task-meta dt{color:var(--muted);font-size:13px}
-.task-meta dd{margin:0}
-.task-meta dd small{display:block;color:var(--muted);font-size:12px}
-.task-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.task-actions button{font-size:13px;padding:7px 12px}
-.needs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.needs li{display:flex;gap:12px;align-items:flex-start}
-.needs small{display:block;color:var(--muted);font-size:13px}
-.inline-form{gap:10px}
-.inline-form input{max-width:200px}
+@media(max-width:700px){.cycle{grid-template-columns:1fr}
+  .cycle-cell{border-right:0;border-bottom:1px solid var(--line)}}
 
-.week{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.week-card{border:1px solid var(--line);border-radius:13px;background:var(--surface);padding:20px}
-.week-card.is-today{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy) inset}
-.week-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
-.week-card h2{font-size:17px}
-.week-why{font-size:14px;color:var(--muted);margin:10px 0}
+/* Kütüphane */
+.segmented{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:flex-start}
+.segmented button{border:0;border-radius:0}
+.segmented button.on{background:var(--navy);color:var(--surface)}
+.row-actions{display:inline-flex;flex-wrap:wrap;gap:6px}
+.row-actions button{font-size:12px;padding:5px 10px}
+.inline-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+
+/* Rapor ve yazdırma */
 .report h2{font-size:17px;margin:26px 0 8px}
-.report-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.report-list small{display:block;color:var(--muted);font-size:13px}
 @media print{
-  .sidebar,.topbar,.no-print,.backlink{display:none!important}
+  .sidebar,.topbar,.no-print,.backlink,.tabs{display:none!important}
   .workspace{margin:0}.content{padding:0}
   .panel{border:0;box-shadow:none}
 }

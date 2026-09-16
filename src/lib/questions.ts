@@ -16,8 +16,8 @@ export const QUESTIONS = [
   { key: "kur", q: "En sorunlu kur hangisi?" },
   { key: "birlikte", q: "Hem devamsızlığı artan hem notu düşen kimler var?" },
   { key: "konusma", q: "Hangi şubede konuşma zayıf?" },
-  { key: "plan", q: "Kimin haftalık planı onay bekliyor?" },
-  { key: "yeniden", q: "Kimler yeniden değerlendirilmeli?" }
+  { key: "plan", q: "Kimlerin planı yok?" },
+  { key: "yeniden", q: "Kimlerin kontrol ölçümü gecikti?" }
 ] as const;
 export type QuestionKey = (typeof QUESTIONS)[number]["key"];
 
@@ -41,16 +41,16 @@ const ANCHORS: Record<QuestionKey, string[]> = {
   kur: ["hangi kur", "kurda", "kurun", "kur hangisi", "sorunlu kur", "seviye"],
   birlikte: ["devamsız", "devamı düşen", "hem devam"],
   konusma: ["konuşma", "speaking"],
-  plan: ["plan", "taslak", "onay bekle"],
-  yeniden: ["yeniden değerlendir", "yeniden ölç", "tekrar ölç", "yeniden ölçüm"]
+  plan: ["planı yok", "plan yok", "planı olmayan", "plansız"],
+  yeniden: ["kontrol ölçüm", "gecik", "yeniden ölç", "tekrar ölç", "yeniden değerlendir"]
 };
 const SUPPORT: Record<QuestionKey, string[]> = {
   oncelik: ["hafta", "kim", "öğrenci", "liste"],
   kur: ["sorunlu", "problem", "kötü", "zayıf", "b1", "b2", "a2"],
   birlikte: ["not", "düşen", "artan", "hem", "birlikte"],
   konusma: ["şube", "beceri", "zayıf", "pratik"],
-  plan: ["onay", "kim", "bekliyor", "haftalık"],
-  yeniden: ["ölçüt", "beceri", "kim", "gerek"]
+  plan: ["kim", "öğrenci", "aksiyon"],
+  yeniden: ["ölçüm", "kim", "tarih"]
 };
 
 /** Free text is matched by counting known words, never by guessing. A question
@@ -84,47 +84,48 @@ export async function answer(client: SupabaseClient, key: QuestionKey): Promise<
   return weakestSpeaking(client, agenda);
 }
 
-/** Onay bekleyen taslaklar — risk sırasına göre değil, karar sırasına göre. */
+/** Risk değerlendirmesi bir şey önerdiği hâlde kimse plan açmamış öğrenciler. */
 function planQueue(a: Agenda): Answer {
-  const waiting = a.students.filter(s => s.plan.state === "draft");
-  if (!waiting.length) return {
-    lead: a.planMissing
-      ? `Onay bekleyen taslak yok. Aksiyon önerilen **${a.planMissing} öğrenci** için ise henüz `
-        + "plan hazırlanmamış."
-      : "Onay bekleyen taslak yok.",
-    rows: [], source: `Kaynak: ${a.weekStart} haftasının çalışma planları`
+  const missing = a.students.filter(s => s.needsAction && !s.plan);
+  if (!missing.length) return {
+    lead: a.studentsWithAction
+      ? `Aksiyon önerilen **${a.studentsWithAction} öğrencinin** hepsinin açık bir planı var.`
+      : "Aksiyon önerilen öğrenci yok.",
+    rows: [], source: "Kaynak: açık planlar ve güncel risk değerlendirmesi"
   };
   return {
-    lead: `**${waiting.length} taslak** onay bekliyor. Taslak, öğretmen onaylayana kadar `
-      + "öğrenciye gösterilmez ve hiçbir oturumda yer ayırmaz.",
-    rows: waiting.map(s => ({
-      label: s.name, sub: `${s.branch} · ${s.level} — ${s.plan.tasks} görev`,
-      right: "Taslak", tone: "warn", href: `/workspace/plans/${s.plan.id}`
+    lead: `**${missing.length} öğrenci** için risk değerlendirmesi bir şey öneriyor ama açık planları `
+      + "yok. Öğrenci kartındaki Plan sekmesinden tek adımda açılır.",
+    rows: missing.map(s => ({
+      label: s.name, sub: `${s.branch} · ${s.level} — ${s.headline}`,
+      right: STATE[s.level_].word, tone: STATE[s.level_].cls,
+      href: `/workspace/students/${s.id}?g=plan`
     })),
-    source: `Kaynak: ${a.weekStart} haftasının onaylanmamış planları`
+    source: "Kaynak: aksiyon önerilen ve açık planı olmayan öğrenciler, en acilden başlayarak"
   };
 }
 
-/** Planı onaylanmış ama aynı ölçütle yeniden ölçülmemiş öğrenciler.
+/** Kontrol tarihi geçmiş ve kontrol ölçümü yapılmamış planlar.
  *
  *  The question the pilot is measured on: work without a second measurement
  *  produces activity and no evidence, and this is the list of students where
  *  that is currently true. */
 function reassessmentDue(a: Agenda): Answer {
-  const due = a.students.filter(s => s.plan.reassessPending);
+  const due = a.students.filter(s => s.plan?.overdue && s.plan.checkPending);
   if (!due.length) return {
-    lead: "Yeniden değerlendirme bekleyen öğrenci yok.", rows: [],
-    source: `Kaynak: ${a.weekStart} haftasının onaylı planları`
+    lead: "Kontrol tarihi geçmiş ve ölçümü yapılmamış plan yok.", rows: [],
+    source: "Kaynak: açık planların kontrol tarihleri"
   };
   return {
-    lead: `**${due.length} öğrencinin** planı onaylı ama aynı ölçütle yeni bir ölçüm yapılmamış. `
-      + "Görevlerin tamamlanmış olması gelişme kanıtı değildir; ölçüm yapılmadan bu öğrenciler "
-      + "için gelişim raporunda bir iddia yer almaz.",
+    lead: `**${due.length} öğrencinin** planında kontrol tarihi geçti ama kontrol ölçümü yapılmadı. `
+      + "Görevlerin yapılmış olması gelişme kanıtı değildir; ölçüm olmadan raporda bir gelişim "
+      + "iddiası yer almaz.",
     rows: due.map(s => ({
-      label: s.name, sub: `${s.branch} · ${s.level} — ${s.plan.done}/${s.plan.tasks} görev tamamlandı`,
-      right: "Ölçüm bekliyor", tone: "warn", href: `/workspace/students/${s.id}?g=beceri`
+      label: s.name,
+      sub: `${s.branch} · ${s.level} — kontrol ${s.plan!.checkOn}, ${s.plan!.done}/${s.plan!.tasks} görev yapıldı`,
+      right: "Ölçüm bekliyor", tone: "warn", href: `/workspace/students/${s.id}?g=olcum`
     })),
-    source: "Kaynak: onaylı planlardaki yeniden değerlendirme görevleri"
+    source: "Kaynak: kontrol tarihi bugünden önce olan açık planlar"
   };
 }
 

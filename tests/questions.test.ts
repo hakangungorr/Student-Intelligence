@@ -7,8 +7,9 @@ describe("soru eşleştirme", () => {
     expect(match("En sorunlu kur hangisi?")).toBe("kur");
     expect(match("Hem devamsızlığı artan hem notu düşen kimler var?")).toBe("birlikte");
     expect(match("Hangi şubede konuşma zayıf?")).toBe("konusma");
-    expect(match("Kimin haftalık planı onay bekliyor?")).toBe("plan");
-    expect(match("Kimler yeniden değerlendirilmeli?")).toBe("yeniden");
+    expect(match("Hangi öğrencilerin planı yok?")).toBe("plan");
+    expect(match("Kimlerin kontrol ölçümü gecikti?")).toBe("yeniden");
+    expect(match("Kimler yeniden ölçülmeli?")).toBe("yeniden");
   });
 
   // The regression this whole matcher was rewritten for: the question hit

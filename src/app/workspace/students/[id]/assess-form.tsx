@@ -7,16 +7,14 @@ import {
 
 const idle: AssessState = { status: "idle" };
 
-export function AssessForm({ studentId, today, objectives }: {
-  studentId: string; today: string;
-  objectives: { id: string; skill: string; label: string }[];
+export function AssessForm({ studentId, today, open }: {
+  studentId: string; today: string; open: boolean;
 }) {
   const [state, submit, saving] = useActionState(assess, idle);
   const [skill, setSkill] = useState<Skill>("speaking");
-  const mine = objectives.filter(o => o.skill === skill);
 
-  return <details className="panel pad" open={state.status === "error"}>
-    <summary><b>Değerlendirme gir</b> <span className="note">— bir görevde gözlediğinizi
+  return <details className="panel pad" open={open || state.status === "error"}>
+    <summary><b>Ölçüm gir</b> <span className="note">— bir görevde gözlediğinizi
       tarihiyle kaydedin</span></summary>
     <form action={submit} className="form-stack">
       <input type="hidden" name="studentId" value={studentId} />
@@ -35,11 +33,6 @@ export function AssessForm({ studentId, today, objectives }: {
 
       <label>Tarih<input type="date" name="assessedOn" required defaultValue={today} max={today} /></label>
 
-      {mine.length > 0 && <label>Alt beceri <span className="note">isteğe bağlı</span>
-        <select name="objectiveId" defaultValue="">
-          <option value="">Seçilmedi</option>
-          {mine.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}</select></label>}
-
       <fieldset className="crit-inputs">
         <legend>Ölçütler <span className="note">0–{RUBRIC_SCALE} · {RUBRIC_VERSION} ·
           ölçmediğinizi boş bırakın</span></legend>
@@ -54,9 +47,9 @@ export function AssessForm({ studentId, today, objectives }: {
         <textarea name="note" rows={2} maxLength={2000} /></label>
 
       <button type="submit" className="primary" disabled={saving}>
-        {saving ? "Kaydediliyor…" : "Değerlendirmeyi kaydet"}</button>
-      <p className="note">Kaydedilen değerlendirme sonradan düzeltilmez. Yanlış girilen bir
-        puan, yeni bir değerlendirmeyle düzeltilir — kâğıt üzerinde de böyle olurdu.</p>
+        {saving ? "Kaydediliyor…" : "Ölçümü kaydet"}</button>
+      <p className="note">Kaydedilen ölçüm sonradan düzeltilmez. Yanlış girilen bir puan, yeni
+        bir ölçümle düzeltilir — kâğıt üzerinde de böyle olurdu.</p>
     </form>
   </details>;
 }

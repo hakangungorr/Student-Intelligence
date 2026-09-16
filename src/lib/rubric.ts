@@ -1,19 +1,18 @@
-/** Alt beceriler, ölçütler ve plan sözlüğü.
+/** Ölçütler ve planın sözlüğü.
  *
  *  A speaking score of 22 does not say what to practise. What does is the level
  *  underneath it: how fluent, how intelligible, how well the target structure
  *  was used — judged on a named task, on a date, against criteria somebody wrote
- *  down. That is what this module names.
+ *  down. The criteria here are those sub-skills; there is no second catalogue of
+ *  them to keep in step.
  *
- *  These criteria are **our draft**, not American LIFE's curriculum. The version
- *  string says so and travels with every stored result, so the day the
- *  institution hands over its own rubric the old results keep their own wording
- *  instead of being silently re-labelled — and a score on one version is never
- *  compared with a score on another.
+ *  They are **our draft**, not American LIFE's curriculum. The version string
+ *  says so and travels with every stored result, so the day the institution
+ *  hands over its own rubric the old results keep their own wording, and a
+ *  score on one version is never compared with a score on another.
  *
- *  Deliberately free of server imports, the same way lib/roles.ts is: the plan
- *  and assessment forms are client components and need the same vocabulary the
- *  server validates against.
+ *  Deliberately free of server imports, the same way lib/roles.ts is: forms are
+ *  client components and need the same vocabulary the server validates against.
  */
 export const SKILLS = ["speaking", "writing", "listening", "reading"] as const;
 export type Skill = (typeof SKILLS)[number];
@@ -23,15 +22,10 @@ export const SKILL_LABEL: Record<Skill, string> = {
 
 export type Criterion = { code: string; label: string; hint: string };
 
-/** Bumped whenever a criterion is added, removed or reworded.
- *
- *  Not a formality: re-assessment is only meaningful against the same criteria,
- *  so a stored result carries the version it was judged under and the screens
- *  refuse to draw a trend across two of them. */
+/** Bumped whenever a criterion is added, removed or reworded. */
 export const RUBRIC_VERSION = "pilot-taslak-v1";
-/** 0–4, because a teacher can hold four bands in their head between two students
- *  and cannot hold a hundred. The maximum is stored per result anyway — an
- *  institution that grades out of 5 should not have its numbers rescaled. */
+/** 0–4, because a teacher can hold four bands in their head. The maximum is
+ *  stored per result anyway, so an institution grading out of 5 is not rescaled. */
 export const RUBRIC_SCALE = 4;
 
 export const RUBRICS: Record<Skill, Criterion[]> = {
@@ -59,82 +53,59 @@ export const RUBRICS: Record<Skill, Criterion[]> = {
   ]
 };
 
-/** Bir ölçütte "yeterli" sayılan en düşük değer.
- *
- *  Half the scale, and the threshold is a product decision rather than a
- *  pedagogical claim: below it the criterion is worth a week's work, above it
- *  there are better uses of the student's hundred and twenty minutes. */
+/** At or below this a criterion is worth a week's work. Half the scale; a
+ *  product decision, not a pedagogical claim. */
 export const NEEDS_WORK_AT = RUBRIC_SCALE / 2;
 
-export const BAND_LABEL = (score: number, scaleMax: number) => {
+export const bandLabel = (score: number, scaleMax: number) => {
   const share = score / scaleMax;
   return share <= .25 ? "çok zayıf" : share <= .5 ? "geride" : share <= .75 ? "yeterli" : "güçlü";
 };
 
-export const RESOURCE_KINDS = [
-  { key: "art", label: "ART dijital çalışma" },
+/** Kütüphanedeki bir öğenin hangi programa ait olduğu. Etiket, entegrasyon değil. */
+export const PROGRAMS = [
+  { key: "art", label: "ART" },
   { key: "guided_practice", label: "Guided Practice" },
-  { key: "more", label: "+More etkinliği" },
+  { key: "more", label: "+More" },
   { key: "other", label: "Diğer" }
 ] as const;
-export type ResourceKind = (typeof RESOURCE_KINDS)[number]["key"];
-export const resourceKindLabel = (k: string) =>
-  RESOURCE_KINDS.find(x => x.key === k)?.label ?? k;
+export type Program = (typeof PROGRAMS)[number]["key"];
+export const programLabel = (k: string) => PROGRAMS.find(x => x.key === k)?.label ?? k;
 
-export const TASK_OWNERS = [
+export const OWNERS = [
   { key: "student", label: "Öğrenci" },
   { key: "teacher", label: "Eğitmen" },
   { key: "student_relations", label: "Öğrenci ilişkileri" },
   { key: "coordinator", label: "Akademik koordinatör" }
 ] as const;
-export type TaskOwner = (typeof TASK_OWNERS)[number]["key"];
-export const ownerLabel = (k: string) => TASK_OWNERS.find(x => x.key === k)?.label ?? k;
+export type Owner = (typeof OWNERS)[number]["key"];
+export const ownerLabel = (k: string) => OWNERS.find(x => x.key === k)?.label ?? k;
 
-/** Yapmak ile öğrenmek ayrı durumlardır.
- *
- *  "student_done" is the student's claim, "teacher_checked" is somebody having
- *  looked, and neither of them is the re-assessment — that is a separate
- *  measurement with its own row. Collapsing the three is how a report comes to
- *  say a student improved because they ticked six boxes. */
-export const TASK_STATES = [
-  { key: "open", label: "Yapılacak", tone: "" },
-  { key: "student_done", label: "Öğrenci tamamladı", tone: "warn" },
-  { key: "teacher_checked", label: "Eğitmen kontrol etti", tone: "good" },
-  { key: "blocked", label: "Yardım istendi", tone: "crit" },
-  { key: "cancelled", label: "İptal", tone: "" }
+/** Üç durum. "Yapıldı" işin kendisidir, öğrenmenin kanıtı değil — onu yalnızca
+ *  kontrol ölçümü söyler. */
+export const STATUSES = [
+  { key: "todo", label: "Yapılacak", tone: "" },
+  { key: "done", label: "Yapıldı", tone: "good" },
+  { key: "stuck", label: "Takıldı", tone: "crit" }
 ] as const;
-export type TaskState = (typeof TASK_STATES)[number]["key"];
-export const taskStateLabel = (k: string) => TASK_STATES.find(x => x.key === k)?.label ?? k;
-export const taskStateTone = (k: string) => TASK_STATES.find(x => x.key === k)?.tone ?? "";
+export type TaskStatus = (typeof STATUSES)[number]["key"];
+export const statusLabel = (k: string) => STATUSES.find(x => x.key === k)?.label ?? k;
+export const statusTone = (k: string) => STATUSES.find(x => x.key === k)?.tone ?? "";
 
-export const PARTICIPATION_STATES = [
-  { key: "proposed", label: "Önerildi" },
-  { key: "reserved", label: "Yer ayrıldı" },
-  { key: "attended", label: "Katıldı" },
-  { key: "absent", label: "Gelmedi" }
-] as const;
-export type ParticipationState = (typeof PARTICIPATION_STATES)[number]["key"];
-export const participationLabel = (k: string) =>
-  PARTICIPATION_STATES.find(x => x.key === k)?.label ?? k;
+/** work: öğrencinin çalışması · staff: kurumda biri harekete geçer ·
+ *  measure: ölçüm eksik · check: kontrol ölçümü. */
+export type TaskKind = "work" | "staff" | "measure" | "check";
 
-/** Pazartesi'den başlayan hafta. */
-export function weekStartOf(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d));
-  const shift = (date.getUTCDay() + 6) % 7;
-  date.setUTCDate(date.getUTCDate() - shift);
-  return date.toISOString().slice(0, 10);
-}
 export function addDays(iso: string, days: number): string {
   const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d + days));
-  return date.toISOString().slice(0, 10);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
-export const DAY_NAMES = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
-/** Hafta başından kaçıncı gün. Kurumun kaydettiği uygun günleri plana çevirir. */
-export const dayOffsets = (days: string[]): number[] => {
-  const found = days.map(d => DAY_NAMES.indexOf(d)).filter(i => i >= 0).sort((a, b) => a - b);
-  // Nothing recorded, or nothing recognisable: spread over the working week
-  // rather than stacking every task on Monday.
-  return found.length ? found : [0, 1, 2, 3, 4];
-};
+export const todayIso = () => new Date().toISOString().slice(0, 10);
+
+/** "16 Eylül", "Çarşamba 17 Eylül" — tarih ekranda hep aynı biçimde. */
+export function dayText(iso: string, weekday = false) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric", month: "long", ...(weekday ? { weekday: "long" as const } : {})
+  }).format(new Date(y, m - 1, d));
+}
