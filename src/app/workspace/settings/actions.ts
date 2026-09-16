@@ -71,7 +71,7 @@ export async function saveSettings(_prev: SettingsState, data: FormData): Promis
   };
 
   for (const path of ["/workspace", "/workspace/students", "/workspace/ask",
-    "/workspace/import", "/workspace/settings"]) revalidatePath(path);
+    "/workspace/entry", "/workspace/settings"]) revalidatePath(path);
 
   // Nothing to re-score before the first calculation, and saying so is better
   // than reporting zero students as though something had gone wrong.

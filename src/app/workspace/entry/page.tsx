@@ -2,14 +2,44 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { ENTRY_KINDS, SHEET_CAP, fieldsOf, isEntryKind, type EntryKind } from "@/lib/entry";
 import { loadSheet } from "@/lib/entry-read";
+import { currentMembership } from "@/lib/membership";
 import { Sheet } from "./form";
 import { Filters } from "./filters";
+import { ImportPanel } from "../import/panel";
 
-type Query = { tur?: string; sube?: string; kur?: string; tarih?: string; ara?: string; hepsi?: string };
+type Query = {
+  yol?: string; tur?: string; sube?: string; kur?: string; tarih?: string; ara?: string; hepsi?: string;
+};
 
+/** Veri: bir sınıfın notunu elle girmek ya da kurumun dosyasını yüklemek.
+ *
+ *  They were two menu entries that wrote the same numbers, and the first
+ *  question anybody asked was which one to use. The answer is a matter of size —
+ *  a column of marks you type, a term's roster you upload — so they are two tabs
+ *  of one screen. Uploading stays with the roles that may create students; a
+ *  teacher sees only the tab they can use, without a tab bar at all. */
 export default async function Entry({ searchParams }: { searchParams: Promise<Query> }) {
   const q = await searchParams;
   const { client } = await requireUser();
+  const me = await currentMembership(client);
+  const canImport = me?.role === "org_admin" || me?.role === "branch_manager";
+  const upload = canImport && q.yol === "dosya";
+
+  const head = <>
+    <p className="eyebrow">VERİ GİRİŞİ</p>
+    <h1>{upload ? "Dosyadan yükle" : "Elle gir"}</h1>
+    {canImport && <nav className="tabs" aria-label="Veri girişi yolu">
+      <Link className={`tab${upload ? "" : " on"}`} href="/workspace/entry"
+        aria-current={upload ? undefined : "page"}>Elle gir</Link>
+      <Link className={`tab${upload ? " on" : ""}`} href="/workspace/entry?yol=dosya"
+        aria-current={upload ? "page" : undefined}>Dosyadan yükle</Link>
+    </nav>}
+    <p className="note">{upload
+      ? "Dönem başında ya da kurumun kendi sistemindeki listeyi toplu almak için. Yeni öğrencileri de kaydeder."
+      : "Bir sınıfın tek tür verisini — dünkü sınavı, bu haftanın devamını — elle girmek için. Kayıtlı öğrencilere yazar."}</p>
+  </>;
+
+  if (upload) return <>{head}<ImportPanel client={client} canScore={me?.role === "org_admin"} /></>;
 
   const kind: EntryKind = isEntryKind(q.tur ?? "") ? (q.tur as EntryKind) : "exam_1";
   const branch = q.sube || null;
@@ -25,9 +55,9 @@ export default async function Entry({ searchParams }: { searchParams: Promise<Qu
   const keep = new URLSearchParams({ tur: kind, tarih: on, hepsi: "1" });
 
   return <>
-    <p className="eyebrow">VERİ GİRİŞİ</p>
-    <h1>{chosen.label}{!sheet.capped && <> · {sheet.rows.length} öğrenci</>}</h1>
-    <p className="intro">Bir seferde tek tür veri girilir: ne gireceğinizi seçin, listede aşağı
+    {head}
+    <p className="intro"><b>{chosen.label}{!sheet.capped && <> · {sheet.rows.length} öğrenci</>}.</b>
+      {" "}Bir seferde tek tür veri girilir: ne gireceğinizi seçin, listede aşağı
       inin. Enter tuşu bir alt satıra geçer. Boş bıraktığınız hücreye dokunulmaz.
       {" "}Tek bir öğrencinin bütün bilgilerini girecekseniz{" "}
       <Link href="/workspace/students">öğrenci kartı</Link> daha kısa yoldur.</p>

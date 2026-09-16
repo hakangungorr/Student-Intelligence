@@ -144,6 +144,7 @@ export async function commit(_prev: PreviewState, form: FormData): Promise<Previ
   revalidatePath("/workspace");
   revalidatePath("/workspace/students");
   revalidatePath("/workspace/ask");
+  revalidatePath("/workspace/entry");
   return {
     status: "done", filename, result, scored, stopped: result.stopped,
     accepted: parsed.rows.length, rejected, issues: parsed.issues,

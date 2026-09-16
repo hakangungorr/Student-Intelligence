@@ -17,7 +17,7 @@ export default async function NewStudent() {
     <p className="eyebrow">YENİ ÖĞRENCİ</p>
     <h1>Öğrenci kaydı.</h1>
     <p className="intro">Tek öğrenci için form; bir dönemin tamamını taşıyacaksanız{" "}
-      <Link href="/workspace/import">CSV aktarımı</Link> daha hızlıdır. Elinizde varsa sınav,
+      <Link href="/workspace/entry?yol=dosya">dosyadan yükleme</Link> daha hızlıdır. Elinizde varsa sınav,
       devam ve sınıf içi bilgilerini de aynı formda girebilirsiniz; yoksa öğrencinin kartından
       istediğiniz zaman eklersiniz.</p>
     <NewStudentForm branches={branches.data} levels={settings.levels}

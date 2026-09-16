@@ -7,17 +7,12 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   // Offering a link that answers "you may not" is worse than not offering it.
   const me = await client.from("memberships").select("role").limit(1).maybeSingle();
   const isAdmin = me.data?.role === "org_admin";
-  // Importing a roster is an administrator's job — a teacher who follows this
-  // link fills in a form, passes the preview and is refused by the database at
-  // the last step, with the raw policy error as the explanation.
-  const canImport = isAdmin || me.data?.role === "branch_manager";
   const items: NavItem[] = [
     { href: "/workspace", icon: "▦", label: "Öğrenci gündemi" },
     { href: "/workspace/students", icon: "☰", label: "Öğrenci listesi" },
     { href: "/workspace/entry", icon: "✎", label: "Veri girişi" },
     { href: "/workspace/library", icon: "❑", label: "Kütüphane" },
     { href: "/workspace/ask", icon: "✦", label: "Soru sor" },
-    ...(canImport ? [{ href: "/workspace/import", icon: "⇪", label: "Veri aktarımı" }] : []),
     ...(isAdmin ? [
       { href: "/workspace/team", icon: "◍", label: "Ekip ve sınıflar" },
       { href: "/workspace/settings", icon: "⚙", label: "Kurum ayarları" }
