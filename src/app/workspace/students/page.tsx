@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent } from "@/lib/agenda";
 import { AREA, DIMENSIONS, STATE, type Dimension } from "@/lib/narrative";
 import { Quad } from "../quad";
+import { Level } from "../level";
 
 const RISKS: [string, string][] = [["HIGH", "Acil"], ["MEDIUM", "Takipte"], ["LOW", "Düşük risk"]];
 const matches = (v: number | undefined) => v !== undefined && v >= 30;
@@ -69,16 +70,16 @@ export default async function Students({ searchParams }: { searchParams: Promise
           <th>Öğrenci</th><th>Şube</th><th>Kur</th><th>Risk</th>
           <th>Sorun alanları</th><th>En acil sebep</th><th>Önerilen aksiyon</th>
         </tr></thead>
-        <tbody>{rows.map(s => <Row key={s.id} s={s} />)}</tbody>
+        <tbody>{rows.map(s => <Row key={s.id} s={s} levels={a.settings.levels} />)}</tbody>
       </table></div></section>}
   </>;
 }
 
-function Row({ s }: { s: AgendaStudent }) {
-  return <tr>
+function Row({ s, levels }: { s: AgendaStudent; levels: string[] }) {
+  return <tr className={`sev-${STATE[s.level_].cls}`}>
     <th scope="row"><Link href={`/workspace/students/${s.id}`}>{s.name}</Link>
       <small>{s.externalId}</small></th>
-    <td>{s.branch}</td><td>{s.level}</td>
+    <td>{s.branch}</td><td><Level level={s.level} levels={levels} /></td>
     <td><span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span></td>
     <td><Quad dimensions={s.dimensions} /></td>
     <td className="wrap">{s.found[0]?.text ?? "—"}</td>

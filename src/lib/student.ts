@@ -38,6 +38,8 @@ export type StudentCard = {
    *  "kurumun kritik sınırı", and it has to be the one they set. */
   passMark: number;
   attendanceFloor: number;
+  /** The institution's level order, so the card draws the level in its colour. */
+  levels: string[];
   benchmark: { exam: number | null; skill: number | null; cohort: number } | null;
 };
 
@@ -150,7 +152,7 @@ export async function loadStudent(client: SupabaseClient, id: string): Promise<S
       .filter(s => Number.isFinite(s.value)),
     attendanceRate: own.term, attendanceRecent: own.recent,
     satisfaction: student.data.satisfaction_score, passMark: settings.passMark,
-    attendanceFloor: settings.attendanceFloor,
+    attendanceFloor: settings.attendanceFloor, levels: settings.levels,
     benchmark: benchmarks(cohort)
   };
 }

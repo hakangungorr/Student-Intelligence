@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { loadAgenda, type AgendaStudent, type HeatRow, type Finding } from "@/lib/agenda";
 import { AREA, DIMENSIONS, MISSING, STATE, band } from "@/lib/narrative";
 import { Quad } from "./quad";
+import { Level, levelStyle } from "./level";
 
 const PRIORITY = 10;
 
@@ -36,40 +37,61 @@ export default async function Workspace() {
     <p>Erişebildiğiniz şubelerde kayıtlı öğrenci bulunmuyor. Öğrenci verisi aktarıldığında
       gündem burada oluşur.</p></section>;
 
-  return <>
-    <p className="eyebrow">KURUM GENELİ · {a.total} ÖĞRENCİ</p>
-    <h1>{a.urgent
-      ? `${a.urgent} öğrenci acil ilgi bekliyor.`
-      : "Acil ilgi bekleyen öğrenci yok."}</h1>
-    <p className="intro">Aksiyon önerilen {a.studentsWithAction} öğrencinin <b>{a.withPlan} tanesinin
-      açık planı var</b>{a.tasks > 0 && <>; planlardaki {a.tasks} görevin {a.tasksDone} tanesi yapıldı</>}
-      {a.periodEnd && <> · {shortDate(a.periodEnd)} ölçümü</>}
-      {a.comparedTo && <>, {shortDate(a.comparedTo)} ile karşılaştırılıyor</>}.
-      {a.awaitingScore > 0 && <> Kayıtlı {a.registered} öğrencinin {a.awaitingScore} tanesi
-        bu kesitte puanlanmadı; veri bekledikleri için listede yoklar.</>}</p>
-    {a.tasks > 0 && <div className="progress" role="img"
-      aria-label={`${a.tasks} görevin ${a.tasksDone} tanesi yapıldı`}>
-      <i style={{ width: `${Math.round(a.tasksDone / a.tasks * 100)}%` }} /></div>}
+  // Where the urgent students are, level by level, in the order the institution
+  // runs its courses. The one place on the page where the level colours carry a
+  // number rather than a label.
+  const levels = a.settings.levels;
+  const urgentByLevel = [...new Set([...levels, ...a.students.map(s => s.level)])]
+    .map(level => ({ level, n: a.students.filter(s => s.level_ === "HIGH" && s.level === level).length }))
+    .filter(x => x.n > 0);
 
-    <div className="metrics kpis">
-      <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent}
-        when={a.comparedTo} worseIsUp />
-      <Kpi value={a.watched} label="Yakın takipte" was={a.previousWatched}
-        when={a.comparedTo} worseIsUp />
-      <Kpi value={a.enteredUrgent} label="Bu hafta riske girenler" note="geçen hafta acil değildi" />
-      <Kpi value={a.attendanceCritical} label="Devamsızlığı kritik"
-        note={`devam oranı %${a.settings.attendanceFloor} sınırının altında`} />
+  return <>
+    <section className="board">
+      <p className="board-eyebrow">KURUM GENELİ · {a.total} ÖĞRENCİ
+        {a.periodEnd && <> · {shortDate(a.periodEnd)} ÖLÇÜMÜ</>}
+        {a.comparedTo && <> · {shortDate(a.comparedTo)} İLE KARŞILAŞTIRMA</>}</p>
+      <h1>{a.urgent
+        ? <><em>{a.urgent} öğrenci</em> acil ilgi bekliyor.</>
+        : "Acil ilgi bekleyen öğrenci yok."}</h1>
+      {urgentByLevel.length > 0 && <figure className="ribbon-wrap">
+        <div className="ribbon" role="img" aria-label={`Acil öğrenciler kurlara göre: ${
+          urgentByLevel.map(x => `${x.level} ${x.n}`).join(", ")}`}>
+          {urgentByLevel.map(x => <span key={x.level} className="ribbon-seg"
+            style={{ ...levelStyle(x.level, levels), flexGrow: x.n }}>
+            <b>{x.level}</b><span>{x.n}</span></span>)}
+        </div>
+        <figcaption>Acil öğrencilerin kurlara dağılımı</figcaption>
+      </figure>}
+      <div className="board-stats">
+        <Kpi value={a.urgent} label="Acil ilgi bekliyor" was={a.previousUrgent}
+          when={a.comparedTo} worseIsUp />
+        <Kpi value={a.watched} label="Yakın takipte" was={a.previousWatched}
+          when={a.comparedTo} worseIsUp />
+        <Kpi value={a.enteredUrgent} label="Bu hafta riske girenler" note="geçen hafta acil değildi" />
+        <Kpi value={a.attendanceCritical} label="Devamsızlığı kritik"
+          note={`devam oranı %${a.settings.attendanceFloor} sınırının altında`} />
+      </div>
+    </section>
+
+    <div className="plan-progress">
+      <p className="intro">Aksiyon önerilen {a.studentsWithAction} öğrencinin <b>{a.withPlan} tanesinin
+        açık planı var</b>{a.tasks > 0 && <>; planlardaki {a.tasks} görevin {a.tasksDone} tanesi yapıldı</>}.
+        {a.awaitingScore > 0 && <> Kayıtlı {a.registered} öğrencinin {a.awaitingScore} tanesi
+          bu kesitte puanlanmadı; veri bekledikleri için listede yoklar.</>}</p>
+      {a.tasks > 0 && <div className="progress" role="img"
+        aria-label={`${a.tasks} görevin ${a.tasksDone} tanesi yapıldı`}>
+        <i style={{ width: `${Math.round(a.tasksDone / a.tasks * 100)}%` }} /></div>}
     </div>
 
     <section className="panel">
       <div className="panel-heading"><h2>Planlar</h2>
         <span className="note">Bugün bakılması gerekenler</span></div>
       <div className="cycle">
-        <Cycle n={a.planMissing} label="Planı yok" href="/workspace/ask?s=plan"
+        <Cycle n={a.planMissing} tone="warn" label="Planı yok" href="/workspace/ask?s=plan"
           note="aksiyon önerildi, kimse plan açmadı" />
-        <Cycle n={a.stuck} label="Takılan var" href="/workspace/students"
+        <Cycle n={a.stuck} tone="crit" label="Takılan var" href="/workspace/students"
           note="bir görevde takılan öğrenci" />
-        <Cycle n={a.checkOverdue} label="Kontrol tarihi geçti" href="/workspace/ask?s=yeniden"
+        <Cycle n={a.checkOverdue} tone="warn" label="Kontrol tarihi geçti" href="/workspace/ask?s=yeniden"
           note="plan açık, kontrol ölçümü bekleniyor" />
       </div>
     </section>
@@ -84,7 +106,7 @@ export default async function Workspace() {
         <span className="note">Her satırdaki dört hücre bu sırayla. Kırmızı ciddi sorun,
           sarı dikkat gerektiriyor, sorunsuz alan yanmaz.</span>
       </div>
-      {a.students.slice(0, PRIORITY).map((s, i) => <Row key={s.id} s={s} rank={i + 1} />)}
+      {a.students.slice(0, PRIORITY).map((s, i) => <Row key={s.id} s={s} rank={i + 1} levels={levels} />)}
     </section>
 
     {a.findings.length > 0 && <section className="panel">
@@ -119,14 +141,15 @@ export default async function Workspace() {
     </section>
 
     <Heat title="Şube risk haritası" rows={a.byBranch} unit="öğrenci" />
-    <Heat title="Kur risk haritası" rows={a.byLevel} unit="öğrenci" />
+    <Heat title="Kur risk haritası" rows={a.byLevel} unit="öğrenci" levels={levels} />
   </>;
 }
 
-function Cycle({ n, label, note, href }: {
-  n: number; label: string; note: string; href: string;
+/** A zero is good news and is drawn quietly; anything else takes its colour. */
+function Cycle({ n, label, note, href, tone }: {
+  n: number; label: string; note: string; href: string; tone: "warn" | "crit";
 }) {
-  return <Link className="cycle-cell" href={href}>
+  return <Link className={`cycle-cell ${n ? tone : "clear"}`} href={href}>
     <strong>{n}</strong><span>{label}</span><small className="note">{note}</small></Link>;
 }
 
@@ -136,14 +159,14 @@ function Kpi({ value, label, was, when, note, worseIsUp }: {
 }) {
   const delta = was === null || was === undefined ? null : value - was;
   const bad = delta !== null && delta !== 0 && (worseIsUp ? delta > 0 : delta < 0);
-  return <section className="panel metric">
-    <strong>{value}</strong><span>{label}</span>
+  return <div className="stat">
+    <strong>{value}</strong><span className="stat-label">{label}</span>
     {delta !== null && delta !== 0 && <span className={`trend ${bad ? "up" : "down"}`}>
       {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} <em>· {when ? shortDate(when) : "önceki ölçüm"}: {was}</em></span>}
     {delta === 0 && <span className="trend flat">
       değişmedi · {when ? shortDate(when) : "önceki ölçüm"}: {was}</span>}
-    {note && <span className="note">{note}</span>}
-  </section>;
+    {note && <span className="stat-note">{note}</span>}
+  </div>;
 }
 
 function Note({ finding, index }: { finding: Finding; index: number }) {
@@ -153,14 +176,15 @@ function Note({ finding, index }: { finding: Finding; index: number }) {
   </div>;
 }
 
-function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
+function Row({ s, rank, levels }: { s: AgendaStudent; rank: number; levels: string[] }) {
   const whos = [...new Set(s.steps.map(x => x.who).filter(Boolean))];
-  return <article className="srow">
+  return <article className={`srow sev-${STATE[s.level_].cls}`}>
     <div className="srow-hd">
       <span className="srank">{String(rank).padStart(2, "0")}</span>
       <Link href={`/workspace/students/${s.id}`}>{s.name}</Link>
       <span className={`state ${STATE[s.level_].cls}`}><i className="dot" />{STATE[s.level_].word}</span>
-      <span className="note">{s.branch} · {s.level}</span>
+      <Level level={s.level} levels={levels} />
+      <span className="note">{s.branch}</span>
     </div>
     <Quad dimensions={s.dimensions} />
     <p className="srow-head">{s.headline}</p>
@@ -182,7 +206,9 @@ function Row({ s, rank }: { s: AgendaStudent; rank: number }) {
   </article>;
 }
 
-function Heat({ title, rows, unit }: { title: string; rows: HeatRow[]; unit: string }) {
+function Heat({ title, rows, unit, levels }: {
+  title: string; rows: HeatRow[]; unit: string; levels?: string[];
+}) {
   return <section className="panel">
     <div className="panel-heading"><h2>{title}</h2>
       <span className="note">0–100 · yüksek sayı = daha çok sorun</span></div>
@@ -190,7 +216,8 @@ function Heat({ title, rows, unit }: { title: string; rows: HeatRow[]; unit: str
       <thead><tr><th>{title.split(" ")[0]}</th>
         {DIMENSIONS.map(d => <th key={d}>{AREA[d]}</th>)}<th>Acil öğrenci</th></tr></thead>
       <tbody>{rows.map(r => <tr key={r.label}>
-        <th scope="row">{r.label}<small>{r.count} {unit}</small></th>
+        <th scope="row">{levels ? <Level level={r.label} levels={levels} /> : r.label}
+          <small>{r.count} {unit}</small></th>
         {DIMENSIONS.map(d => <td key={d} className={`heat ${band(r.scores[d])}`}
           title={r.scores[d] === undefined ? MISSING[d] : undefined}>
           {r.scores[d] ?? "—"}</td>)}

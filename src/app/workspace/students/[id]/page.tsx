@@ -9,6 +9,7 @@ import { canPlan, currentMembership } from "@/lib/membership";
 import { loadPlanSummaries, type PlanSummary } from "@/lib/plan";
 import { dayText } from "@/lib/rubric";
 import { EntryPanel } from "./entry-panel";
+import { Level } from "../../level";
 import { PlanTab } from "./plan-tab";
 import { MeasureTab } from "./measure-tab";
 
@@ -50,12 +51,12 @@ export default async function Student({ params, searchParams }: {
   return <>
     <Link className="backlink" href="/workspace">← Gündeme dön</Link>
 
-    <section className="panel pad">
+    <section className={`panel pad student-hero${s.risk ? ` sev-${STATE[s.risk.riskLevel].cls}` : ""}`}>
       <div className="card-hd">
         <div>
           <h1 className="dname">{s.name}</h1>
-          <p className="note">{s.branch} şubesi · {s.level} kuru
-            {s.teacher && <> · Eğitmeni {s.teacher}</>}</p>
+          <p className="note hero-meta"><Level level={s.level} levels={s.levels} />
+            <span>{s.branch} şubesi{s.teacher && <> · Eğitmeni {s.teacher}</>}</span></p>
         </div>
         {s.risk && <div className="stack-end">
           <span className={`state ${STATE[s.risk.riskLevel].cls}`}><i className="dot" />{STATE[s.risk.riskLevel].word}</span>
